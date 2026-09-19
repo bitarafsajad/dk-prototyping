@@ -458,6 +458,11 @@ body{
     var qt = block && block.querySelector('.qtext');
     if (!qt || !textfield || textfield.classList.contains('hidden')) return;
 
+    // The opening question never moves. Its answer simply appears beneath it,
+    // and the layout stays exactly as it was — no scroll, no reflow. Scrolling
+    // only starts once there is a second question to make room for.
+    if (state.records.length === 0) return;
+
     if (!padBot) padBot = el('div','pad');
     chat.appendChild(padBot);                 // re-appending an existing node moves it last
     padBot.style.height = '0px';              // measure the natural layout first
@@ -762,6 +767,17 @@ body{
   lock(true);
   boot();
 })();
+</script>
+
+<script>
+  // Needs HTTPS (or localhost). Registration is what makes Chrome offer "Install".
+  if ('serviceWorker' in navigator && window.top === window.self) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function (err) {
+        console.warn('Service worker not registered:', err && err.message);
+      });
+    });
+  }
 </script>
 
 </body>
