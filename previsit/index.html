@@ -412,16 +412,28 @@ body{
   // when it opens. visualViewport is the only thing that reports that on iOS.
   var vv = window.visualViewport;
   var root = document.documentElement;
+  var deviceEl = document.getElementById('device');
+
   function fitViewport(){
     if (!vv) return;
     // Some browsers report the TOP-level viewport from inside an iframe, which
     // would size the frame far too tall and push the field out of reach. Only
     // clamp when the reading is smaller than the window — i.e. a keyboard is up.
-    if (vv.height && vv.height < window.innerHeight - 40){
-      root.style.setProperty('--vvh', vv.height + 'px');
-    } else {
-      root.style.removeProperty('--vvh');
+    var squeezed = !!(vv.height && vv.height < window.innerHeight - 40);
+    if (squeezed) root.style.setProperty('--vvh', vv.height + 'px');
+    else root.style.removeProperty('--vvh');
+
+    // Safari slides the VISUAL viewport down to reveal the focused field while
+    // the LAYOUT viewport stays where it was. The frame is laid out against the
+    // layout viewport, so without following that offset its top — the header and
+    // the description — ends up above the visible area and reads as if the page
+    // had scrolled. Move the frame down to meet what is actually on screen.
+    if (deviceEl){
+      var off = squeezed ? Math.round(vv.offsetTop || 0) : 0;
+      deviceEl.style.transform = off ? 'translateY(' + off + 'px)' : '';
     }
+    if (window.pageYOffset) window.scrollTo(0, 0);
+
     parkQuestion(false);
   }
   window.addEventListener('resize', function(){ parkQuestion(false); });
@@ -553,7 +565,10 @@ body{
   });
 
   // once the native keyboard has finished opening, keep the latest turn in view
-  field.addEventListener('focus', function(){ setTimeout(function(){ parkQuestion(true); }, 350); });
+  field.addEventListener('focus', function(){
+    [0, 120, 300, 500, 800].forEach(function(t){ setTimeout(fitViewport, t); });
+  });
+  field.addEventListener('blur', function(){ setTimeout(fitViewport, 120); });
 
   sendBtn.addEventListener('click', function(){ submit(); focusField(); });
 
@@ -747,6 +762,17 @@ body{
   lock(true);
   boot();
 })();
+</script>
+
+<script>
+  // Needs HTTPS (or localhost). Registration is what makes Chrome offer "Install".
+  if ('serviceWorker' in navigator && window.top === window.self) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function (err) {
+        console.warn('Service worker not registered:', err && err.message);
+      });
+    });
+  }
 </script>
 
 </body>
