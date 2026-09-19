@@ -771,16 +771,5 @@ body{
 })();
 </script>
 
-<script>
-  // Needs HTTPS (or localhost). Registration is what makes Chrome offer "Install".
-  if ('serviceWorker' in navigator && window.top === window.self) {
-    window.addEventListener('load', function () {
-      navigator.serviceWorker.register('sw.js').catch(function (err) {
-        console.warn('Service worker not registered:', err && err.message);
-      });
-    });
-  }
-</script>
-
 </body>
 </html>
