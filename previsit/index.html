@@ -79,25 +79,18 @@
   /* backdrop behind the device — neutral biased toward the brand crimson */
   --stage:#f1edee;
   --stage-2:#e6e0e2;
-  --stage-ink:#6d6165;
-  --stage-rule:rgba(109,97,101,.22);
 
   --fa:'IRANYekanX',Tahoma,'Segoe UI',sans-serif;
-  --ios:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif;
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
     --stage:#171314;
     --stage-2:#241d1f;
-    --stage-ink:#a9999e;
-    --stage-rule:rgba(169,153,158,.2);
   }
 }
 :root[data-theme="dark"]{
   --stage:#171314;
   --stage-2:#241d1f;
-  --stage-ink:#a9999e;
-  --stage-rule:rgba(169,153,158,.2);
 }
 
 *{box-sizing:border-box}
@@ -107,31 +100,9 @@ body{
   background:radial-gradient(120% 90% at 50% 0%,var(--stage) 0%,var(--stage-2) 100%);
   font-family:var(--fa);
   display:flex;align-items:stretch;justify-content:center;
-  gap:28px;
   overflow:hidden;
   -webkit-font-smoothing:antialiased;
 }
-
-/* ── stage caption (desktop only) ───────────────────────────── */
-.stage-note{
-  display:none;
-  width:230px;flex:0 0 auto;align-self:center;
-  color:var(--stage-ink);
-  padding-inline-start:8px;
-}
-.stage-note h1{
-  font-family:var(--ios);
-  font-size:13px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
-  margin:0 0 14px;opacity:.75;
-}
-.stage-note p{font-family:var(--ios);font-size:12.5px;line-height:1.65;margin:0 0 16px;opacity:.72}
-.stage-note ul{list-style:none;margin:0;padding:0;border-top:1px solid var(--stage-rule)}
-.stage-note li{
-  font-family:var(--ios);font-size:12px;line-height:1.5;
-  padding:9px 0;border-bottom:1px solid var(--stage-rule);
-  display:flex;gap:10px;align-items:baseline;opacity:.8;
-}
-.stage-note li b{font-variant-numeric:tabular-nums;font-weight:600;opacity:.55;font-size:10.5px;letter-spacing:.08em}
 
 /* ────────────────────────────────────────────────────────────
    Device
@@ -349,23 +320,12 @@ body{
 @media (pointer:coarse){ .controlbar{display:none} }
 
 /* ── responsive: full-bleed on phones ───────────────────────── */
-@media (max-width:900px){ body{gap:0} .stage-note{display:none} }
-@media (min-width:901px){ .stage-note{display:block} }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
   .caret,.qtext .cursor{animation:none!important;opacity:1}
 }
 </style>
 
-<aside class="stage-note">
-  <h1>Pre-visit intake</h1>
-  <p>A four-question triage chat the patient answers before the doctor joins. Questions are typed out by the assistant; answers go into a real text field, so the device supplies its own keyboard.</p>
-  <ul>
-    <li><b>01</b><span>Physical keyboard here; the native one on a phone.</span></li>
-    <li><b>02</b><span>Enter or the red button sends an answer.</span></li>
-    <li><b>03</b><span>Tap any answer chip to edit it.</span></li>
-  </ul>
-</aside>
 
 <div class="device" id="device">
 
@@ -809,6 +769,17 @@ body{
   lock(true);
   boot();
 })();
+</script>
+
+<script>
+  // Needs HTTPS (or localhost). Registration is what makes Chrome offer "Install".
+  if ('serviceWorker' in navigator && window.top === window.self) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function (err) {
+        console.warn('Service worker not registered:', err && err.message);
+      });
+    });
+  }
 </script>
 
 </body>
