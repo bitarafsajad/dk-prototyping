@@ -361,6 +361,7 @@ body{
       <input class="field" id="field" type="text" dir="rtl"
              autocomplete="off" autocorrect="off" autocapitalize="sentences" spellcheck="false"
              enterkeyhint="send" maxlength="120" placeholder="نوشتن جواب"
+             inputmode="text"
              aria-label="پاسخ خودت رو بنویس" readonly>
     </div>
   </div>
@@ -376,10 +377,10 @@ body{
   var INTRO = 'قبل از ویزیت با پزشک، نیازه که چنتا سوال ازت بپرسیم تا پزشک، بهتر بتونه کمکت کنه :)';
 
   var QUESTIONS = [
-    { text:'سن خودت رو بهمون بگو:',                 kind:'num',  ph:'نوشتن جواب',       unit:' سال' },
-    { text:'علت مصرف دارو چیه؟',                    kind:'text', ph:'نوشتن جواب',       unit:'' },
-    { text:'چند وقته این دارو رو مصرف می‌کنی؟',      kind:'text', ph:'نوشتن جواب',       unit:'' },
-    { text:'به دارو یا خوراکی خاصی حساسیت داری؟',    kind:'text', ph:'نوشتن جواب',       unit:'' }
+    { text:'سن خودت رو بهمون بگو:',                 ph:'نوشتن جواب',       unit:' سال' },
+    { text:'علت مصرف دارو چیه؟',                    ph:'نوشتن جواب',       unit:'' },
+    { text:'چند وقته این دارو رو مصرف می‌کنی؟',      ph:'نوشتن جواب',       unit:'' },
+    { text:'به دارو یا خوراکی خاصی حساسیت داری؟',    ph:'نوشتن جواب',       unit:'' }
   ];
 
   var OUTRO = 'ممنون! پاسخ‌هات ثبت شد و برای پزشکت فرستاده می‌شه. تا چند لحظه‌ی دیگه ویزیت شروع می‌شه.';
@@ -407,9 +408,8 @@ body{
   }
   function toBottom(){ chat.scrollTop = chat.scrollHeight; }
 
-  /* ── the on-screen keyboard is the device's own, so the frame
-        has to give way when it opens. visualViewport is the only
-        thing that reports that on iOS. ─────────────────────────── */
+  // The on-screen keyboard is the device's own, so the frame has to give way
+  // when it opens. visualViewport is the only thing that reports that on iOS.
   var vv = window.visualViewport;
   var root = document.documentElement;
   function fitViewport(){
@@ -422,12 +422,52 @@ body{
     } else {
       root.style.removeProperty('--vvh');
     }
+    parkQuestion(false);
   }
+  window.addEventListener('resize', function(){ parkQuestion(false); });
   if (vv){
     vv.addEventListener('resize', fitViewport);
     vv.addEventListener('scroll', fitViewport);
     fitViewport();
   }
+
+  // While everything fits, the conversation just sits at the top — no need to
+  // drag the question down to meet the input. Only once the content outgrows
+  // the space (a phone with the keyboard up, or a long conversation) does it
+  // scroll, and then it stops with exactly 24px between the last question and
+  // the input pill. A spacer covers the last stretch, since scrolling to the
+  // natural end still leaves the block's own padding in the way.
+  var GAP = 24;
+  var padBot = null;
+
+  function parkQuestion(smooth){
+    // `state` is declared below, and fitViewport() runs before that
+    var block = typeof state !== 'undefined' && state && state.activeBlock;
+    var qt = block && block.querySelector('.qtext');
+    if (!qt || !textfield || textfield.classList.contains('hidden')) return;
+
+    if (!padBot) padBot = el('div','pad');
+    chat.appendChild(padBot);                 // re-appending an existing node moves it last
+    padBot.style.height = '0px';              // measure the natural layout first
+
+    var top  = chat.scrollTop;                // re-read: clearing the pad may have clamped it
+    var pill = textfield.querySelector('.searchbox').getBoundingClientRect();
+    var want = top + (qt.getBoundingClientRect().bottom - (pill.top - GAP));
+
+    if (want <= 0){ chat.scrollTop = 0; return; }   // it all fits — leave it at the top
+
+    // never scroll the question's own top out of view
+    var blockTop = top + (block.getBoundingClientRect().top - chat.getBoundingClientRect().top);
+    want = Math.min(want, Math.max(0, blockTop));
+
+    var max = chat.scrollHeight - chat.clientHeight;
+    if (want > max) padBot.style.height = (want - max) + 'px';
+
+    if (smooth && !REDUCED) chat.scrollTo({ top: want, behavior: 'smooth' });
+    else chat.scrollTop = want;
+  }
+
+  function clearPads(){ if (padBot) padBot.style.height = '0px'; }
 
   /* ── typewriter ───────────────────────────────────────────── */
   var PAUSE_AFTER = { '،':190, '.':240, '؟':260, '!':240, ':':200, '؛':190 };
@@ -453,7 +493,7 @@ body{
         toBottom();
         var wait = 24 + Math.random()*22;
         if (ch === ' ') wait += 34;
-        if (ch === '\u200c') wait = 12;          // ZWNJ is invisible — don't dwell on it
+        if (ch === '‌') wait = 12;          // ZWNJ is invisible — don't dwell on it
         if (PAUSE_AFTER[ch]) wait += PAUSE_AFTER[ch];
         setTimeout(step, wait);
       })();
@@ -463,10 +503,11 @@ body{
   /* ── state ────────────────────────────────────────────────── */
   var state = {
     idx: 0,          // current question index
-    mode: 'text',    // what this question accepts: 'num' or 'text'
     busy: true,      // assistant is talking
     editing: null,   // record being edited, or null
-    records: []      // { q, answer, chipEl, valEl }
+    currentBlock: null,  // the question awaiting an answer
+    activeBlock: null,   // what parkQuestion aligns to (differs while editing)
+    records: []      // { q, answer, chipEl, valEl, block }
   };
   var pending = null;  // a half-written answer parked while an old one is edited
 
@@ -475,19 +516,6 @@ body{
     sendBtn.setAttribute('aria-disabled', String(state.busy || !field.value.trim()));
   }
   function setValue(v){ field.value = v; syncSend(); }
-
-  // 'num' asks the phone for a number pad, matching the design's numeric
-  // keyboard; anything else gets the normal one.
-  function setInputMode(kind){
-    state.mode = kind;
-    if (kind === 'num'){
-      field.setAttribute('inputmode','numeric');
-      field.setAttribute('maxlength','3');
-    } else {
-      field.setAttribute('inputmode','text');
-      field.setAttribute('maxlength','120');
-    }
-  }
 
   function lock(on){
     field.readOnly = on;
@@ -525,7 +553,7 @@ body{
   });
 
   // once the native keyboard has finished opening, keep the latest turn in view
-  field.addEventListener('focus', function(){ setTimeout(toBottom, 350); });
+  field.addEventListener('focus', function(){ setTimeout(function(){ parkQuestion(true); }, 350); });
 
   sendBtn.addEventListener('click', function(){ submit(); focusField(); });
 
@@ -566,6 +594,7 @@ body{
   async function askQuestion(i){
     state.busy = true;
     lock(true);
+    clearPads();
 
     if (i > 0) addDivider();
 
@@ -588,13 +617,14 @@ body{
     await sleep(REDUCED ? 0 : 140);
 
     state.idx = i;
+    state.currentBlock = block;
+    state.activeBlock = block;
     setValue('');
     field.placeholder = QUESTIONS[i].ph;
-    setInputMode(QUESTIONS[i].kind);
     state.busy = false;
     lock(false);
     focusField();
-    toBottom();
+    parkQuestion(true);
   }
 
   function format(q, raw){
@@ -604,7 +634,6 @@ body{
   function submit(){
     if (state.busy) return;
     var raw = field.value.trim();
-    if (state.mode === 'num') raw = raw.replace(/[^0-9۰-۹]/g,'').slice(0,3);
     if (!raw) return;                     // the button stays live, it just does nothing
 
     if (state.editing){                   // rewriting an earlier answer
@@ -618,8 +647,9 @@ body{
       return;
     }
 
+    clearPads();
     var q = QUESTIONS[state.idx];
-    var record = { q:q, answer: format(q, raw) };
+    var record = { q:q, answer: format(q, raw), block: state.currentBlock };
     state.records.push(record);
     addAnswer(record);
     setValue('');
@@ -636,12 +666,12 @@ body{
     state.editing = rec;
     rec.chipEl.classList.add('editing');
     field.placeholder = rec.q.ph;
-    setInputMode(rec.q.kind);
     setValue(rec.q.unit ? rec.answer.replace(rec.q.unit, '') : rec.answer);
     textfield.classList.remove('hidden');
     lock(false);
     focusField();
-    rec.chipEl.scrollIntoView({ block:'nearest', behavior: REDUCED ? 'auto' : 'smooth' });
+    state.activeBlock = rec.block || state.currentBlock;
+    parkQuestion(true);
   }
 
   function restoreCurrent(){
@@ -656,10 +686,10 @@ body{
     }
     var q = QUESTIONS[state.idx];
     field.placeholder = q.ph;
-    setInputMode(q.kind);
     setValue(draft);
     focusField();
-    toBottom();
+    state.activeBlock = state.currentBlock;
+    parkQuestion(true);
   }
 
   /* ── wrap up ──────────────────────────────────────────────── */
@@ -668,6 +698,8 @@ body{
     lock(true);
     field.blur();
     textfield.classList.add('hidden');
+    state.activeBlock = null;
+    clearPads();
 
     addDivider();
     var wrap = el('div','done');
@@ -689,9 +721,10 @@ body{
 
   /* ── reset ────────────────────────────────────────────────── */
   async function reset(){
-    state = { idx:0, mode:'text', busy:true, editing:null, records:[] };
+    state = { idx:0, busy:true, editing:null, currentBlock:null, activeBlock:null, records:[] };
     pending = null;
     chat.innerHTML = '';
+    padBot = null;
     textfield.classList.remove('hidden');
     setValue('');
     lock(true);

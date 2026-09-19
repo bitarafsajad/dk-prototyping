@@ -1,34 +1,34 @@
-# پیش‌ویزیت — Pre-visit intake
+# پیش‌ویزیت — PWA bundle
 
-A Persian pre-visit triage chat, implemented from Figma. Static PWA: no build
-step, no dependencies, no external requests. The IRANYekanX font and all icons
-are embedded in `index.html`.
+Static files. Upload the whole folder, keeping the structure, to any HTTPS host.
 
-## Files
+    index.html
+    manifest.webmanifest
+    sw.js
+    icons/
 
-    index.html              the whole app
-    manifest.webmanifest    PWA metadata
-    sw.js                   service worker (offline + installability)
-    icons/                  app icons
-    .nojekyll               tells GitHub Pages to serve files as-is
+## Requirements
 
-## Publishing with GitHub Pages
+- **HTTPS is mandatory.** Service workers and install prompts do not run over
+  plain HTTP (localhost is the one exception, for testing).
+- Serve the folder at its own path or domain root. `start_url` and `scope` are
+  relative (`./`), so a subfolder works fine.
 
-Settings -> Pages -> Source: *Deploy from a branch*, branch `main`, folder `/ (root)`.
-The site appears at `https://<user>.github.io/<repo>/` within a minute or two.
+## Installing
 
-Paths are all relative, so serving from a repo subpath works without changes.
+- **Android / Chrome** — an "Install app" prompt appears once the service
+  worker registers. Also available under the browser menu.
+- **iOS / Safari** — Share -> Add to Home Screen. iOS ignores the manifest and
+  reads the `apple-*` meta tags in `index.html` instead.
+- **Desktop Chrome / Edge** — install icon in the address bar.
 
 ## Updating
 
-After editing `index.html`, bump `CACHE` in `sw.js` (`previsit-v3` -> `previsit-v4`).
-Installed copies serve from cache until that name changes.
+Replace `index.html`, then bump `CACHE` in `sw.js` (e.g. `previsit-v2`).
+Without that bump, installed copies keep serving the cached old version.
 
-## Installing to a home screen
+## Swapping the icon
 
-- Android / Chrome: an install prompt appears once the service worker registers.
-- iOS / Safari: Share -> Add to Home Screen (iOS reads the `apple-*` meta tags,
-  not the manifest).
-- Desktop Chrome / Edge: install icon in the address bar.
-
-Requires HTTPS, which GitHub Pages provides.
+Replace the four PNGs in `icons/`, keeping the filenames and pixel sizes.
+`icon-maskable-512.png` must keep its artwork inside the middle 80% — Android
+crops it to a circle on some launchers.
