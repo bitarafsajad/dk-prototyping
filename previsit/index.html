@@ -2,7 +2,10 @@
 <html lang="fa">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- interactive-widget=resizes-content: Chrome shrinks the LAYOUT viewport for the
+     keyboard, so the frame fits above it with no JavaScript at all. Safari ignores
+     it and only moves the visual viewport, which the script handles. -->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#ffffff">
@@ -408,39 +411,41 @@ body{
   }
   function toBottom(){ chat.scrollTop = chat.scrollHeight; }
 
-  // The on-screen keyboard is the device's own, so the frame has to give way
-  // when it opens. visualViewport is the only thing that reports that on iOS.
+  // The keyboard slides in over a few hundred milliseconds, and the browser
+  // reports EVERY intermediate viewport size while it does. Reacting to each
+  // one resizes the frame a dozen times on the way down — which is the jumping.
+  // So: wait for the viewport to hold still, then move exactly once.
   var vv = window.visualViewport;
   var root = document.documentElement;
   var deviceEl = document.getElementById('device');
+  var settleTimer = null;
 
-  function fitViewport(){
+  function applyViewport(){
     if (!vv) return;
-    // Some browsers report the TOP-level viewport from inside an iframe, which
-    // would size the frame far too tall and push the field out of reach. Only
-    // clamp when the reading is smaller than the window — i.e. a keyboard is up.
     var squeezed = !!(vv.height && vv.height < window.innerHeight - 40);
-    if (squeezed) root.style.setProperty('--vvh', vv.height + 'px');
+    if (squeezed) root.style.setProperty('--vvh', Math.round(vv.height) + 'px');
     else root.style.removeProperty('--vvh');
 
     // Safari slides the VISUAL viewport down to reveal the focused field while
-    // the LAYOUT viewport stays where it was. The frame is laid out against the
-    // layout viewport, so without following that offset its top — the header and
-    // the description — ends up above the visible area and reads as if the page
-    // had scrolled. Move the frame down to meet what is actually on screen.
+    // the LAYOUT viewport stays put; follow it so the frame keeps meeting the
+    // visible area instead of being left above it.
     if (deviceEl){
       var off = squeezed ? Math.round(vv.offsetTop || 0) : 0;
       deviceEl.style.transform = off ? 'translateY(' + off + 'px)' : '';
     }
-    if (window.pageYOffset) window.scrollTo(0, 0);
-
     parkQuestion(false);
   }
-  window.addEventListener('resize', function(){ parkQuestion(false); });
+
+  function viewportSettled(){
+    clearTimeout(settleTimer);
+    settleTimer = setTimeout(applyViewport, 180);
+  }
+
+  window.addEventListener('resize', viewportSettled);
   if (vv){
-    vv.addEventListener('resize', fitViewport);
-    vv.addEventListener('scroll', fitViewport);
-    fitViewport();
+    vv.addEventListener('resize', viewportSettled);
+    vv.addEventListener('scroll', viewportSettled);
+    applyViewport();
   }
 
   // While everything fits, the conversation just sits at the top — no need to
@@ -453,7 +458,7 @@ body{
   var padBot = null;
 
   function parkQuestion(smooth){
-    // `state` is declared below, and fitViewport() runs before that
+    // `state` is declared below, and applyViewport() runs before that
     var block = typeof state !== 'undefined' && state && state.activeBlock;
     var qt = block && block.querySelector('.qtext');
     if (!qt || !textfield || textfield.classList.contains('hidden')) return;
@@ -570,10 +575,8 @@ body{
   });
 
   // once the native keyboard has finished opening, keep the latest turn in view
-  field.addEventListener('focus', function(){
-    [0, 120, 300, 500, 800].forEach(function(t){ setTimeout(fitViewport, t); });
-  });
-  field.addEventListener('blur', function(){ setTimeout(fitViewport, 120); });
+  field.addEventListener('focus', viewportSettled);
+  field.addEventListener('blur',  viewportSettled);
 
   sendBtn.addEventListener('click', function(){ submit(); focusField(); });
 
@@ -767,6 +770,17 @@ body{
   lock(true);
   boot();
 })();
+</script>
+
+<script>
+  // Needs HTTPS (or localhost). Registration is what makes Chrome offer "Install".
+  if ('serviceWorker' in navigator && window.top === window.self) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function (err) {
+        console.warn('Service worker not registered:', err && err.message);
+      });
+    });
+  }
 </script>
 
 </body>
