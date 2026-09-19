@@ -1,5 +1,5 @@
 // Bump CACHE whenever you replace index.html, or clients keep the old copy.
-const CACHE = 'previsit-v8';
+const CACHE = 'previsit-v12';
 const SHELL = [
   './', './index.html', './manifest.webmanifest',
   './icons/icon-192.png', './icons/icon-512.png',
