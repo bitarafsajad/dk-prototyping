@@ -1,0 +1,50 @@
+/* Part of the product-card component set · see README.md */
+
+/* =====================================================================
+   Price — Figma: price (5069:22943)
+   final price (Prominent/Small 15/24 Bold) + toman sign, highlight underneath,
+   previous price (Subtle/Small 13/20) with a red diagonal strike
+   ===================================================================== */
+.price{
+  display:inline-flex; flex-direction:column; align-items:flex-start;  /* flex-start = right in RTL */
+  gap:8px; direction:rtl;
+  font-family:"Digikala","Vazirmatn",Tahoma,sans-serif;
+}
+
+/* final price + highlight */
+.price__final{ display:flex; flex-direction:column; isolation:isolate; }
+.price__row{
+  position:relative; z-index:2;
+  display:flex; align-items:center; gap:4px;
+  height:16px;
+}
+.price--discount .price__row{ margin-bottom:-5px; }   /* highlight tucks under the last 5px */
+.price__amount{
+  font-size:15px; line-height:24px; font-weight:700;
+  color:var(--content-primary,#000); white-space:nowrap;
+}
+.price__toman{                                     /* 13×8 slot — replace with the toman SVG */
+  display:grid; place-items:center; width:13px; height:8px; flex-shrink:0;
+  font-size:13px; line-height:0; font-weight:700; color:var(--content-primary,#000);
+}
+.price__toman img, .price__toman svg{ display:block; width:13px; height:8px; }
+.price__highlight{
+  position:relative; z-index:1; height:5px; width:100%;
+  background:url("../assets/highlight.png") 0 0 / 100% 100% no-repeat;
+}
+
+/* previous price */
+.price__prev{
+  position:relative; height:14px; display:flex; align-items:center;
+  font-size:13px; line-height:20px; font-weight:400;
+  color:var(--content-quaternary,#999); white-space:nowrap;
+}
+.price__prev::after{                               /* red line, -5deg, 1px */
+  content:""; position:absolute; left:.06px; right:.06px; top:50%;
+  height:1px; margin-top:-.5px;
+  background:rgba(237,25,68,.48);
+  transform:rotate(-5deg) skewX(.63deg);
+}
+
+/* <del> is used for accessibility; the visual strike is the ::after line */
+del.price__prev{ text-decoration:none; }
