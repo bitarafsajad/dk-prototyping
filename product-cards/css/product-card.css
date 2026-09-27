@@ -1,0 +1,48 @@
+/* Part of the product-card component set · see README.md */
+
+/* =====================================================================
+   Product card — Figma: card (5064:22891)
+   ===================================================================== */
+:root{
+  --surface-primary:#fff;
+  --border-terra-primary:#efeeeb;
+  --content-primary:#000;
+  --content-quaternary:#999;
+  --font:"Digikala","Vazirmatn",Tahoma,sans-serif;
+}
+.cards{ display:flex; gap:16px; align-items:flex-start; padding:16px; background:var(--surface-primary);
+  width:100%; max-width:360px; box-sizing:border-box; font-family:var(--font); }
+.pc{ flex:1 0 0; min-width:0; display:flex; flex-direction:column; gap:8px; }
+
+/* Image frame */
+.pc__media{ position:relative; aspect-ratio:1; border:1px solid var(--border-terra-primary); border-radius:24px;
+  background:var(--surface-primary); box-sizing:border-box; }
+.pc__img{ position:absolute; top:7px; left:7px; right:7px; width:calc(100% - 14px); aspect-ratio:1;
+  object-fit:cover; pointer-events:none; border-radius:16px; }
+.pc__overlay{ position:absolute; inset:-1px; border-radius:24px; pointer-events:none;
+  background:radial-gradient(57% 50% at 50% 50%, rgba(var(--tint),0) 0%, rgba(var(--tint),.06) 100%); }
+
+/* Discount badge */
+.pc__badge{ position:absolute; top:9px; left:9px; height:20px; padding:0 6px; box-sizing:border-box;
+  display:flex; align-items:center; border:1px solid var(--surface-primary); border-radius:12px;
+  background:linear-gradient(-54.7deg, #caf200 0%, #ffffb2 100%);
+  filter:drop-shadow(0 .4px .3px rgba(0,0,0,.14));
+  font-size:13px; line-height:20px; font-weight:700; color:var(--content-primary); white-space:nowrap; }
+
+/* Stepper sits on the bottom edge of the image frame, anchored right */
+.pc__media .qs{ position:absolute; left:-1px; right:-1px; bottom:-1px; width:auto; container-type:inline-size; }
+/* Expanded stepper fills the image container width (minus the 8px frame padding) */
+.pc__media .qs[data-open] .qs__pill{ width:100%; }
+.pc__media .qs[data-compact] .qs__pill{ width:40px; }
+.pc__media .qs__row{ width:100cqw; padding:0 4px; }   /* 100cqw = stepper content width */
+/* Minus gets a 32px slot like the plus, so both icons sit 20px from their edge */
+.pc__media .qs__minus{ position:relative; width:32px; height:32px; flex-shrink:0; background:none; border-radius:0; }
+.pc__media .qs__minus::before{ content:""; position:absolute; left:50%; top:50%; width:16px; height:2px;
+  margin:-1px 0 0 -8px; border-radius:2px; background:var(--content-brand); }
+
+/* Text */
+.pc__text{ display:flex; flex-direction:column; gap:8px; padding:4px 4px 0; }
+.pc__names p{ margin:0; font-size:13px; line-height:20px; }
+.pc__title{ font-weight:500; color:var(--content-primary);
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.pc__sub{ font-weight:400; color:var(--content-quaternary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }

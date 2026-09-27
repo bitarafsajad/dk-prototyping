@@ -1,0 +1,4 @@
+/* Demo page layout only — not needed in your app */
+body{ margin:0; min-height:100vh; display:grid; place-items:center; background:#f4f4f4; }
+.hint{ font:12px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; color:#888; text-align:center; margin-top:12px; direction:ltr; }
+.shell{ background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,.05); }

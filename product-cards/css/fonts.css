@@ -1,0 +1,4 @@
+/* Digikala — self-hosted. Check the font licence before publishing the files publicly. */
+@font-face{ font-family:"Digikala"; font-weight:400; font-style:normal; font-display:swap; src:url("../fonts/Digikala-Regular.woff2") format("woff2"); }
+@font-face{ font-family:"Digikala"; font-weight:500; font-style:normal; font-display:swap; src:url("../fonts/Digikala-Medium.woff2") format("woff2"); }
+@font-face{ font-family:"Digikala"; font-weight:700; font-style:normal; font-display:swap; src:url("../fonts/Digikala-Bold.woff2") format("woff2"); }
