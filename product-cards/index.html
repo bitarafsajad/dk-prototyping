@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Product Cards</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/quantity-stepper.css">
+<link rel="stylesheet" href="css/price.css">
+<link rel="stylesheet" href="css/product-card.css">
+<link rel="stylesheet" href="css/demo.css">
+</head>
+<body>
+<div>
+  <div class="shell">
+    <div class="cards">
+      <article class="pc">
+        <div class="pc__media" style="--tint:72,68,62">
+          <img class="pc__img" src="assets/vitalayer-sunscreen.jpg" alt="فلوئید ضد آفتاب ویتامین سی">
+          <span class="pc__overlay"></span>
+          <span class="pc__badge" dir="ltr">-۱۷ ٪</span>
+          <div class="qs">
+            <div class="qs__pill">
+              <div class="qs__bg"><div class="qs__glass"></div></div>
+              <div class="qs__clip"><div class="qs__row">
+                <span class="qs__minus"></span>
+                <span class="qs__count" aria-live="polite"><span>۱</span></span>
+                <span class="qs__plus"><span class="qs__plus-bg"></span><span class="qs__plus-clip"><span class="qs__plus-icon"></span><span class="qs__plus-num">۱</span></span></span>
+              </div></div>
+              <div class="qs__border"></div>
+              <button class="qs__hit qs__hit--minus" type="button" aria-label="کم کردن"></button>
+              <button class="qs__hit qs__hit--plus" type="button" aria-label="افزودن به سبد"></button>
+            </div>
+          </div>
+        </div>
+        <div class="pc__text">
+          <div class="pc__names">
+            <p class="pc__title">فلوئید ضد آفتاب ویتامین سی (بی رنگ)</p>
+            <p class="pc__sub">SPF ۵۰</p>
+          </div>
+          <div class="price price--discount">
+            <div class="price__final"><div class="price__row"><span class="price__amount">۱٬۲۱۹٬۸۰۰</span><span class="price__toman" aria-label="تومان">ت</span></div><span class="price__highlight" aria-hidden="true"></span></div>
+            <del class="price__prev" aria-label="قیمت قبلی">۱٬۶۳۶٬۸۳۰</del>
+          </div>        </div>
+      </article>
+      <article class="pc">
+        <div class="pc__media" style="--tint:41,45,61">
+          <img class="pc__img" src="assets/babyfirst-sunscreen.jpg" alt="کرم ضد آفتاب کودکان بیبی فرست">
+          <span class="pc__overlay"></span>
+          
+          <div class="qs">
+            <div class="qs__pill">
+              <div class="qs__bg"><div class="qs__glass"></div></div>
+              <div class="qs__clip"><div class="qs__row">
+                <span class="qs__minus"></span>
+                <span class="qs__count" aria-live="polite"><span>۱</span></span>
+                <span class="qs__plus"><span class="qs__plus-bg"></span><span class="qs__plus-clip"><span class="qs__plus-icon"></span><span class="qs__plus-num">۱</span></span></span>
+              </div></div>
+              <div class="qs__border"></div>
+              <button class="qs__hit qs__hit--minus" type="button" aria-label="کم کردن"></button>
+              <button class="qs__hit qs__hit--plus" type="button" aria-label="افزودن به سبد"></button>
+            </div>
+          </div>
+        </div>
+        <div class="pc__text">
+          <div class="pc__names">
+            <p class="pc__title">کرم ضد آفتاب کودکان بیبی فرست</p>
+            <p class="pc__sub">SPF ۵۰</p>
+          </div>
+          <div class="price"><div class="price__final"><div class="price__row"><span class="price__amount">۱٬۱۰۰٬۰۰۰</span><span class="price__toman" aria-label="تومان">ت</span></div></div></div>        </div>
+      </article>
+    </div>
+  </div>
+  <p class="hint">Tap + to add · collapses to the amount after 1.5s</p>
+</div>
+<script src="js/quantity-stepper.js"></script>
+</body>
+</html>
