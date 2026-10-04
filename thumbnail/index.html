@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Product thumbnail · 24px radius, 60% smoothing</title>
+<style>
+:root { box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px);
+  --bg: #ffffff; --text: #262626; --muted: #8a8a8a; --panel: #f7f6f4; color-scheme: light dark; }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #161514; --text: #f2f1ef; --muted: #9b9893; --panel: #201f1d; } }
+:root[data-theme="dark"] { --bg: #161514; --text: #f2f1ef; --muted: #9b9893; --panel: #201f1d; }
+*, *::before, *::after { box-sizing: inherit; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+main { max-width: 760px; margin: 0 auto; padding: 32px 20px 48px; }
+h1 { font-size: 20px; font-weight: 600; margin: 0 0 4px; }
+p.lead { margin: 0 0 28px; color: var(--muted); }
+h2 { font-size: 15px; font-weight: 600; margin: 36px 0 14px; }
+.row { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-end; }
+figure { margin: 0; }
+figcaption { margin-top: 10px; font-size: 13px; color: var(--muted); text-align: center; }
+.zoom { overflow-x: auto; padding: 24px; background: var(--panel); border-radius: 16px; }
+.zoom .row { flex-wrap: nowrap; }
+/* Plain border-radius version, for comparison only */
+.plain { position: relative; width: 128px; height: 128px; border-radius: 24px; overflow: hidden; background: #fff; }
+.plain img { position: absolute; inset: 12px; width: 104px; height: 104px; object-fit: cover; }
+.plain::before { content: ""; position: absolute; inset: 0; z-index: 1;
+  background: radial-gradient(57.03% 50% at 50% 50%, rgba(47,43,37,0) 0%, rgba(47,43,37,.06) 100%); }
+.plain::after { content: ""; position: absolute; inset: 0; z-index: 2; border: 1px solid #efeeeb; border-radius: 24px; }
+.big { transform-origin: bottom left; }
+</style>
+<link rel="stylesheet" href="src/squircle-thumb.css">
+</head>
+<body>
+<main>
+  <h1>Product thumbnail</h1>
+  <p class="lead">Figma image/Default · 128×128 · corner radius 24px · corner smoothing 60%</p>
+
+  <h2>Actual size</h2>
+  <div class="row">
+    <figure>
+      <div class="sq-thumb"><img class="sq-thumb__img" src="images/place_img.jpg" alt="Crax Double Mazza"></div>
+      <figcaption>Smoothed 60%</figcaption>
+    </figure>
+    <figure>
+      <div class="plain"><img src="images/place_img.jpg" alt=""></div>
+      <figcaption>Plain border-radius</figcaption>
+    </figure>
+  </div>
+
+  <h2>Zoomed 3× to compare corners</h2>
+  <div class="zoom">
+    <div class="row">
+      <figure>
+        <div style="width:384px;height:384px"><div class="sq-thumb" style="transform:scale(3);transform-origin:0 0"><img class="sq-thumb__img" src="images/place_img.jpg" alt=""></div></div>
+        <figcaption>Smoothed 60%</figcaption>
+      </figure>
+      <figure>
+        <div style="width:384px;height:384px"><div class="plain" style="transform:scale(3);transform-origin:0 0"><img src="images/place_img.jpg" alt=""></div></div>
+        <figcaption>Plain border-radius</figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <h2>In a product row</h2>
+  <div class="row" style="gap:12px">
+    <div class="sq-thumb"><img class="sq-thumb__img" src="images/place_img.jpg" alt="Crax Double Mazza"></div>
+    <div class="sq-thumb"><img class="sq-thumb__img" src="images/place_img.jpg" alt="Crax Double Mazza"></div>
+    <div class="sq-thumb"><img class="sq-thumb__img" src="images/place_img.jpg" alt="Crax Double Mazza"></div>
+  </div>
+</main>
+</body>
+</html>
