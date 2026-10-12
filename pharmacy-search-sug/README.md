@@ -1,85 +1,53 @@
-# Search suggestions pop-in (HTML + CSS)
+# Search suggestions pop-in
 
 A search page empty state where the suggestion chips pop in with a fast,
-playful, randomized spring. Plain HTML and CSS: no framework, no build step.
+randomized spring. Built for low-end Android phones (e.g. older Samsung A series).
 
-**Open `index.html`** with a double-click, or upload the two files anywhere
-(GitHub Pages: Settings → Pages → Deploy from a branch → `main`, `/ (root)`).
-Keep the `fonts/` and `icons/` folders next to the two files.
+**Open `index.html`.** It is the whole page in one file: HTML, CSS, the font
+and the icons are all inside it. Upload just that file anywhere (GitHub Pages:
+Settings → Pages → Deploy from a branch → `main`, `/ (root)`).
 
-## Files
+A plain white page: the search bar at the top, the chips under it.
+**Tap any white area** to replay. Typing hides the chips; clearing the field pops them back.
 
-| File | What it is |
-| --- | --- |
-| `index.html` | The page, icons inline as SVG |
-| `styles.css` | All styles and the animation (the demo-frame styles are at the bottom) |
-| `fonts/Digikala-Medium.woff2` | Digikala 2.2 Medium, the only weight the design uses (22 KB) |
-| `icons/back.svg`, `icons/search.svg` | The two icons from the design system |
+## Performance
 
-## How it works
-
-- **The pop.** Each chip runs two CSS animations: `chip-pop` (scale 0.1 → 1)
-  and `chip-fade` (opacity 0 → 1). Only `transform` and `opacity` change, so
-  the layout never shifts.
-- **The spring.** `--pop-ease` is a `linear()` curve sampled from a real spring
-  (stiffness 560, damping 20, mass 0.7): it overshoots to about 1.14× and
-  settles in 460ms. Browsers without `linear()` get a single-overshoot bezier.
-- **Random timing.** Each chip's delay is its `--d` value. The HTML ships a
-  fixed random-looking order; the small script at the bottom of `index.html`
-  reshuffles it on every visit.
-- **Empty state only.** CSS hides the chips while the field has text
-  (`:placeholder-shown` + `:has()`). Clearing the field shows them again, which
-  restarts the pop.
-- **Replay.** Tap any white area of the page to replay instantly. Nothing
-  reloads: the field is cleared and the chips restart with a new random order.
-  Taps on the back button, search field or chips don't replay.
-- **Reduced motion.** With `prefers-reduced-motion: reduce`, chips only fade.
-
-## Components (matched to Figma)
-
-All three (back button, search field, chips) share one surface:
-`surface/secondary` fill, a 1px `border/secondary` stroke drawn inside the box,
-and the "Shadow/Button - outline" inner shadow (white 70%, y 4, blur 8).
-
-Figma composites that inner shadow over the *whole* component, including the
-border and the content, so the white glow softens the top border. CSS
-`box-shadow: inset` can't do that (it sits inside the border, under the
-content), so the shadow is drawn on a `::after` layer that covers the border
-box and sits on top. Rendered against Figma's own exported SVG filter, each
-component is within 0.4% of Figma's pixels.
-
-## The script
-
-The page shows and animates the chips without JavaScript, using the delays in
-the HTML. The small script at the bottom of `index.html` adds: tap-the-white-area
-replay, a new random order on each visit and replay, and tapping a chip to put
-its text in the field.
-
-## Tuning
-
-In `styles.css`, on `.search-page`:
-
-| Variable | Default | Effect |
+| | Before | Now |
 | --- | --- | --- |
-| `--pop-duration` | `460ms` | Length of the spring |
-| `--pop-ease` | `linear(…)` | The spring curve; swap for `cubic-bezier(0.34, 1.56, 0.64, 1)` for a simpler bounce |
-| `--fade-duration` | `120ms` | How fast each chip becomes visible |
+| Requests | 6 | **1** |
+| Download (gzipped) | 37 KB over 6 files | **21 KB, one file** |
+| First paint (Lighthouse, slow 4G + slow CPU) | 1140 ms | **830 ms** |
+| Layout shift | 0 | 0 |
+| Tap-to-replay handler (6× slower CPU) | ~9 ms, forces layout | **~3 ms, no layout** |
+| Janky frames over 60 replays (6× slower CPU) | 26 | **13** (no-animation control: 4) |
 
-Delay spread lives in the script: `0.06` (start), `0.22` (window), `0.05` (jitter), in seconds.
+What makes it light:
 
-## Browser support
+- **One request.** CSS, font and icons are inlined, so there's no request chain before the first paint.
+- **Font subset.** Digikala Medium is cut down to the Persian/Arabic script, digits and punctuation (16 KB instead of 22 KB). It shapes text identically to the full font at 13, 15 and 24px.
+- **GPU-only animation.** Only `transform` and `opacity` animate, on the compositor, so the layout never changes.
+- **Animations are created once and rewound** through the Web Animations API, so a replay does no style or layout work.
+- **A lighter spring curve.** 21 points, within 0.5% of the real spring.
 
-Chrome/Edge 113+, Safari 17.2+ and Firefox 121+ get the full spring.
-Hiding the chips while typing uses `:has()` (Safari 15.4+, Chrome 105+, Firefox 121+).
+## Old browsers
 
-## Notes
+- **Without `linear()` easing** (Chrome < 113, Samsung Internet < 23): a single-overshoot bezier bounce.
+- **Without the Web Animations API:** the CSS keyframes run instead.
+- **Without JavaScript:** the chips still pop in once.
+- **Forced dark modes** (Chrome, Samsung Internet): blocked with `color-scheme: only light`, so the light design isn't recolored.
+- **Reduced motion:** the chips only fade.
 
-- **Font license:** Digikala is a proprietary typeface. Check that your license
-  allows redistributing it before publishing this repo publicly.
+## Design fidelity (Figma)
 
-- **Font:** Digikala 2.2 Medium is bundled and loaded from `fonts/`. Chips land
-  on their Figma positions; a few are 1px narrower than in Figma because this
-  font file spaces some glyphs slightly differently. No external requests.
-- **Light only:** the page sets `color-scheme: light`, matching the design, so
-  dark-mode browsers don't restyle the controls.
-- **Content:** the suggestions come from the Figma design, including its repeated "قرص استامینوفن" chip.
+- **Component sizes and positions:** the search field (16, 8, 302×44) and back button (330, 44×44) match Figma exactly.
+- **Chips:** within 1.5px of Figma (font rendering).
+- **Inner shadow:** drawn over the border box and above the content, as Figma does. Each component is within 0.4% of Figma's pixels.
+
+## Editing
+
+- **Chip text and order:** in `index.html` (RTL reading order, row by row).
+- **Spring and timing:** the `--pop-*` tokens in the `<style>` block, plus `POP` and `FADE` in the script.
+- **Assets:** `assets/` holds the icon SVGs and the subset font file, for reference. The page uses inlined copies of them.
+
+**Font license:** Digikala is a proprietary typeface. Check that your license
+allows redistributing it before publishing this repository publicly.
