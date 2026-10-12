@@ -1,6 +1,6 @@
 import { StrictMode, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { SearchPage } from "../search/SearchPage";
+import { SearchPage } from "../src/search/SearchPage";
 import "./demo.css";
 
 /**

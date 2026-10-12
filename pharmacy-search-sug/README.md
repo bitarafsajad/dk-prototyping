@@ -12,6 +12,11 @@ Built with React + [Framer Motion](https://www.framer.com/motion/), RTL-first (P
 | :-: | :-: |
 | <img src="docs/pop-mid.png" width="260" alt="Chips popping in at different sizes"> | <img src="docs/preview.png" width="260" alt="All chips at full size"> |
 
+## Quick look (no install)
+
+Double-click **`index.html`**. It's a single self-contained file that runs
+straight from disk, with nothing to install.
+
 ## Run the demo
 
 ```bash
@@ -19,6 +24,7 @@ npm install
 npm run dev       # local dev server
 npm run build     # type-check + production build into dist/
 npm run preview   # serve the production build
+npm run build:standalone  # regenerate index.html after changing the code
 ```
 
 The demo shows the page in a 390×844 frame. **Refresh page** remounts the
@@ -88,14 +94,25 @@ src/
     search.css            styles (tokens mirror the Figma variables)
     assets/               icons exported from Figma
   demo/                   demo page only (390×844 frame, refresh button)
+demo/                     demo page only (390×844 frame, refresh button)
+  index.html              Vite dev/build entry
+  main.tsx, demo.css
+scripts/
+  build-standalone.mjs    builds the self-contained root index.html
+index.html                generated demo, opens with a double-click
 .github/workflows/
   deploy.yml              builds and deploys the demo to GitHub Pages
 ```
 
 ## Deploy the demo to GitHub Pages
 
+Simplest: **Settings → Pages → Source → Deploy from a branch**, pick `main` and `/ (root)`.
+The root `index.html` is self-contained, so it works as-is.
+
+Or, to build on every push, use the included workflow instead:
+
 1. Push this repo to GitHub on the `main` branch.
-2. In the repo, go to **Settings → Pages → Build and deployment** and set **Source** to **GitHub Actions**.
+2. In **Settings → Pages**, set **Source** to **GitHub Actions**.
 3. The workflow runs on every push to `main`; the demo URL appears in the Actions run.
 
 ## Notes
