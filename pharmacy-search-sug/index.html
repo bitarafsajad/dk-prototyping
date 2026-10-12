@@ -67,6 +67,12 @@ body {
   touch-action: manipulation; /* no tap delay */
 }
 
+/* Phones: always full screen width with the 16px safe area on each side.
+   Larger screens (tablets, desktop): capped at 390px and centred. */
+@media (min-width: 481px) {
+  .search-page { max-width: 390px; margin: 0 auto; }
+}
+
 /* ---------- Shared surface (back button, search field, chips) ----------
    Fill + 1px stroke drawn inside the box (padding = Figma padding - 1px).
    Figma's inner shadow covers the whole component, stroke and content
@@ -271,7 +277,7 @@ html:not(.js) .search-chip {
   }
 
   // Tap on any white area (not a control) replays.
-  page.addEventListener("click", function (e) {
+  document.addEventListener("click", function (e) {
     if (e.target.closest("button, input, label")) return;
     input.blur();
     if (input.value) clearAndShow();
