@@ -1,124 +1,85 @@
-# Search suggestions pop-in
+# Search suggestions pop-in (HTML + CSS)
 
-A search page empty state where the suggestion chips appear with a fast,
-playful, **randomized spring pop-in**. Each chip starts tiny and invisible,
-then springs to full size with a small bounce, in a random order and with
-overlapping timing, so the effect feels organic rather than mechanically
-staggered.
+A search page empty state where the suggestion chips pop in with a fast,
+playful, randomized spring. Plain HTML and CSS: no framework, no build step.
 
-Built with React + [Framer Motion](https://www.framer.com/motion/), RTL-first (Persian UI).
+**Open `index.html`** with a double-click, or upload the two files anywhere
+(GitHub Pages: Settings → Pages → Deploy from a branch → `main`, `/ (root)`).
+Keep the `fonts/` and `icons/` folders next to the two files.
 
-| Mid-animation | Settled |
-| :-: | :-: |
-| <img src="docs/pop-mid.png" width="260" alt="Chips popping in at different sizes"> | <img src="docs/preview.png" width="260" alt="All chips at full size"> |
+## Files
 
-## Quick look (no install)
+| File | What it is |
+| --- | --- |
+| `index.html` | The page, icons inline as SVG |
+| `styles.css` | All styles and the animation (the demo-frame styles are at the bottom) |
+| `fonts/Digikala-Medium.woff2` | Digikala 2.2 Medium, the only weight the design uses (22 KB) |
+| `icons/back.svg`, `icons/search.svg` | The two icons from the design system |
 
-Double-click **`index.html`**. It's a single self-contained file that runs
-straight from disk, with nothing to install.
+## How it works
 
-## Run the demo
+- **The pop.** Each chip runs two CSS animations: `chip-pop` (scale 0.1 → 1)
+  and `chip-fade` (opacity 0 → 1). Only `transform` and `opacity` change, so
+  the layout never shifts.
+- **The spring.** `--pop-ease` is a `linear()` curve sampled from a real spring
+  (stiffness 560, damping 20, mass 0.7): it overshoots to about 1.14× and
+  settles in 460ms. Browsers without `linear()` get a single-overshoot bezier.
+- **Random timing.** Each chip's delay is its `--d` value. The HTML ships a
+  fixed random-looking order; the small script at the bottom of `index.html`
+  reshuffles it on every visit.
+- **Empty state only.** CSS hides the chips while the field has text
+  (`:placeholder-shown` + `:has()`). Clearing the field shows them again, which
+  restarts the pop.
+- **Replay.** Tap any white area of the page to replay instantly. Nothing
+  reloads: the field is cleared and the chips restart with a new random order.
+  Taps on the back button, search field or chips don't replay.
+- **Reduced motion.** With `prefers-reduced-motion: reduce`, chips only fade.
 
-```bash
-npm install
-npm run dev       # local dev server
-npm run build     # type-check + production build into dist/
-npm run preview   # serve the production build
-npm run build:standalone  # regenerate index.html after changing the code
-```
+## Components (matched to Figma)
 
-The demo shows the page in a 390×844 frame. **Refresh page** remounts the
-search page to replay the animation. Typing hides the chips, and clearing the
-field brings them back with a new random pop.
+All three (back button, search field, chips) share one surface:
+`surface/secondary` fill, a 1px `border/secondary` stroke drawn inside the box,
+and the "Shadow/Button - outline" inner shadow (white 70%, y 4, blur 8).
 
-## Use it in your project
+Figma composites that inner shadow over the *whole* component, including the
+border and the content, so the white glow softens the top border. CSS
+`box-shadow: inset` can't do that (it sits inside the border, under the
+content), so the shadow is drawn on a `::after` layer that covers the border
+box and sits on top. Rendered against Figma's own exported SVG filter, each
+component is within 0.4% of Figma's pixels.
 
-Copy `src/search/` into your app. It needs `react` and `framer-motion`.
+## The script
 
-```tsx
-import { SearchPage } from "./search/SearchPage";
+The page shows and animates the chips without JavaScript, using the delays in
+the HTML. The small script at the bottom of `index.html` adds: tap-the-white-area
+replay, a new random order on each visit and replay, and tapping a chip to put
+its text in the field.
 
-<SearchPage onBack={() => history.back()} />
-```
+## Tuning
 
-Or use the chips on their own:
+In `styles.css`, on `.search-page`:
 
-```tsx
-import { SuggestionChips } from "./search/SuggestionChips";
-
-<SuggestionChips
-  suggestions={[{ id: "vitamin-c", label: "ویتامین ث" }]}
-  onSelect={(s) => setQuery(s.label)}
-/>
-```
-
-If your project uses the newer `motion` package instead of `framer-motion`,
-change the import in `SuggestionChips.tsx` to `motion/react`. The API is the same.
-
-## How the animation works
-
-- **Two states per chip.** `false` = `opacity: 0, scale(0.1)`; `true` = `opacity: 1, scale(1)`.
-  Every chip is its own `motion.button`, so they animate independently.
-- **Random timing.** On mount the chips are shuffled into a random order and
-  spread across a ~0.22s window, plus up to 0.05s of jitter each. Neighbours
-  often overlap, so several chips pop at almost the same moment. All chips
-  have started within about 0.3s.
-- **Spring, not easing.** Scale uses a spring (`stiffness 560, damping 20, mass 0.7`)
-  for a short overshoot. Opacity uses a quick 120ms ease-out so the chip pops
-  instead of flickering.
-- **Stable delays.** Delays are created once in a `useState` initializer: re-renders
-  keep them, and a real re-entry (unmount → mount) gets a fresh random order.
-- **No layout shift.** Only `transform` and `opacity` animate, so every chip
-  holds its final flex-wrap position from the first frame.
-- **Reduced motion.** With `prefers-reduced-motion: reduce`, chips fade in only, with no scale and shorter delays.
-
-### Tuning
-
-All in `src/search/SuggestionChips.tsx`:
-
-| Constant | Default | Effect |
+| Variable | Default | Effect |
 | --- | --- | --- |
-| `POP_SPRING.damping` | `20` | Higher = less bounce (try `24` for calmer) |
-| `POP_SPRING.stiffness` | `560` | Higher = snappier |
-| `START_OFFSET` | `0.06` s | Pause before the first chip |
-| `SPREAD` | `0.22` s | Window the random order is spread across |
-| `JITTER` | `0.05` s | Random noise per chip |
+| `--pop-duration` | `460ms` | Length of the spring |
+| `--pop-ease` | `linear(…)` | The spring curve; swap for `cubic-bezier(0.34, 1.56, 0.64, 1)` for a simpler bounce |
+| `--fade-duration` | `120ms` | How fast each chip becomes visible |
 
-## Project structure
+Delay spread lives in the script: `0.06` (start), `0.22` (window), `0.05` (jitter), in seconds.
 
-```
-src/
-  search/                 ← the reusable part
-    SuggestionChips.tsx   animated chips
-    SearchPage.tsx        header + empty state
-    search.css            styles (tokens mirror the Figma variables)
-    assets/               icons exported from Figma
-  demo/                   demo page only (390×844 frame, refresh button)
-demo/                     demo page only (390×844 frame, refresh button)
-  index.html              Vite dev/build entry
-  main.tsx, demo.css
-scripts/
-  build-standalone.mjs    builds the self-contained root index.html
-index.html                generated demo, opens with a double-click
-.github/workflows/
-  deploy.yml              builds and deploys the demo to GitHub Pages
-```
+## Browser support
 
-## Deploy the demo to GitHub Pages
-
-Simplest: **Settings → Pages → Source → Deploy from a branch**, pick `main` and `/ (root)`.
-The root `index.html` is self-contained, so it works as-is.
-
-Or, to build on every push, use the included workflow instead:
-
-1. Push this repo to GitHub on the `main` branch.
-2. In **Settings → Pages**, set **Source** to **GitHub Actions**.
-3. The workflow runs on every push to `main`; the demo URL appears in the Actions run.
+Chrome/Edge 113+, Safari 17.2+ and Firefox 121+ get the full spring.
+Hiding the chips while typing uses `:has()` (Safari 15.4+, Chrome 105+, Firefox 121+).
 
 ## Notes
 
-- **Font:** the design uses Digikala, which isn't publicly licensed, so the demo
-  falls back to [Vazirmatn](https://github.com/rastikerdar/vazirmatn). If your app
-  loads Digikala, it's picked up automatically.
-- **Content:** the suggestion list comes from the Figma design, including its
-  repeated "قرص استامینوفن" chip.
+- **Font license:** Digikala is a proprietary typeface. Check that your license
+  allows redistributing it before publishing this repo publicly.
+
+- **Font:** Digikala 2.2 Medium is bundled and loaded from `fonts/`. Chips land
+  on their Figma positions; a few are 1px narrower than in Figma because this
+  font file spaces some glyphs slightly differently. No external requests.
+- **Light only:** the page sets `color-scheme: light`, matching the design, so
+  dark-mode browsers don't restyle the controls.
+- **Content:** the suggestions come from the Figma design, including its repeated "قرص استامینوفن" chip.

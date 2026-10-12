@@ -1,0 +1,286 @@
+/* ==========================================================================
+   Search page: suggestion chips with a randomized spring pop-in.
+   Plain CSS. No framework, no build step.
+   ========================================================================== */
+
+/* ---------- Font ----------
+   Digikala Medium (the only weight the design uses), bundled in fonts/. */
+@font-face {
+  font-family: "Digikala";
+  font-weight: 500;
+  font-style: normal;
+  font-display: block; /* short invisible period instead of a fallback-font flash */
+  src: url("fonts/Digikala-Medium.woff2") format("woff2");
+}
+
+/* ---------- Tokens (Figma variables and styles) ---------- */
+.search-page {
+  --surface-primary: #ffffff;          /* surface/primary   */
+  --surface-secondary: #f5f5f5;        /* surface/secondary */
+  --border-secondary: #d6d6d6;         /* border/secondary  */
+  --content-primary: #000000;          /* content/primary   */
+  --content-tertiary: #737373;         /* content/tertiary  */
+  --shadow-button-outline: inset 0 4px 8px 0 rgba(255, 255, 255, 0.7); /* Shadow/Button - outline */
+  --font-base: "Digikala", system-ui, sans-serif;
+
+  /* Pop animation. The curve is the spring (stiffness 560, damping 20,
+     mass 0.7) sampled into linear(): it overshoots to ~1.14x, then settles. */
+  --pop-duration: 460ms;
+  --pop-ease: linear(0, 0.04, 0.141, 0.282, 0.44, 0.6, 0.746, 0.876, 0.981, 1.06, 1.114, 1.145, 1.158, 1.155, 1.142, 1.121, 1.096, 1.071, 1.047, 1.025, 1.008, 0.994, 0.984, 0.978, 0.975, 0.975, 0.977, 0.98, 0.983, 0.988, 0.991, 0.995, 0.998, 1, 1.002, 1.003, 1.004, 1.004, 1.004, 1.003, 1.003, 1.002, 1.002, 1.001, 1);
+  --fade-duration: 120ms;
+  --fade-ease: cubic-bezier(0.23, 1, 0.32, 1);
+
+  /* The design is light-only. Pinning the scheme stops browsers and embedding
+     viewers in dark mode from restyling buttons and inputs (that is what
+     turned the back arrow white). */
+  color-scheme: light;
+  min-height: 100%;
+  background: var(--surface-primary);
+  color: var(--content-primary);
+  font-family: var(--font-base);
+  font-weight: 500;
+}
+
+/* Older browsers without linear(): a single-overshoot bezier stands in. */
+@supports not (animation-timing-function: linear(0, 1)) {
+  .search-page {
+    --pop-duration: 380ms;
+    --pop-ease: cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+}
+
+/* Typography styles from Figma */
+.search-page .t-base-small  { font: 500 13px/20px var(--font-base); letter-spacing: 0; } /* Base/Small  */
+.search-page .t-base-medium { font: 500 15px/28px var(--font-base); letter-spacing: 0; } /* Base/Medium */
+
+/* ---------- Shared surface (Search field, Button, Chips) ----------
+   Matches Figma's component structure exactly:
+   - Fill surface/secondary, 1px border/secondary stroke drawn *inside* the
+     box (it never adds to the size), so each padding below is the Figma
+     padding minus that 1px.
+   - Effect "Shadow/Button - outline": Figma composites this inner shadow
+     against the whole component (fill + stroke + content) and blends it ON
+     TOP of all of it. A plain `box-shadow: inset` would sit inside the border
+     and under the content, leaving the top border too dark. So the shadow
+     lives on ::after, covering the border box, above the content. */
+.search-field,
+.search-icon-button,
+.search-chip {
+  position: relative;
+  box-sizing: border-box;
+  margin: 0;
+  border: 1px solid var(--border-secondary);
+  border-radius: 999px;
+  background-color: var(--surface-secondary);
+  color: var(--content-primary);
+  -webkit-appearance: none;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.search-field::after,
+.search-icon-button::after,
+.search-chip::after {
+  content: "";
+  position: absolute;
+  inset: -1px;              /* the border box, so the glow covers the stroke */
+  border-radius: inherit;
+  box-shadow: var(--shadow-button-outline);
+  pointer-events: none;
+}
+
+/* ---------- Header: Title Row ---------- */
+.search-header {
+  background: var(--surface-primary);
+}
+
+.search-header__row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 8px 16px 12px;
+}
+
+/* Back button: 44x44, icon 24 centred */
+.search-icon-button {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  cursor: pointer;
+}
+.search-icon-button img {
+  display: block;
+  width: 24px;
+  height: 24px;
+  color: var(--content-primary);
+}
+
+/* Search field: fills the row, 44 high, padding 16 (15 + 1 stroke), gap 8 */
+.search-field {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  height: 44px;
+  padding: 0 15px;
+  cursor: text;
+}
+
+.search-field__icon {
+  flex: none;
+  display: block;
+  width: 24px;
+  height: 24px;
+}
+
+.search-field__input {
+  flex: 1;
+  min-width: 0;
+  height: 28px;
+  margin: 0;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--content-primary);
+  text-align: right;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.search-field__input::placeholder {
+  color: var(--content-tertiary);
+  opacity: 1;
+}
+.search-field__input::-webkit-search-cancel-button,
+.search-field__input::-webkit-search-decoration {
+  -webkit-appearance: none;
+}
+
+.search-field:focus-within,
+.search-icon-button:focus-visible,
+.search-chip:focus-visible {
+  outline: 2px solid var(--content-primary);
+  outline-offset: 2px;
+}
+
+/* ---------- Suggestions ---------- */
+.search-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+  gap: 12px;
+  padding: 8px 16px;
+}
+
+/* Empty state only: hide the chips while the field has text. When it is
+   cleared they are shown again, which restarts the pop animation. */
+.search-page:has(.search-field__input:not(:placeholder-shown)) .search-suggestions {
+  display: none;
+}
+
+.search-chip {
+  /* Chip: 32 high, padding 12 (6 button + 6 text frame) = 11 + 1 stroke */
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  padding: 0 11px;
+  white-space: nowrap;
+  cursor: pointer;
+  transform-origin: center;
+
+  /* State false -> true. Each chip runs its own animation, offset by --d
+     (set per chip in the HTML). Only transform and opacity change, so the
+     layout never shifts. "both" holds the start state during the delay and
+     the end state afterwards, so there is no gap frame. */
+  animation:
+    chip-pop var(--pop-duration) var(--pop-ease) var(--d, 0s) both,
+    chip-fade var(--fade-duration) var(--fade-ease) var(--d, 0s) both;
+}
+
+/* Replay without reloading: toggling this class restarts every chip. */
+.search-suggestions.is-restarting .search-chip {
+  animation: none;
+}
+
+@keyframes chip-pop {
+  from { transform: scale(0.1); }
+  to   { transform: scale(1); }
+}
+
+@keyframes chip-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Reduced motion: no scaling, a short fade with shorter delays. */
+@media (prefers-reduced-motion: reduce) {
+  .search-chip {
+    animation: chip-fade 200ms ease-out calc(var(--d, 0s) * 0.5) both;
+  }
+}
+
+/* ==========================================================================
+   Demo page chrome only (390x844 frame, refresh link). Not part of the page.
+   ========================================================================== */
+:root {
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  --stage-bg: #ececec;
+  --stage-fg: #3a3a3a;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --stage-bg: #1c1c1c; --stage-fg: #c9c9c9; }
+}
+:root[data-theme="dark"] { --stage-bg: #1c1c1c; --stage-fg: #c9c9c9; }
+
+html { height: 100%; scroll-padding-top: env(safe-area-inset-top, 0px); }
+*, *::before, *::after { box-sizing: inherit; }
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--stage-bg);
+  color: var(--stage-fg);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.stage {
+  overflow-x: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 32px 16px;
+}
+
+.device {
+  width: 390px;
+  height: 844px;
+  flex: none;
+  background: #fff;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 24px 60px -20px rgba(0, 0, 0, 0.35);
+}
+/* The whole white area is the replay target (see the script in index.html).
+   touch-action removes the tap delay on mobile so it responds instantly. */
+.device__screen {
+  flex: 1;
+  overflow: auto;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.device__screen > .search-page { min-height: 100%; }
+
+.hint { margin: 0; font: 13px/18px system-ui, sans-serif; opacity: 0.7; text-align: center; }
