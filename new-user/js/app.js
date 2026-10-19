@@ -242,12 +242,21 @@
       if (Math.abs(d) > 1) el.animate([{ transform:`translateY(${d}px)` }, { transform:'none' }], { duration:ms, easing:KB_EASE, id:'kb' });
     });
   }
+  let kbAt = 0;   /* when the keyboard was last opened/closed */
   function syncVV(){
     const h = vv ? vv.height : innerHeight, t = vv ? vv.offsetTop : 0;
-    if (!typing()) { fullH = h; setH(h, t); placeFog(); return; }
-    if (fullH - h > 120) { kbH = Math.round(fullH - h); try { localStorage.setItem('kbH', kbH); } catch (_) {} }
+    const settling = performance.now() - kbAt < 700;
+    if (!typing()) {
+      /* keyboard still sliding away: don't mistake the shrinking viewport for the page height */
+      if (settling && appliedH !== null && h < appliedH - 1) return;
+      fullH = h; setH(h, t); placeFog(); return;
+    }
+    /* keyboard not up yet: keep the predicted position instead of bouncing back down */
+    if (settling && appliedH !== null && h > appliedH + 1) return;
+    const k = fullH - h;
+    if (k > 120 && k < fullH * .65) { kbH = Math.round(k); try { localStorage.setItem('kbH', kbH); } catch (_) {} }
     if (appliedH !== null && Math.abs(h - appliedH) <= 1) { root.style.setProperty('--vvt', t + 'px'); return; }
-    move(() => setH(h, t), 280);           /* small correction of the prediction */
+    move(() => setH(h, t), 280);           /* small correction so input + button sit right on the keyboard */
   }
   if (vv) { vv.addEventListener('resize', syncVV); vv.addEventListener('scroll', syncVV); }
   addEventListener('resize', syncVV);
@@ -261,12 +270,18 @@
     /* fade ends just above the headline, wherever the keyboard leaves it */
     s.style.setProperty('--fogH', Math.max(0, col.offsetTop + copy.offsetTop - s.scrollTop - 6) + 'px');
   }
+  let settleT = 0;
   function setKb(screen, on){
+    kbAt = performance.now();
     move(() => {
       screen.classList.toggle('kb', on);
       if (on) screen.scrollTop = 0;
       if (touch) setH(on ? fullH - kbH : fullH, 0);   /* move with the keyboard, not after it */
     });
+    /* iOS sometimes skips the final viewport event (e.g. when the AutoFill bar appears):
+       keep checking for a moment so input + button always end up right on the keyboard */
+    clearInterval(settleT); let n = 0;
+    settleT = setInterval(() => { syncVV(); if (++n > 14) clearInterval(settleT); }, 100);
   }
 
   /* ---------------- phone ---------------- */
@@ -280,7 +295,7 @@
   phone.addEventListener('blur', () => {
     setTimeout(() => {
       if (document.activeElement === phone || current !== 'landing') return;
-      if (!phone.value) wrap.classList.remove('show');
+      wrap.classList.remove('show');   /* the button only lives under the input while typing */
       setKb(landing, false);
       startSlides();
     }, 60);

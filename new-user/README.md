@@ -5,7 +5,8 @@ Responsive landing flow built from the Figma file *Sajad → Landing* (max width
 - Two product-card rows that loop slowly (top → left, bottom → right), with the quantity stepper
   from `dk-prototyping/product-cards` — tap **+** to add to the cart.
 - Auto-rotating headline slides (all on the orange background) with a light spring; swipe left/right to change them.
-- Phone input (numeric keyboard on phones). The submit button slides up when the field is focused.
+- Phone input (numeric keyboard on phones). While typing, a round red arrow button grows in beside
+  the input (Figma page 7) and submits the number.
   The layout starts at the top with the input/button bar sticky at the bottom on a blurred white fade.
   While typing (Figma page 7) the whole page glides up with the keyboard (it starts moving on focus,
   using the keyboard height learned from the last open) so input + button sit above the keyboard,

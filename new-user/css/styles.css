@@ -34,10 +34,11 @@
 :root[data-theme="dark"]{ color-scheme:light; --content-primary:#000; --surface-primary:#fff; --surface-secondary:#F5F5F5; }
 
 *,*::before,*::after{box-sizing:border-box;}
-html{ height:100%; background-color:var(--page-bg); transition:background-color .6s ease; scroll-padding-top:env(safe-area-inset-top,0px); -webkit-tap-highlight-color:transparent; -webkit-text-size-adjust:100%; }
+html{ height:100%; background-color:#fff; scroll-padding-top:env(safe-area-inset-top,0px); -webkit-tap-highlight-color:transparent; -webkit-text-size-adjust:100%; }
 html,body{ margin:0; overscroll-behavior:none; }
 body{
-  height:100%; overflow:hidden; background:var(--page-bg); transition:background-color .6s ease;
+  /* white behind the keyboard (the orange page colour lives on #app only) */
+  height:100%; overflow:hidden; background:#fff;
   font-family:"Digikala", Tahoma, "Segoe UI", system-ui, sans-serif;
   color:var(--content-primary);
   font-feature-settings:"ss01" 0;
@@ -298,7 +299,31 @@ img{ max-width:100%; display:block; }
   -webkit-mask-image:linear-gradient(180deg, #000 0%, #000 60%, transparent 100%);
   mask-image:linear-gradient(180deg, #000 0%, #000 60%, transparent 100%);
 }
-.kb .topfog{ opacity:1; }
+/* phones only: on desktop there's no keyboard, so nothing needs to be faded at the top */
+@media (hover: none) and (pointer: coarse){ .kb .topfog{ opacity:1; } }
+
+/* Input row (Figma page 7, 'Frame 1597881585'): round 52px arrow button + SearchField,
+   gap 8, padding 16. The button grows in beside the input while typing. */
+.inrow{ width:100%; display:flex; align-items:flex-start; direction:ltr; }
+.inrow .field{ flex:1 1 auto; width:auto; min-width:0; }
+.btn-wrap.round{ display:block; width:0; margin-right:0; flex:none; height:52px;
+  transition:width .55s var(--ease-sheet), margin-right .55s var(--ease-sheet); }
+.btn-wrap.round.show{ width:52px; margin-right:8px; }
+.rbtn{
+  width:52px; height:52px; border-radius:999px; background:var(--brand); flex:none;
+  display:flex; align-items:center; justify-content:center; padding:0 16px;
+  transform-origin:left center; transform:scale(.4); opacity:0;
+  transition:transform .3s var(--ease-out), opacity .2s ease;
+}
+.rbtn svg{ width:24px; height:24px; display:block; flex:none; }
+.btn-wrap.round.show .rbtn{ transform:none; opacity:1;
+  transition:transform var(--qs-bounce-duration,600ms) var(--qs-bounce,cubic-bezier(.3,1.45,.45,1)) .06s, opacity .25s ease .06s; }
+.btn-wrap.round.show .rbtn:active{ transform:scale(.92); transition:transform .12s var(--ease-out); }
+.rbtn:focus-visible{ outline:2px solid transparent; box-shadow:0 0 0 3px rgba(237,25,68,.3); }
+#landing .bottombar{ transition:padding .55s var(--ease-sheet); }
+#landing.kb .bottombar{ padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px)); }
+/* keep the copy where page 7 has it: indicator ends at 364, input row starts at 468 */
+#landing.kb .spacer{ min-height:104px; }
 
 /* Layout always starts at the top. When there isn't room, the page scrolls and the content
    passes behind the bottom bar (input / button), which sits on a blurred white fade. */
