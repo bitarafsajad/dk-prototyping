@@ -222,6 +222,10 @@ img{ max-width:100%; display:block; }
 }
 .thumb .qs__bg::after{ content:""; position:absolute; inset:0; z-index:0; background:var(--effect-neutral-0-80); }
 .thumb .qs__glass{ z-index:1; }
+/* Safari ignores overflow:hidden + border-radius for filtered / animated children, so the pill's
+   layers are clipped with a rounded clip-path, which it always honours */
+.thumb .qs__bg, .thumb .qs__clip{ -webkit-clip-path:inset(0 round 999px); clip-path:inset(0 round 999px); }
+.thumb .qs__plus-clip, .thumb .qs__plus-bg{ -webkit-clip-path:circle(50% at 50% 50%); clip-path:circle(50% at 50% 50%); }
 .thumb .qs__pill, .thumb .qs__clip, .thumb .qs__plus{ isolation:isolate; }
 .thumb .qs{ position:absolute; left:0; right:0; bottom:0; width:auto; container-type:inline-size; }
 .thumb .qs[data-open] .qs__pill{ width:100%; }
