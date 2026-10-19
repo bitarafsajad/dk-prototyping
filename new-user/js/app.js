@@ -212,21 +212,42 @@
     else { stopSlides(); setBg(id === 'discount' ? '#F6F4F1' : '#F6F4F1'); }
   }
 
-  /* ---------------- visual viewport → keyboard pushes the page up ---------------- */
+  /* ---------------- keyboard: one smooth move, in step with the keyboard (Gemini-style) ----------------
+     iOS only reports the new visual viewport once the keyboard has finished sliding in, so waiting
+     for it makes the page jump late. Instead the page starts moving the moment the input is focused,
+     towards the keyboard height we expect (learned from the last time it opened), on a curve close to
+     the system keyboard's; the real viewport then only nudges it if the guess was off. */
   const vv = window.visualViewport;
+  const touch = matchMedia('(pointer: coarse)').matches;
+  const KB_EASE = 'cubic-bezier(.38,.7,.125,1)', KB_MS = 480;
+  let fullH = vv ? vv.height : innerHeight, kbH = 0, appliedH = null;
+  try { kbH = +localStorage.getItem('kbH') || 0; } catch (_) {}
+  if (!kbH) kbH = Math.round(Math.min(340, Math.max(260, fullH * .36)));
+  const typing = () => !!document.querySelector('.screen.kb');
+  function setH(h, t = 0){ appliedH = h; root.style.setProperty('--vvh', h + 'px'); root.style.setProperty('--vvt', t + 'px'); }
+  /* FLIP per block: measure where each block is now (mid-animation included), change the layout,
+     then let every block glide from there — the cards/headline and the input bar each keep their
+     own path, so nothing jumps when the spacer between them grows or shrinks */
+  function move(change, ms = KB_MS){
+    const scr = $('#' + current), col = scr && scr.querySelector('.col');
+    if (!col) { change(); placeFog(); return; }
+    const kids = [...col.children].filter(el => !el.classList.contains('wash') && !el.classList.contains('spacer'));
+    const before = kids.map(el => el.getBoundingClientRect().top);
+    kids.forEach(el => el.getAnimations().forEach(a => { if (a.id === 'kb') a.cancel(); }));
+    change();
+    placeFog();
+    if (reduced) return;
+    kids.forEach((el, i) => {
+      const d = before[i] - el.getBoundingClientRect().top;
+      if (Math.abs(d) > 1) el.animate([{ transform:`translateY(${d}px)` }, { transform:'none' }], { duration:ms, easing:KB_EASE, id:'kb' });
+    });
+  }
   function syncVV(){
     const h = vv ? vv.height : innerHeight, t = vv ? vv.offsetTop : 0;
-    const scr = $('#' + current), bar = scr && scr.querySelector('.bottombar');
-    const before = bar ? bar.getBoundingClientRect().top : 0;
-    root.style.setProperty('--vvh', h + 'px');
-    root.style.setProperty('--vvt', t + 'px');
-    if (bar && !reduced) {
-      /* while typing the whole page rides up with the keyboard; otherwise just the bottom bar */
-      const target = scr.classList.contains('kb') ? scr.querySelector('.col') : bar;
-      const delta = before - bar.getBoundingClientRect().top;
-      if (Math.abs(delta) > 2) target.animate([{ transform:`translateY(${delta}px)` }, { transform:'none' }], { duration:320, easing:'cubic-bezier(.32,.72,0,1)' });
-    }
-    if (typeof placeFog === 'function') placeFog();
+    if (!typing()) { fullH = h; setH(h, t); placeFog(); return; }
+    if (fullH - h > 120) { kbH = Math.round(fullH - h); try { localStorage.setItem('kbH', kbH); } catch (_) {} }
+    if (appliedH !== null && Math.abs(h - appliedH) <= 1) { root.style.setProperty('--vvt', t + 'px'); return; }
+    move(() => setH(h, t), 280);           /* small correction of the prediction */
   }
   if (vv) { vv.addEventListener('resize', syncVV); vv.addEventListener('scroll', syncVV); }
   addEventListener('resize', syncVV);
@@ -234,7 +255,6 @@
   /* iOS still tries to scroll the (unscrollable) document when an input focuses */
   addEventListener('scroll', () => { if (scrollY) scrollTo(0, 0); }, { passive:true });
 
-  /* FLIP: anchor content to the bottom while typing, animating the jump */
   function placeFog(){
     const s = $('#landing'), copy = s.querySelector('.copy'), col = s.querySelector('.col');
     if (!s.classList.contains('kb')) return;
@@ -242,13 +262,11 @@
     s.style.setProperty('--fogH', Math.max(0, col.offsetTop + copy.offsetTop - s.scrollTop - 6) + 'px');
   }
   function setKb(screen, on){
-    const col = screen.querySelector('.col'), bar = screen.querySelector('.bottombar');
-    const before = bar.getBoundingClientRect().top;
-    screen.classList.toggle('kb', on);
-    if (on) screen.scrollTop = 0;
-    const delta = before - bar.getBoundingClientRect().top;
-    if (Math.abs(delta) > 2 && !reduced) col.animate([{ transform:`translateY(${delta}px)` }, { transform:'none' }], { duration:420, easing:'cubic-bezier(.32,.72,0,1)' });
-    placeFog();
+    move(() => {
+      screen.classList.toggle('kb', on);
+      if (on) screen.scrollTop = 0;
+      if (touch) setH(on ? fullH - kbH : fullH, 0);   /* move with the keyboard, not after it */
+    });
   }
 
   /* ---------------- phone ---------------- */
@@ -274,6 +292,10 @@
   /* keep the keyboard up while the button is pressed */
   phoneBtn.addEventListener('pointerdown', e => { if (document.activeElement === phone) e.preventDefault(); });
   phone.addEventListener('keydown', e => { if (e.key === 'Enter') submitPhone(); });
+  /* focus ourselves without letting iOS scroll the page to the input (it would fight the glide) */
+  $('.field').addEventListener('touchend', e => {
+    if (document.activeElement !== phone) { e.preventDefault(); phone.focus({ preventScroll:true }); }
+  }, { passive:false });
   phoneBtn.addEventListener('click', submitPhone);
   function submitPhone(){
     if (!validPhone()) { phone.focus(); $('.field').animate([{transform:'translateX(-8px)'},{transform:'translateX(7px)'},{transform:'translateX(-4px)'},{transform:'none'}], {duration:360}); return; }
@@ -306,7 +328,10 @@
   otp.addEventListener('keydown', e => { if (e.key === 'Enter') submitOtp(); });
   otpBtn.addEventListener('pointerdown', e => { if (document.activeElement === otp) e.preventDefault(); });
   otpBtn.addEventListener('click', submitOtp);
-  otpBox.addEventListener('click', () => otp.focus());
+  otpBox.addEventListener('click', () => otp.focus({ preventScroll:true }));
+  otpBox.addEventListener('touchend', e => {
+    if (document.activeElement !== otp) { e.preventDefault(); otp.focus({ preventScroll:true }); }
+  }, { passive:false });
   function submitOtp(){
     if (current !== 'otp') return;
     if (otp.value.length !== 5) { otpBox.classList.remove('shake'); void otpBox.offsetWidth; otpBox.classList.add('shake', 'err'); otp.focus(); return; }

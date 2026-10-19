@@ -7,7 +7,8 @@ Responsive landing flow built from the Figma file *Sajad → Landing* (max width
 - Auto-rotating headline slides (all on the orange background) with a light spring; swipe left/right to change them.
 - Phone input (numeric keyboard on phones). The submit button slides up when the field is focused.
   The layout starts at the top with the input/button bar sticky at the bottom on a blurred white fade.
-  While typing (Figma page 7) the whole page moves up so input + button sit above the keyboard,
+  While typing (Figma page 7) the whole page glides up with the keyboard (it starts moving on focus,
+  using the keyboard height learned from the last open) so input + button sit above the keyboard,
   and the top of the screen gets a blurred fade of the page colour.
 - OTP screen (5 digits, SMS autofill, resend timer) → discount screen with a Telegram-style spoiler.
   Tapping the spoiler reveals the code **FAFES** with a confetti burst; tapping the code copies it.

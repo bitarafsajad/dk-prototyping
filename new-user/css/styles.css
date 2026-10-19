@@ -396,7 +396,9 @@ img{ max-width:100%; display:block; }
 /* browsers without @property can't animate the ripple radius → dissolve instead */
 .no-prop .revealing .spoiler{ -webkit-mask-image:none; mask-image:none; animation:none !important;
   opacity:0; transform:scale(1.08); filter:blur(4px); transition:opacity .5s ease, transform .6s var(--ease-out), filter .5s ease; }
-.spoiler svg{ display:block; width:264px; height:104px; }
+.spoiler svg{ display:block; width:264px; height:104px; opacity:.55; }
+/* softer, low-contrast dots (warm grey instead of pure black) */
+.spoiler circle{ fill:#5C5650; }
 .spoiler:focus-visible{ outline:2px solid rgba(237,25,68,.4); outline-offset:4px; }
 @property --r{ syntax:"<length>"; inherits:false; initial-value:-28px; }
 .revealing .spoiler{ animation:reveal .9s var(--ease-out) forwards; pointer-events:none; }
