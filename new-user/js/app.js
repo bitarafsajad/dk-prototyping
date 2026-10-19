@@ -243,16 +243,36 @@
     });
   }
   let kbAt = 0;   /* when the keyboard was last opened/closed */
+  /* The keyboard can go away while the input keeps focus (iOS swipe-down / keyboard hide), so no
+     blur event fires. Follow the keyboard itself: gone → leave typing mode (top blur, button);
+     back → enter it again. */
+  const focusedScreen = () => {
+    const a = document.activeElement;
+    return a && (a.id === 'phone' || a.id === 'otpInput') && a.closest('.screen.active');
+  };
+  function kbGone(scr){
+    setKb(scr, false);
+    if (scr.id === 'landing') $('#phoneBtnWrap').classList.remove('show');
+  }
+  function kbBack(scr){
+    if (scr.id === 'landing') $('#phoneBtnWrap').classList.add('show');
+    setKb(scr, true);
+  }
   function syncVV(){
     const h = vv ? vv.height : innerHeight, t = vv ? vv.offsetTop : 0;
     const settling = performance.now() - kbAt < 700;
     if (!typing()) {
       /* keyboard still sliding away: don't mistake the shrinking viewport for the page height */
       if (settling && appliedH !== null && h < appliedH - 1) return;
+      /* keyboard came back up on an input that never lost focus */
+      const fs = touch && !settling && focusedScreen();
+      if (fs && fullH - h > 120) { kbBack(fs); return; }
       fullH = h; setH(h, t); placeFog(); return;
     }
     /* keyboard not up yet: keep the predicted position instead of bouncing back down */
     if (settling && appliedH !== null && h > appliedH + 1) return;
+    /* keyboard dismissed but the input is still focused */
+    if (touch && !settling && h > fullH - 80) { kbGone($('.screen.kb')); return; }
     const k = fullH - h;
     if (k > 120 && k < fullH * .65) { kbH = Math.round(k); try { localStorage.setItem('kbH', kbH); } catch (_) {} }
     if (appliedH !== null && Math.abs(h - appliedH) <= 1) { root.style.setProperty('--vvt', t + 'px'); return; }
