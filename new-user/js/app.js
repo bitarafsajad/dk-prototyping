@@ -269,8 +269,9 @@
       if (fs && fullH - h > 120) { kbBack(fs); return; }
       fullH = h; setH(h, t); placeFog(); return;
     }
-    /* keyboard not up yet: keep the predicted position instead of bouncing back down */
-    if (settling && appliedH !== null && h > appliedH + 1) return;
+    /* keyboard not up yet: keep the predicted position instead of bouncing back down
+       (and look again once the keyboard has had time to settle) */
+    if (settling && appliedH !== null && h > appliedH + 1) { clearTimeout(syncVV.t); syncVV.t = setTimeout(syncVV, 720 - (performance.now() - kbAt)); return; }
     /* keyboard dismissed but the input is still focused */
     if (touch && !settling && h > fullH - 80) { kbGone($('.screen.kb')); return; }
     const k = fullH - h;
@@ -331,7 +332,12 @@
   $('.field').addEventListener('touchend', e => {
     if (document.activeElement !== phone) { e.preventDefault(); phone.focus({ preventScroll:true }); }
   }, { passive:false });
-  phoneBtn.addEventListener('click', submitPhone);
+  phoneBtn.addEventListener('click', () => {
+    /* first tap: the "خرید" pill turns into the input row and the keyboard opens
+       (focus inside the tap so iOS shows the keyboard); afterwards it submits */
+    if (!wrap.classList.contains('show')) { phone.focus({ preventScroll:true }); return; }
+    submitPhone();
+  });
   function submitPhone(){
     if (!validPhone()) { phone.focus(); $('.field').animate([{transform:'translateX(-8px)'},{transform:'translateX(7px)'},{transform:'translateX(-4px)'},{transform:'none'}], {duration:360}); return; }
     $('#otpPhone').textContent = fa(phone.value);

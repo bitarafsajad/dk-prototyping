@@ -302,28 +302,38 @@ img{ max-width:100%; display:block; }
 /* phones only: on desktop there's no keyboard, so nothing needs to be faded at the top */
 @media (hover: none) and (pointer: coarse){ .kb .topfog{ opacity:1; } }
 
-/* Input row (Figma page 7, 'Frame 1597881585'): round 52px arrow button + SearchField,
-   gap 8, padding 16. The button grows in beside the input while typing. */
+/* Landing bar (Figma page 2 → page 7, 'Frame 1597881585'):
+   idle   = centered 246×52 red pill "خرید" (padding 16/72, 20px above the screen edge)
+   typing = the same pill shrinks into the 52px round arrow button on the left, the SearchField
+            grows in beside it (gap 8, padding 16) and the keyboard opens. */
 .inrow{ width:100%; display:flex; align-items:flex-start; direction:ltr; }
-.inrow .field{ flex:1 1 auto; width:auto; min-width:0; }
-.btn-wrap.round{ display:block; width:0; margin-right:0; flex:none; height:52px;
-  transition:width .55s var(--ease-sheet), margin-right .55s var(--ease-sheet); }
-.btn-wrap.round.show{ width:52px; margin-right:8px; }
 .rbtn{
-  width:52px; height:52px; border-radius:999px; background:var(--brand); flex:none;
-  display:flex; align-items:center; justify-content:center; padding:0 16px;
-  transform-origin:left center; transform:scale(.4); opacity:0;
-  transition:transform .3s var(--ease-out), opacity .2s ease;
+  position:relative; flex:none; width:100%; height:52px; border-radius:999px; overflow:hidden;
+  background:var(--brand); color:#fff; display:flex; align-items:center; justify-content:center;
+  transition:width .55s var(--ease-sheet), transform .14s var(--ease-out);
 }
-.rbtn svg{ width:24px; height:24px; display:block; flex:none; }
-.btn-wrap.round.show .rbtn{ transform:none; opacity:1;
-  transition:transform var(--qs-bounce-duration,600ms) var(--qs-bounce,cubic-bezier(.3,1.45,.45,1)) .06s, opacity .25s ease .06s; }
-.btn-wrap.round.show .rbtn:active{ transform:scale(.92); transition:transform .12s var(--ease-out); }
+.rbtn:active{ transform:scale(.96); }
+.rbtn__label{ font-weight:500; font-size:15px; line-height:28px; padding:0 8px; white-space:nowrap;
+  transition:opacity .22s ease .1s, transform .45s var(--ease-sheet); }
+.rbtn__icon{ position:absolute; left:14px; top:14px; width:24px; height:24px; display:block;
+  opacity:0; transform:translateX(10px) scale(.6); transition:opacity .15s ease, transform .3s var(--ease-out); }
+.inrow .field{
+  flex:none; width:2px; height:52px; margin-left:-2px; padding:0; opacity:0; overflow:hidden; pointer-events:none;
+  transition:width .55s var(--ease-sheet), height .55s var(--ease-sheet), margin-left .55s var(--ease-sheet),
+             padding .55s var(--ease-sheet), opacity .3s ease;
+}
+.inrow.show .rbtn{ width:52px; }
+.inrow.show .rbtn__label{ opacity:0; transform:scale(.8); transition:opacity .12s ease, transform .45s var(--ease-sheet); }
+.inrow.show .rbtn__icon{ opacity:1; transform:none;
+  transition:opacity .25s ease .14s, transform var(--qs-bounce-duration,600ms) var(--qs-bounce,cubic-bezier(.3,1.45,.45,1)) .1s; }
+.inrow.show .field{ width:calc(100% - 60px); height:56px; margin-left:8px; padding:12px 24px; opacity:1; pointer-events:auto;
+  transition:width .55s var(--ease-sheet), height .55s var(--ease-sheet), margin-left .55s var(--ease-sheet),
+             padding .55s var(--ease-sheet), opacity .3s ease .08s; }
 .rbtn:focus-visible{ outline:2px solid transparent; box-shadow:0 0 0 3px rgba(237,25,68,.3); }
-#landing .bottombar{ transition:padding .55s var(--ease-sheet); }
+#landing .bottombar{ padding:16px 72px calc(36px + env(safe-area-inset-bottom,0px)); transition:padding .55s var(--ease-sheet); }
 #landing.kb .bottombar{ padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px)); }
-/* keep the copy where page 7 has it: indicator ends at 364, input row starts at 468 */
-#landing.kb .spacer{ min-height:104px; }
+/* page 7: indicator ends 24px above the input row */
+#landing.kb .spacer{ min-height:24px; }
 
 /* Layout always starts at the top. When there isn't room, the page scrolls and the content
    passes behind the bottom bar (input / button), which sits on a blurred white fade. */
@@ -429,7 +439,8 @@ img{ max-width:100%; display:block; }
 .revealing .spoiler{ animation:reveal .9s var(--ease-out) forwards; pointer-events:none; }
 @keyframes reveal{ to{ --r:320px; } }
 .code{
-  position:absolute; left:46px; top:10px; width:172px; height:84px; padding:8px; border-radius:8px;
+  position:absolute; left:14px; top:10px; width:236px; height:84px; padding:8px 40px; border-radius:999px;
+  background:#E4E1DC;
   display:flex; align-items:center; justify-content:center;
   font-weight:700; font-size:56px; line-height:68px; direction:ltr; letter-spacing:0;
   opacity:0; transform:scale(.88); filter:blur(6px);
@@ -446,6 +457,12 @@ img{ max-width:100%; display:block; }
   opacity:0; pointer-events:none; transition:opacity .25s ease, transform .35s var(--ease-sheet); white-space:nowrap; z-index:20; }
 .toast.on{ opacity:1; transform:translate(-50%,0); }
 .dc-col .btn{ width:100%; flex:none; }
+/* after-signup button (Figma 212:28512): 246×52 pill, padding 16/72, 16px above the screen edge */
+.btn.pill{ height:52px; font-size:15px; line-height:28px; }
+#otp .bottombar, #discount .bottombar{ padding:16px 72px calc(32px + env(safe-area-inset-bottom,0px)); }
+#otp .btn-wrap .btn{ margin-top:0; }
+#otp.kb .bottombar{ padding-bottom:calc(16px + env(safe-area-inset-bottom,0px)); }
+.spoiler{ border-radius:88px; overflow:hidden; }
 
 /* wider than the phone frame: the side fogs would show as bands, so fade the rows instead */
 @media (min-width: 760px){

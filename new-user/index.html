@@ -54,12 +54,11 @@
       <div class="spacer"></div>
 
       <div class="bottombar">
-      <div class="inrow" data-name="Frame 1597881585">
-        <div class="btn-wrap round" id="phoneBtnWrap">
-          <button class="rbtn" id="phoneBtn" type="button" aria-label="ثبت شماره">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15.5001 5.00018C15.5001 5.26018 15.4001 5.51018 15.2101 5.71018L8.92006 12.0002L15.2101 18.2902C15.6001 18.6802 15.6001 19.3102 15.2101 19.7002C14.8201 20.0902 14.1901 20.0902 13.8001 19.7002L6.79006 12.7102C6.40006 12.3202 6.40006 11.6902 6.79006 11.3002L13.7901 4.30018C14.1801 3.91018 14.8101 3.91018 15.2001 4.30018C15.4001 4.50018 15.4901 4.75018 15.4901 5.01018L15.5001 5.00018Z" fill="white"/></svg>
-          </button>
-        </div>
+      <div class="inrow" id="phoneBtnWrap" data-name="Frame 1597881585">
+        <button class="rbtn" id="phoneBtn" type="button">
+          <span class="rbtn__label">خرید</span>
+          <svg class="rbtn__icon" width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15.5001 5.00018C15.5001 5.26018 15.4001 5.51018 15.2101 5.71018L8.92006 12.0002L15.2101 18.2902C15.6001 18.6802 15.6001 19.3102 15.2101 19.7002C14.8201 20.0902 14.1901 20.0902 13.8001 19.7002L6.79006 12.7102C6.40006 12.3202 6.40006 11.6902 6.79006 11.3002L13.7901 4.30018C14.1801 3.91018 14.8101 3.91018 15.2001 4.30018C15.4001 4.50018 15.4901 4.75018 15.4901 5.01018L15.5001 5.00018Z" fill="white"/></svg>
+        </button>
         <label class="field" data-name="SearchField">
           <input id="phone" type="tel" inputmode="numeric" autocomplete="tel-national" enterkeyhint="go"
                  maxlength="11" placeholder="شماره همراه خود را وارد کنید" aria-label="شماره همراه">
@@ -84,7 +83,7 @@
       <div class="timer" id="timer"></div>
       <div class="spacer"></div>
       <div class="bottombar"><div class="btn-wrap show"><div>
-        <button class="btn" id="otpBtn">تایید کد</button>
+        <button class="btn pill" id="otpBtn">تایید کد</button>
       </div></div></div>
     </div>
   </section>
@@ -974,7 +973,7 @@
 </g></svg></div>
       </div>
       <div class="spacer"></div>
-      <div class="bottombar"><button class="btn lg" id="shopBtn">شروع خرید</button></div>
+      <div class="bottombar"><button class="btn pill" id="shopBtn">شروع خرید</button></div>
     </div>
   </section>
 
