@@ -307,7 +307,9 @@
 
   /* ---------------- phone ---------------- */
   const phone = $('#phone'), phoneBtn = $('#phoneBtn'), wrap = $('#phoneBtnWrap'), landing = $('#landing');
-  const validPhone = () => /^09\d{9}$/.test(phone.value);
+  /* digits are kept as Latin for checking but always shown as Persian (۰۹۳۵…) */
+  const phoneDigits = () => toLatin(phone.value).replace(/\D/g, '');
+  const validPhone = () => /^09\d{9}$/.test(phoneDigits());
   phone.addEventListener('focus', () => {
     stopSlides();
     wrap.classList.add('show');
@@ -322,8 +324,13 @@
     }, 60);
   });
   phone.addEventListener('input', () => {
-    const v = toLatin(phone.value).replace(/\D/g, '').slice(0, 11);
-    if (v !== phone.value) phone.value = v;
+    let v = phoneDigits();
+    /* AutoFill / paste in international form: +98 935 … / 0098 935 … / 935 … → 0935 … */
+    if (v.startsWith('0098')) v = '0' + v.slice(4);
+    else if (v.startsWith('98') && v.length === 12) v = '0' + v.slice(2);
+    else if (v.startsWith('9') && v.length === 10) v = '0' + v;
+    const shown = fa(v.slice(0, 11));
+    if (shown !== phone.value) phone.value = shown;
   });
   /* keep the keyboard up while the button is pressed */
   phoneBtn.addEventListener('pointerdown', e => { if (document.activeElement === phone) e.preventDefault(); });
@@ -340,7 +347,7 @@
   });
   function submitPhone(){
     if (!validPhone()) { phone.focus(); $('.field').animate([{transform:'translateX(-8px)'},{transform:'translateX(7px)'},{transform:'translateX(-4px)'},{transform:'none'}], {duration:360}); return; }
-    $('#otpPhone').textContent = fa(phone.value);
+    $('#otpPhone').textContent = fa(phoneDigits());
     otp.value = ''; renderOtp();
     go('otp');
     $('#otp').classList.add('kb');
@@ -353,7 +360,7 @@
   function renderOtp(){
     const v = otp.value;
     cells.forEach((c, i) => {
-      const ch = v[i] || '';
+      const ch = v[i] ? fa(v[i]) : '';
       if (c.textContent !== ch) { c.textContent = ch; c.classList.remove('filled'); if (ch) { void c.offsetWidth; c.classList.add('filled'); } }
       c.classList.toggle('cur', i === Math.min(v.length, 4) && (v.length < 5 || i === 4));
     });
