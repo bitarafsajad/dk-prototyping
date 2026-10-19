@@ -47,6 +47,12 @@
   const CART = {};            /* productId → quantity */
   const STEPPERS = {};        /* productId → [stepper, …] */
   const faN = n => n.toLocaleString('fa-IR');
+  /* Safari < 17.2 has no linear() easing: an unsupported value would drop the stepper's whole
+     transition/animation declarations, so fall back to equivalent cubic-beziers there */
+  if (!CSS.supports('transition-timing-function', 'linear(0, 1)')) {
+    root.style.setProperty('--qs-ease', 'cubic-bezier(.25,1.1,.4,1)');
+    root.style.setProperty('--qs-bounce', 'cubic-bezier(.3,1.45,.45,1)');
+  }
   /* rows keep scrolling at all times */
   function syncRow(){}
   function QuantityStepper(root, { idle = 1500 } = {}){
@@ -59,7 +65,7 @@
     function setCount(next, dir){
       const old = count.lastElementChild, el = document.createElement('span');
       el.textContent = faN(next);
-      if (dir && old){ old.className = 'out-' + dir; old.addEventListener('animationend', () => old.remove(), { once:true }); el.className = 'in-' + dir; }
+      if (dir && old){ old.className = 'out-' + dir; const kill = () => old.remove(); old.addEventListener('animationend', kill, { once:true }); setTimeout(kill, 600); el.className = 'in-' + dir; }
       else if (old) old.remove();
       count.appendChild(el);
     }
@@ -234,14 +240,14 @@
   const vv = window.visualViewport;
   function syncVV(){
     const h = vv ? vv.height : innerHeight, t = vv ? vv.offsetTop : 0;
-    const col = $('#' + current + ' .col');
-    const field = col && col.querySelector('.field, .otp, .btn');
-    const before = field ? field.getBoundingClientRect().top : 0;
+    const bar = $('#' + current + ' .bottombar');
+    const before = bar ? bar.getBoundingClientRect().top : 0;
     root.style.setProperty('--vvh', h + 'px');
     root.style.setProperty('--vvt', t + 'px');
-    if (field && !reduced) {
-      const delta = before - field.getBoundingClientRect().top;
-      if (Math.abs(delta) > 2) col.animate([{ transform:`translateY(${delta}px)` }, { transform:'none' }], { duration:320, easing:'cubic-bezier(.32,.72,0,1)' });
+    if (bar && !reduced) {
+      /* the bottom bar rides up with the keyboard instead of jumping */
+      const delta = before - bar.getBoundingClientRect().top;
+      if (Math.abs(delta) > 2) bar.animate([{ transform:`translateY(${delta}px)` }, { transform:'none' }], { duration:320, easing:'cubic-bezier(.32,.72,0,1)' });
     }
   }
   if (vv) { vv.addEventListener('resize', syncVV); vv.addEventListener('scroll', syncVV); }
@@ -252,13 +258,8 @@
 
   /* FLIP: anchor content to the bottom while typing, animating the jump */
   function setKb(screen, on){
-    const col = screen.querySelector('.col');
-    const anchor = col.querySelector('.field, .otp');
-    const before = anchor.getBoundingClientRect().top;
+    /* layout stays top-anchored; the sticky bottom bar follows the keyboard on its own */
     screen.classList.toggle('kb', on);
-    if (on) screen.scrollTop = 0;
-    const delta = before - anchor.getBoundingClientRect().top;
-    if (Math.abs(delta) > 2 && !reduced) col.animate([{ transform:`translateY(${delta}px)` }, { transform:'none' }], { duration:420, easing:'cubic-bezier(.32,.72,0,1)' });
   }
 
   /* ---------------- phone ---------------- */

@@ -4,16 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#FFEFDB">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>سوپرمارکت دیجی‌کالا</title>
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
+<!-- iOS Safari tints its status bar / top toolbar from a full-width fixed element at the top
+     (and from the html background); both carry the live page colour -->
+<div id="statusbar" aria-hidden="true"></div>
 <div id="app">
 
   <!-- ===================== Landing (Figma: page 2 / 3 / 4 / 7) ===================== -->
   <section class="screen active" id="landing" aria-label="سوپرمارکت دیجی‌کالا">
-    <div class="wash"></div>
     <div class="col" id="landingCol">
+      <div class="wash"></div>
       <div class="cards" data-name="Product cards" aria-hidden="true">
         <div class="row r1"><div class="track" id="row1"></div></div>
         <div class="row r2"><div class="track" id="row2"></div></div>
@@ -53,6 +58,7 @@
 
       <div class="spacer"></div>
 
+      <div class="bottombar">
       <label class="field" data-name="SearchField">
         <input id="phone" type="tel" inputmode="numeric" autocomplete="tel-national" enterkeyhint="go"
                maxlength="11" placeholder="شماره همراه خود را وارد کنید" aria-label="شماره همراه">
@@ -60,13 +66,14 @@
       <div class="btn-wrap" id="phoneBtnWrap"><div>
         <button class="btn" id="phoneBtn">ثبت شماره</button>
       </div></div>
+      </div>
     </div>
   </section>
 
   <!-- ===================== OTP ===================== -->
   <section class="screen" id="otp" aria-label="کد تایید">
-    <div class="wash" style="opacity:1"></div>
     <div class="col otp-col" id="otpCol">
+      <div class="wash"></div>
       <h1 class="title">کد تایید رو وارد کن</h1>
       <p class="sub">کد ۵ رقمی به شماره <span id="otpPhone" dir="ltr"></span> پیامک شد.</p>
       <p class="sub" style="margin-top:4px"><a href="#" id="editPhone">ویرایش شماره</a></p>
@@ -76,16 +83,16 @@
       </div>
       <div class="timer" id="timer"></div>
       <div class="spacer"></div>
-      <div class="btn-wrap show" style="width:calc(100% - 48px)"><div>
+      <div class="bottombar"><div class="btn-wrap show"><div>
         <button class="btn" id="otpBtn">تایید کد</button>
-      </div></div>
+      </div></div></div>
     </div>
   </section>
 
   <!-- ===================== Discount (Figma: page 5 → page 6) ===================== -->
   <section class="screen" id="discount" aria-label="کد تخفیف">
-    <div class="wash dc-wash"></div>
     <div class="col dc-col">
+      <div class="wash dc-wash"></div>
       <div class="dc-head"><h1 class="title">کد تخفیف شما حاظره!</h1></div>
       <p class="sub" style="padding:0">برای استفاده از کد تخفیف روی اینجا بزن!</p>
       <div class="emoji" aria-hidden="true">👇</div>
@@ -967,7 +974,7 @@
 </g></svg></div>
       </div>
       <div class="spacer"></div>
-      <button class="btn lg" id="shopBtn">شروع خرید</button>
+      <div class="bottombar"><button class="btn lg" id="shopBtn">شروع خرید</button></div>
     </div>
   </section>
 

@@ -34,10 +34,10 @@
 :root[data-theme="dark"]{ color-scheme:light; --content-primary:#000; --surface-primary:#fff; --surface-secondary:#F5F5F5; }
 
 *,*::before,*::after{box-sizing:border-box;}
-html{ height:100%; scroll-padding-top:env(safe-area-inset-top,0px); -webkit-tap-highlight-color:transparent; -webkit-text-size-adjust:100%; }
+html{ height:100%; background-color:var(--page-bg); transition:background-color .6s ease; scroll-padding-top:env(safe-area-inset-top,0px); -webkit-tap-highlight-color:transparent; -webkit-text-size-adjust:100%; }
 html,body{ margin:0; overscroll-behavior:none; }
 body{
-  height:100%; overflow:hidden; background:var(--page-bg);
+  height:100%; overflow:hidden; background:var(--page-bg); transition:background-color .6s ease;
   font-family:"Digikala", Tahoma, "Segoe UI", system-ui, sans-serif;
   color:var(--content-primary);
   font-feature-settings:"ss01" 0;
@@ -46,6 +46,8 @@ button{ font:inherit; color:inherit; border:0; background:none; padding:0; curso
 img{ max-width:100%; display:block; }
 
 /* ---------- app shell: follows the *visual* viewport so the keyboard pushes content up ---------- */
+#statusbar{ position:fixed; top:0; left:0; right:0; height:env(safe-area-inset-top,0px); z-index:50;
+  background:var(--page-bg); transition:background-color .6s ease; pointer-events:none; }
 #app{
   position:fixed; left:0; right:0; top:var(--vvt,0px); height:var(--vvh,100%);
   overflow:hidden; background:var(--page-bg);
@@ -60,19 +62,20 @@ img{ max-width:100%; display:block; }
 }
 .screen.active{ visibility:visible; opacity:1; pointer-events:auto; transform:none; transition:opacity .42s var(--ease-sheet), transform .42s var(--ease-sheet), visibility 0s 0s; }
 .screen.leaving{ transform:translateY(-12px); }
-.screen.kb{ overflow:hidden; }
 
 /* page background: a solid colour washed to white, so the colour itself can transition */
 .wash{ position:absolute; inset:0; pointer-events:none;
   background:linear-gradient(180deg, rgba(255,255,255,0) 0%, #fff 100%); }
+/* the wash lives in the column so it spans the full scroll height, and bleeds to the viewport edges */
+.col > .wash{ left:calc(50% - 50vw); right:calc(50% - 50vw); z-index:-1; }
+.col{ isolation:isolate; }
 
 .col{
   position:relative; width:100%; max-width:720px; margin:0 auto; min-height:100%;
   display:flex; flex-direction:column; align-items:center;
   padding-top:max(12px, calc(53px - env(safe-area-inset-top,0px)));
-  padding-bottom:calc(16px + env(safe-area-inset-bottom,0px));
+  padding-bottom:0;
 }
-.kb .col{ justify-content:flex-end; height:100%; padding-bottom:16px; }
 
 /* ======================= Product cards ======================= */
 .cards{ position:relative; width:100%; height:404px; flex:none; }
@@ -80,7 +83,7 @@ img{ max-width:100%; display:block; }
 .track{
   position:absolute; top:8px; left:calc(100% - 1728px);
   display:flex; gap:16px; padding-right:16px; width:max-content;
-  will-change:transform; animation:marquee-left 46s linear infinite;
+  animation:marquee-left 46s linear infinite;
 }
 .row.r2 .track{ animation-name:marquee-right; }
 @keyframes marquee-left { from{transform:translate3d(0,0,0)} to{transform:translate3d(-864px,0,0)} }
@@ -209,6 +212,11 @@ img{ max-width:100%; display:block; }
 .qs__count .out-down { animation:qs-out-down var(--qs-t) both; }
 @media (prefers-reduced-motion:reduce){ :root{ --qs-duration:1ms; --qs-bounce-duration:1ms; } }
 /* placement on the card (reference .pc__media rules; our thumbnail has no 1px frame) */
+/* Safari stops painting backdrop-filters (and the icons layered next to them) once dozens of
+   them sit inside a 2,600px moving marquee layer — the pill sits on a white card, so its glass
+   is drawn without the backdrop blur and the clips are isolated instead of composited. */
+.thumb .qs__bg{ -webkit-backdrop-filter:none; backdrop-filter:none; }
+.thumb .qs__pill, .thumb .qs__clip, .thumb .qs__plus{ isolation:isolate; }
 .thumb .qs{ position:absolute; left:0; right:0; bottom:0; width:auto; container-type:inline-size; }
 .thumb .qs[data-open] .qs__pill{ width:100%; }
 .thumb .qs[data-compact] .qs__pill{ width:40px; }
@@ -265,22 +273,26 @@ img{ max-width:100%; display:block; }
 .indicator button[data-d="1"]{ --s:7px; --c:var(--dot-big); }
 .indicator button[data-d="2"]{ --s:4px; --c:var(--dot-small); }
 
-.spacer{ flex:1 1 auto; min-height:40px; }
+.spacer{ flex:1 1 auto; min-height:16px; }
 
-/* No page scroll: the landing is always exactly one screen tall and anchored to the bottom,
-   so on short screens the cards are cut off at the top (as in the Figma keyboard state)
-   instead of the page scrolling. Only a really tiny screen falls back to scrolling. */
-#landing{ overflow:hidden; overflow:clip; }
-#landing .col{ height:100%; justify-content:flex-end; }
-#landing .spacer{ min-height:32px; }
-@media (max-height: 480px){
-  #landing:not(.kb){ overflow-y:auto; }
-  #landing:not(.kb) .col{ height:auto; justify-content:flex-start; }
+/* Layout always starts at the top. When there isn't room, the page scrolls and the content
+   passes behind the bottom bar (input / button), which sits on a blurred white fade. */
+.bottombar{
+  position:sticky; bottom:0; z-index:5; width:100%; flex:none;
+  padding:24px 24px calc(16px + env(safe-area-inset-bottom,0px));
+  display:flex; flex-direction:column; align-items:center;
+}
+.bottombar::before{
+  content:""; position:absolute; top:0; bottom:0; left:calc(50% - 50vw); right:calc(50% - 50vw); z-index:-1;
+  pointer-events:none;
+  background:linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.88) 24px, #fff 56px);
+  -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px);
+  -webkit-mask-image:linear-gradient(180deg, transparent 0, #000 28px); mask-image:linear-gradient(180deg, transparent 0, #000 28px);
 }
 
 /* ======================= SearchField + Button ======================= */
 .field{
-  position:relative; width:calc(100% - 48px); height:56px; flex:none;
+  position:relative; width:100%; height:56px; flex:none;
   /* stroke drawn as an inset ring UNDER the white inner shadow, like Figma: the shadow washes the top edge */
   --stroke:rgba(0,0,0,.16);
   border-radius:999px; background:var(--surface-secondary);
@@ -297,13 +309,12 @@ img{ max-width:100%; display:block; }
 .field input::placeholder{ color:var(--content-tertiary); opacity:1; direction:rtl; }
 .field:focus-within{ --stroke:rgba(0,0,0,.24); }
 
-.btn-wrap{ width:calc(100% - 48px); flex:none; display:grid; grid-template-rows:0fr; transition:grid-template-rows .55s var(--ease-sheet); }
-.btn-wrap > div{ overflow:hidden; min-height:0; margin:0 -24px -24px; padding:0 24px 24px; }
+.btn-wrap{ width:100%; flex:none; display:grid; grid-template-rows:0fr; transition:grid-template-rows .55s var(--ease-sheet); }
+.btn-wrap > div{ overflow:hidden; min-height:0; }
 .btn-wrap.show{ grid-template-rows:1fr; }
-.btn-wrap .btn{ margin:24px 0 16px; transform:translateY(64px); opacity:0;
+.btn-wrap .btn{ margin:24px 0 0; transform:translateY(64px); opacity:0;
   transition:transform .55s var(--ease-sheet), opacity .3s ease, filter .2s ease; }
 .btn-wrap.show .btn{ transform:none; opacity:1; }
-.kb .btn-wrap .btn{ margin-bottom:0; }
 .btn{
   width:100%; height:56px; border-radius:999px; background:var(--brand); color:#fff;
   box-shadow:none;
@@ -376,7 +387,7 @@ img{ max-width:100%; display:block; }
   background:rgba(0,0,0,.84); color:#fff; font-size:14px; line-height:24px; padding:6px 16px; border-radius:999px;
   opacity:0; pointer-events:none; transition:opacity .25s ease, transform .35s var(--ease-sheet); white-space:nowrap; z-index:20; }
 .toast.on{ opacity:1; transform:translate(-50%,0); }
-.dc-col .btn{ width:calc(100% - 48px); flex:none; }
+.dc-col .btn{ width:100%; flex:none; }
 
 /* wider than the phone frame: the side fogs would show as bands, so fade the rows instead */
 @media (min-width: 760px){
