@@ -54,3 +54,13 @@ assets/fonts/         Digikala Regular / Medium / Bold (woff2)
 - The cart lives in memory (`CART` in `js/app.js`); each change dispatches a `qtychange`
   event with `{ id, qty, cart }` if you want to hook up a real cart.
 - Keyboard behaviour (field pushed above the keyboard) should be checked on a real iPhone and Android device.
+
+## Updating the live site
+
+1. Replace **all** files in the repository with the new ones (delete the old `css/` and `js/` folders
+   first, or upload with "replace"), then commit to `main`.
+2. Open the repository's **Actions** tab and wait until the *pages build and deployment* run is green
+   (usually under a minute).
+3. `index.html` links to `css/styles.css?v=…` and `js/app.js?v=…` with a hash of each file, so a new
+   version always loads fresh CSS/JS. GitHub Pages can still serve the old `index.html` for up to
+   ~10 minutes; if you still see the old page, reload once more or open it in a private tab.
