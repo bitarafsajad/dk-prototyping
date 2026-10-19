@@ -4,11 +4,10 @@ Responsive landing flow built from the Figma file *Sajad → Landing* (max width
 
 - Two product-card rows that loop slowly (top → left, bottom → right), with the quantity stepper
   from `dk-prototyping/product-cards` — tap **+** to add to the cart.
-- Auto-rotating headline slides with a light spring; swipe left/right to change them.
+- Auto-rotating headline slides (all on the orange background) with a light spring; swipe left/right to change them.
 - Phone input (numeric keyboard on phones). The submit button slides up when the field is focused.
   The layout always starts at the top; the input/button bar is sticky at the bottom on a blurred
   white fade, so on short screens (or with the keyboard open) the content scrolls behind it.
-- The status bar / browser chrome colour follows the page background (theme-color + html background).
 - OTP screen (5 digits, SMS autofill, resend timer) → discount screen with a Telegram-style spoiler.
   Tapping the spoiler reveals the code **FAFES** with a confetti burst; tapping the code copies it.
 

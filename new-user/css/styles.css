@@ -46,8 +46,6 @@ button{ font:inherit; color:inherit; border:0; background:none; padding:0; curso
 img{ max-width:100%; display:block; }
 
 /* ---------- app shell: follows the *visual* viewport so the keyboard pushes content up ---------- */
-#statusbar{ position:fixed; top:0; left:0; right:0; height:env(safe-area-inset-top,0px); z-index:50;
-  background:var(--page-bg); transition:background-color .6s ease; pointer-events:none; }
 #app{
   position:fixed; left:0; right:0; top:var(--vvt,0px); height:var(--vvh,100%);
   overflow:hidden; background:var(--page-bg);
@@ -73,7 +71,7 @@ img{ max-width:100%; display:block; }
 .col{
   position:relative; width:100%; max-width:720px; margin:0 auto; min-height:100%;
   display:flex; flex-direction:column; align-items:center;
-  padding-top:max(12px, calc(53px - env(safe-area-inset-top,0px)));
+  padding-top:env(safe-area-inset-top,0px);
   padding-bottom:0;
 }
 
@@ -212,10 +210,18 @@ img{ max-width:100%; display:block; }
 .qs__count .out-down { animation:qs-out-down var(--qs-t) both; }
 @media (prefers-reduced-motion:reduce){ :root{ --qs-duration:1ms; --qs-bounce-duration:1ms; } }
 /* placement on the card (reference .pc__media rules; our thumbnail has no 1px frame) */
-/* Safari stops painting backdrop-filters (and the icons layered next to them) once dozens of
-   them sit inside a 2,600px moving marquee layer — the pill sits on a white card, so its glass
-   is drawn without the backdrop blur and the clips are isolated instead of composited. */
-.thumb .qs__bg{ -webkit-backdrop-filter:none; backdrop-filter:none; }
+/* Background blur — the reference uses backdrop-filter:blur(5px) behind 80% white. Safari stops
+   painting dozens of backdrop-filters inside a 2,600px moving marquee layer, so the same result is
+   drawn from what is actually behind the pill: a blurred copy of this card's thumbnail (white tile +
+   product image), aligned to the pill, under the reference's 80% white. Same look, no backdrop-filter. */
+.thumb .qs__bg{ -webkit-backdrop-filter:none; backdrop-filter:none; background:transparent; isolation:isolate; }
+.thumb .qs__bg::before{
+  content:""; position:absolute; right:-18px; bottom:-18px; width:140px; height:140px;  /* thumb + 10px bleed */
+  background:var(--img) 18px 18px / 104px 104px no-repeat, var(--surface-primary);
+  filter:blur(5px); pointer-events:none;
+}
+.thumb .qs__bg::after{ content:""; position:absolute; inset:0; z-index:0; background:var(--effect-neutral-0-80); }
+.thumb .qs__glass{ z-index:1; }
 .thumb .qs__pill, .thumb .qs__clip, .thumb .qs__plus{ isolation:isolate; }
 .thumb .qs{ position:absolute; left:0; right:0; bottom:0; width:auto; container-type:inline-size; }
 .thumb .qs[data-open] .qs__pill{ width:100%; }

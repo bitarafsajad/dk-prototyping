@@ -20,7 +20,7 @@
       <div class="thumb">
         <div class="tbg"></div><img src="${IMGS[img]}" alt="" loading="eager" decoding="async">
         <div class="badge" dir="ltr">${off}</div>
-        <div class="qs" data-pid="${img}">
+        <div class="qs" data-pid="${img}" style="--img:url('${new URL(IMGS[img], location.href).href}')">
           <div class="qs__pill">
             <div class="qs__bg"><div class="qs__glass"></div></div>
             <div class="qs__clip"><div class="qs__row">
@@ -104,8 +104,8 @@
   /* ---------------- slides ---------------- */
   const SLIDES = [
     { bg:'#FFEFDB', fog:'#FEF3E6' },
-    { bg:'#FDF4F5', fog:'#FDF6F7' },
-    { bg:'#F3F7FF', fog:'#F6F9FE' },
+    { bg:'#FFEFDB', fog:'#FEF3E6' },
+    { bg:'#FFEFDB', fog:'#FEF3E6' },
   ];
   const slides = [...document.querySelectorAll('.slide')];
   const dots = [...document.querySelectorAll('.indicator button')];
@@ -150,32 +150,7 @@
     if (current === 'landing') setBg(SLIDES[cur].bg);
     root.style.setProperty('--fog', SLIDES[cur].fog);
   }
-  function setBg(c){ app.style.setProperty('--page-bg', c); root.style.setProperty('--page-bg', c); tweenTheme(c); }
-
-  /* Status bar / browser chrome colour (theme-color) follows the page background,
-     cross-fading over the same 600ms as the background itself. The <meta> is re-inserted on
-     every step because Safari only re-reads theme-color when the element changes. */
-  let themeNow = '#FFEFDB', themeRaf = 0;
-  const hexRgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
-  const rgbHex = a => '#' + a.map(v => Math.round(v).toString(16).padStart(2, '0')).join('');
-  function putTheme(c){
-    const m = document.querySelector('meta[name="theme-color"]');
-    if (m && m.content.toLowerCase() === c.toLowerCase()) return;
-    const n = document.createElement('meta'); n.name = 'theme-color'; n.content = c;
-    m ? m.replaceWith(n) : document.head.appendChild(n);
-  }
-  function tweenTheme(to){
-    cancelAnimationFrame(themeRaf);
-    const a = hexRgb(themeNow), b = hexRgb(to), t0 = performance.now();
-    if (reduced) { themeNow = to; putTheme(to); return; }
-    const step = now => {
-      const k = Math.min(1, (now - t0) / 600), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
-      themeNow = rgbHex(a.map((v, i) => v + (b[i] - v) * e));
-      putTheme(k < 1 ? themeNow : (themeNow = to));
-      if (k < 1) themeRaf = requestAnimationFrame(step);
-    };
-    themeRaf = requestAnimationFrame(step);
-  }
+  function setBg(c){ app.style.setProperty('--page-bg', c); root.style.setProperty('--page-bg', c); }
   const startSlides = () => { clearInterval(slideTimer); slideTimer = setInterval(() => show(cur + 1, 1), 4000); };
   const stopSlides = () => clearInterval(slideTimer);
   dots.forEach(d => d.addEventListener('click', () => { const k = +d.dataset.go; show(k, k >= cur ? 1 : -1); startSlides(); }));
