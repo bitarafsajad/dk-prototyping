@@ -363,10 +363,14 @@ img{ max-width:100%; display:block; }
   /* 16px so iOS doesn't zoom, scaled to the design's 15px */
   width:106.6667%; margin-left:-6.6667%; height:28px; border:0; outline:0; background:transparent; padding:0;
   font:500 16px/28px "Digikala", Tahoma, sans-serif; color:var(--content-primary); text-align:right; direction:ltr;
-  transform:scale(.9375); transform-origin:right center; caret-color:var(--brand);
+  transform:scale(.9375); transform-origin:right center; caret-color:transparent;
   letter-spacing:0;
 }
 .field input::placeholder{ color:var(--content-tertiary); opacity:1; direction:rtl; }
+/* custom caret: 2x24px, #ED1944 (the native caret can't be sized) */
+.caret{ position:absolute; top:50%; right:24px; width:2px; height:24px; margin-top:-12px; border-radius:1px;
+  background:#ED1944; pointer-events:none; opacity:0; }
+.field.caret-on .caret{ opacity:1; animation:blink 1s steps(1) infinite; }
 .field:focus-within{ --stroke:rgba(0,0,0,.24); }
 
 .btn-wrap{ width:100%; flex:none; display:grid; grid-template-rows:0fr; transition:grid-template-rows .55s var(--ease-sheet); }
@@ -405,7 +409,7 @@ img{ max-width:100%; display:block; }
 .cell.filled{ animation:pop .22s var(--ease-out); }
 @keyframes pop{ 0%{transform:scale(.92)} 100%{transform:scale(1)} }
 .otp:focus-within .cell.cur{ --stroke:var(--brand); }
-.otp:focus-within .cell.cur::after{ content:""; position:absolute; width:2px; height:28px; background:var(--brand); border-radius:1px; animation:blink 1s steps(1) infinite; }
+.otp:focus-within .cell.cur::after{ content:""; position:absolute; width:2px; height:24px; background:#ED1944; border-radius:1px; animation:blink 1s steps(1) infinite; }
 @keyframes blink{ 50%{ opacity:0; } }
 .otp.err .cell{ --stroke:var(--brand); }
 .otp.shake{ animation:shake .4s var(--ease-out); }

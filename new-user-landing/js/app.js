@@ -335,6 +335,44 @@
   /* keep the keyboard up while the button is pressed */
   phoneBtn.addEventListener('pointerdown', e => { if (document.activeElement === phone) e.preventDefault(); });
   phone.addEventListener('keydown', e => { if (e.key === 'Enter') submitPhone(); });
+
+  /* custom caret: sits at the insertion point, measured from the field's right edge
+     (the text is right-aligned, so this stays correct while the field animates its width) */
+  const field = phone.closest('.field');
+  const caretEl = document.createElement('i'); caretEl.className = 'caret'; caretEl.setAttribute('aria-hidden', 'true');
+  field.appendChild(caretEl);
+  const mctx = document.createElement('canvas').getContext('2d');
+  function placeCaret(restartBlink = true){
+    const on = document.activeElement === phone && phone.selectionStart === phone.selectionEnd;
+    field.classList.toggle('caret-on', on);
+    if (!on) return;
+    const cs = getComputedStyle(phone);
+    mctx.font = cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
+    const pos = phone.selectionStart == null ? phone.value.length : phone.selectionStart;
+    const after = phone.value.slice(pos);
+    const fr = field.getBoundingClientRect(), ir = phone.getBoundingClientRect();
+    const right = (fr.right - ir.right) + mctx.measureText(after).width * .9375 - 1;
+    caretEl.style.right = Math.max(0, right) + 'px';
+    if (!restartBlink) return;
+    /* solid while typing, blink when idle */
+    caretEl.style.animation = 'none'; void caretEl.offsetWidth; caretEl.style.animation = '';
+  }
+  /* while the field grows in from the button its width and padding animate, so the caret
+     is re-placed every frame until the expansion has finished */
+  let followRaf = 0;
+  function followExpansion(){
+    cancelAnimationFrame(followRaf);
+    const until = performance.now() + 700;
+    const step = now => { placeCaret(false); if (now < until) followRaf = requestAnimationFrame(step); else placeCaret(); };
+    followRaf = requestAnimationFrame(step);
+  }
+  phone.addEventListener('focus', followExpansion);
+  ['input', 'focus', 'blur', 'click', 'keyup'].forEach(ev => phone.addEventListener(ev, () => requestAnimationFrame(() => placeCaret())));
+  document.addEventListener('selectionchange', () => { if (document.activeElement === phone) placeCaret(); });
+  if (document.fonts) document.fonts.ready.then(() => placeCaret());
+  /* the field grows in from the button: re-measure once it has its final size */
+  field.addEventListener('transitionend', e => { if (e.target === field) placeCaret(); });
+  addEventListener('resize', () => requestAnimationFrame(() => placeCaret()));
   /* focus ourselves without letting iOS scroll the page to the input (it would fight the glide) */
   $('.field').addEventListener('touchend', e => {
     if (document.activeElement !== phone) { e.preventDefault(); phone.focus({ preventScroll:true }); }
