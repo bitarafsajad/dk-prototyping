@@ -3,6 +3,7 @@
   const root = document.documentElement;
   const app = $('#app');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!(window.CSS && CSS.registerProperty)) root.classList.add('no-prop');
   const fa = s => String(s).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
   const toLatin = s => s.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
 
@@ -215,15 +216,17 @@
   const vv = window.visualViewport;
   function syncVV(){
     const h = vv ? vv.height : innerHeight, t = vv ? vv.offsetTop : 0;
-    const bar = $('#' + current + ' .bottombar');
+    const scr = $('#' + current), bar = scr && scr.querySelector('.bottombar');
     const before = bar ? bar.getBoundingClientRect().top : 0;
     root.style.setProperty('--vvh', h + 'px');
     root.style.setProperty('--vvt', t + 'px');
     if (bar && !reduced) {
-      /* the bottom bar rides up with the keyboard instead of jumping */
+      /* while typing the whole page rides up with the keyboard; otherwise just the bottom bar */
+      const target = scr.classList.contains('kb') ? scr.querySelector('.col') : bar;
       const delta = before - bar.getBoundingClientRect().top;
-      if (Math.abs(delta) > 2) bar.animate([{ transform:`translateY(${delta}px)` }, { transform:'none' }], { duration:320, easing:'cubic-bezier(.32,.72,0,1)' });
+      if (Math.abs(delta) > 2) target.animate([{ transform:`translateY(${delta}px)` }, { transform:'none' }], { duration:320, easing:'cubic-bezier(.32,.72,0,1)' });
     }
+    if (typeof placeFog === 'function') placeFog();
   }
   if (vv) { vv.addEventListener('resize', syncVV); vv.addEventListener('scroll', syncVV); }
   addEventListener('resize', syncVV);
@@ -232,9 +235,20 @@
   addEventListener('scroll', () => { if (scrollY) scrollTo(0, 0); }, { passive:true });
 
   /* FLIP: anchor content to the bottom while typing, animating the jump */
+  function placeFog(){
+    const s = $('#landing'), copy = s.querySelector('.copy'), col = s.querySelector('.col');
+    if (!s.classList.contains('kb')) return;
+    /* fade ends just above the headline, wherever the keyboard leaves it */
+    s.style.setProperty('--fogH', Math.max(0, col.offsetTop + copy.offsetTop - s.scrollTop - 6) + 'px');
+  }
   function setKb(screen, on){
-    /* layout stays top-anchored; the sticky bottom bar follows the keyboard on its own */
+    const col = screen.querySelector('.col'), bar = screen.querySelector('.bottombar');
+    const before = bar.getBoundingClientRect().top;
     screen.classList.toggle('kb', on);
+    if (on) screen.scrollTop = 0;
+    const delta = before - bar.getBoundingClientRect().top;
+    if (Math.abs(delta) > 2 && !reduced) col.animate([{ transform:`translateY(${delta}px)` }, { transform:'none' }], { duration:420, easing:'cubic-bezier(.32,.72,0,1)' });
+    placeFog();
   }
 
   /* ---------------- phone ---------------- */

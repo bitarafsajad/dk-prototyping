@@ -285,6 +285,21 @@ img{ max-width:100%; display:block; }
 
 .spacer{ flex:1 1 auto; min-height:16px; }
 
+/* Typing (Figma page 7): the whole page moves up so the input + button sit right above the
+   keyboard, and the top of the screen is covered by a blurred fade of the page colour. */
+.screen.kb{ overflow:hidden; }
+.kb .col{ height:100%; justify-content:flex-end; }
+.kb .bottombar{ position:relative; }
+.topfog{
+  position:absolute; left:0; right:0; top:0; height:var(--fogH,0px); z-index:4; pointer-events:none;
+  opacity:0; transition:opacity .35s ease;
+  background:linear-gradient(180deg, #FFEFDB 0%, rgba(255,239,219,.94) 45%, rgba(255,239,219,.6) 75%, rgba(255,239,219,0) 100%);
+  -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px);
+  -webkit-mask-image:linear-gradient(180deg, #000 0%, #000 60%, transparent 100%);
+  mask-image:linear-gradient(180deg, #000 0%, #000 60%, transparent 100%);
+}
+.kb .topfog{ opacity:1; }
+
 /* Layout always starts at the top. When there isn't room, the page scrolls and the content
    passes behind the bottom bar (input / button), which sits on a blurred white fade. */
 .bottombar{
@@ -295,7 +310,7 @@ img{ max-width:100%; display:block; }
 .bottombar::before{
   content:""; position:absolute; top:0; bottom:0; left:calc(50% - 50vw); right:calc(50% - 50vw); z-index:-1;
   pointer-events:none;
-  background:linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.88) 24px, #fff 56px);
+  background:linear-gradient(180deg, transparent 0%, var(--bar-bg,#fff) 40px, var(--bar-bg,#fff) 100%);
   -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px);
   -webkit-mask-image:linear-gradient(180deg, transparent 0, #000 28px); mask-image:linear-gradient(180deg, transparent 0, #000 28px);
 }
@@ -367,14 +382,20 @@ img{ max-width:100%; display:block; }
 .dc-col{ padding-top:max(24px, min(calc(223px - env(safe-area-inset-top,0px)), calc(26.4dvh - env(safe-area-inset-top,0px)))); }
 .dc-wash{ background:linear-gradient(180deg, rgba(255,255,255,0) 0%, #fff 100%); transition:opacity .6s ease; }
 .revealed .dc-wash{ opacity:0; }
+.revealed .bottombar{ --bar-bg:var(--discount-bg); }
 .dc-head{ height:40px; display:flex; align-items:center; justify-content:center; }
 .dc-head .title{ padding:0; }
 .emoji{ margin-top:8px; font-size:24px; line-height:24px; height:24px; color:var(--content-secondary); font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif; }
 .spoiler-area{ position:relative; isolation:isolate; margin-top:19px; width:264px; height:104px; flex:none; }
-.spoiler{ position:absolute; inset:0; border-radius:24px; cursor:pointer;
+.spoiler{ position:absolute; inset:0; border-radius:24px; cursor:pointer; --r:-28px; }
+/* the reveal mask is only applied while revealing: Safari stops repainting the animated
+   (SMIL) dots underneath a CSS mask, which left the spoiler blank / frozen */
+.revealing .spoiler{
   -webkit-mask-image:radial-gradient(circle at var(--mx,50%) var(--my,50%), transparent var(--r), #000 calc(var(--r) + 28px));
-  mask-image:radial-gradient(circle at var(--mx,50%) var(--my,50%), transparent var(--r), #000 calc(var(--r) + 28px));
-  --r:-28px; }
+  mask-image:radial-gradient(circle at var(--mx,50%) var(--my,50%), transparent var(--r), #000 calc(var(--r) + 28px)); }
+/* browsers without @property can't animate the ripple radius → dissolve instead */
+.no-prop .revealing .spoiler{ -webkit-mask-image:none; mask-image:none; animation:none !important;
+  opacity:0; transform:scale(1.08); filter:blur(4px); transition:opacity .5s ease, transform .6s var(--ease-out), filter .5s ease; }
 .spoiler svg{ display:block; width:264px; height:104px; }
 .spoiler:focus-visible{ outline:2px solid rgba(237,25,68,.4); outline-offset:4px; }
 @property --r{ syntax:"<length>"; inherits:false; initial-value:-28px; }
