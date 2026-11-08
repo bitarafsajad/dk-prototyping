@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Jetkon</title>
+<meta name="description" content="Jetkon – offline shopping assistant robot">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%F0%9F%A4%96%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+<div id="viewport">
+  <div id="stage" role="region" aria-roledescription="carousel" aria-label="معرفی ربات جت‌کن">
+    <div class="shadow a" id="sh1"></div>
+    <div class="shadow b" id="sh2"></div>
+
+    <div id="robot" aria-hidden="true">
+      <div class="floor pool"></div>
+      <div class="floor rim"></div>
+      <div class="floor reflect"><img src="assets/images/robot-red.webp" alt=""></div>
+      <div class="floor contact"></div>
+      <img class="base on" src="assets/images/robot-red.webp" alt="">
+      <img data-color="green"  src="assets/images/head-green.webp" alt="">
+      <img data-color="orange" src="assets/images/head-orange.webp" alt="">
+      <img data-color="purple" src="assets/images/head-purple.webp" alt="">
+      <div class="adback"></div>
+      <img class="ad still on" src="assets/images/ad-still.jpg" alt="">
+      <img class="ad" src="assets/images/ad.webp" alt="">
+    </div>
+
+    <div id="fade"></div>
+
+    <svg id="lines" aria-hidden="true">
+      <path id="leader" d=""></path>
+      <g id="dot">
+        <circle class="pulse" r="22" fill="none" stroke="#fff" stroke-width="2"></circle>
+        <circle r="9" fill="#fff"></circle>
+      </g>
+    </svg>
+
+    <!-- 1 · Hero (Figma: page 1) -->
+    <section class="copy" data-slide="0" aria-label="جت‌کن">
+      <p class="pre" data-k="pre">جت‌کن</p>
+      <h1 class="title" data-k="title">دستیار خرید آفلاین</h1>
+      <p class="desc" data-k="desc">دستیار خرید آفلاین با حضور در شعب فیزیکی دیجیکالا، تجربه خرید بهتری برای مشتریان فراهم می‌کند</p>
+    </section>
+
+    <!-- 2 · Face monitor (Figma: page 2) -->
+    <section class="copy" data-slide="1" aria-label="مانیتور صورت">
+      <h2 class="pre" data-k="title">مانیتور صورت</h2>
+      <p class="desc" data-k="desc">مانیتور ۱۲ اینچی، برای مشتری، امکان مشاهده کالاها، ثبت و پرداخت سفارش را فراهم می‌کند.</p>
+    </section>
+
+    <!-- 3 · Colors (same camera as face monitor) -->
+    <section class="copy" data-slide="2" aria-label="رنگ‌بندی">
+      <h2 class="pre" data-k="title">رنگ‌بندی</h2>
+      <p class="desc" data-k="desc">سر ربات در چهار رنگ قرمز، سبز، نارنجی و بنفش ساخته می‌شود تا با فضا و هویت بصری هر شعبه هماهنگ باشد.</p>
+    </section>
+
+    <!-- 3 · Ad display -->
+    <section class="copy" data-slide="2" aria-label="نمایشگر تبلیغات">
+      <h2 class="pre" data-k="title">نمایشگر تبلیغات</h2>
+      <p class="desc" data-k="desc">نمایشگر عمودی بدنه، کمپین‌ها و پیشنهادهای ویژه برندها را در طول مسیر حرکت ربات به مشتریان نشان می‌دهد.</p>
+    </section>
+
+    <!-- 4 · Shelves -->
+    <section class="copy" data-slide="3" aria-label="قفسه‌های حمل کالا">
+      <h2 class="pre" data-k="title">قفسه‌های کالا</h2>
+      <p class="desc" data-k="desc">دو طبقه با لبه‌های نورانی، کالا و نمونه محصولات را تا کنار مشتری می‌آورد تا بدون گشتن در راهروها، آن را از نزدیک ببیند.</p>
+    </section>
+
+    <!-- 5 · Base & mobility -->
+    <section class="copy" data-slide="5" aria-label="سیستم نظافت">
+      <h2 class="pre" data-k="title">سیستم نظافت</h2>
+      <p class="desc" data-k="desc">سیستم نظافت در پایه ربات، کف سالن فروشگاه را تمیز می‌کند تا فضای خرید همیشه پاکیزه بماند و حلقه نوری کناری، وضعیت کار را نشان می‌دهد.</p>
+    </section>
+
+  </div>
+</div>
+
+<div id="hint" aria-hidden="true"><span class="k">برای دیدن بخش‌ها از کلیدهای <kbd>←</kbd> <kbd>→</kbd> استفاده کنید</span><span class="t">برای دیدن بخش‌ها صفحه را بکشید</span></div>
+<nav id="nav" aria-label="بخش‌ها"></nav>
+
+<script src="assets/script.js"></script>
+</body>
+</html>
