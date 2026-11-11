@@ -1,0 +1,100 @@
+/* ProductCard — Figma: Components › ProductCard (43:5205)
+   width is responsive (112–184 in the hand-off); thumbnail stays square */
+.pcard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;          /* right edge in RTL (Figma counter-axis MAX) */
+  gap: 8px;
+  width: 128px;
+  min-width: 112px;                 /* smallest size in the Figma hand-off */
+  flex: none;                       /* never squeezed by a flex row/carousel */
+  box-sizing: border-box;
+  direction: rtl;
+  font-family: "Digikala", system-ui, sans-serif;
+  letter-spacing: 0;
+}
+.pcard * { box-sizing: border-box; }
+
+/* whiteBackground: squircle r24/60%, padding 4 4 12 4 (8 when discounted & with text) */
+.pcard--white { padding: 4px 4px 12px; }
+.pcard--white.pcard--pad8 { padding-bottom: 8px; }
+.pcard__bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+/* thumbnailFrame: square, holds badges + stepper */
+.pcard__media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  flex: none;
+  direction: ltr;
+}
+.pcard__media .thumb { position: absolute; inset: 0; }
+.pcard__stepper {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: flex-end;        /* Counter instance: align MAX */
+}
+.pcard__discount { position: absolute; left: 10px; top: 10px; }
+.pcard__tag { position: absolute; right: 2px; top: 0; }
+
+/* textContainer */
+.pcard__text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;          /* right edge in RTL */
+  gap: 8px;
+  width: 100%;
+  padding: 4px 4px 0;
+}
+.pcard--white .pcard__text { padding: 4px 8px 0; }
+.pcard--noBg.pcard--pad4b .pcard__text { padding-bottom: 4px; }
+
+.pcard__textFrame {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+}
+/* Subtle/Small, max 2 lines with ellipsis */
+.pcard__title,
+.pcard__support {
+  margin: 0;
+  width: 100%;
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 20px;
+  text-align: right;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+.pcard__title { color: #000; }
+.pcard__support { color: #999999; }
+
+.pcard__link {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: 24px;
+}
+.pcard__link:focus-visible { outline: 2px solid #ed1944; outline-offset: 2px; }
+.pcard__media, .pcard__text { position: relative; }
+.pcard__stepper, .pcard__discount, .pcard__tag { z-index: 1; }
+
+/* equal-height cards (Carousel promotion): stretch, keep the price at the bottom */
+.pcard--fill { align-self: stretch; }
+.pcard--fill .pcard__text { flex: 1 1 auto; }
+.pcard--fill .pcard__text > .price { margin-top: auto; }

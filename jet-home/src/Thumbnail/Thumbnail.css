@@ -1,0 +1,27 @@
+/* Thumbnail — Figma: Components › Thumbnail (418:5397)
+   128 × 128 (square, responsive), radius 24 with 60% corner smoothing */
+.thumb {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  flex: none;
+}
+.thumb__svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+/* placeImage: inset 12px, FILL (cover) */
+.thumb__img {
+  position: absolute;
+  inset: 12px;
+  width: calc(100% - 24px);
+  height: calc(100% - 24px);
+  object-fit: cover;
+  display: block;
+  -webkit-user-drag: none;
+  user-select: none;
+}

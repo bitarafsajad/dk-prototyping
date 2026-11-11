@@ -1,0 +1,67 @@
+/* DiscountBadge — Figma: Components › DiscountBadge (43:494)
+   h 20, radius 12 (60% smoothing), lime gradient, 1px white inner stroke,
+   drop shadow 0 0.4 0.6 rgba(0,0,0,.14). Label: Digikala Bold 13/20 */
+.dbadge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  padding: 0 6px;
+  box-sizing: border-box;
+  direction: ltr;
+  white-space: nowrap;
+  font-family: "Digikala", system-ui, sans-serif;
+  /* Figma drop-shadow blur 0.6 → CSS drop-shadow std-dev 0.3 */
+  filter: drop-shadow(0 0.4px 0.3px rgba(0, 0, 0, 0.14));
+}
+.dbadge--amazing { padding: 0 6px 0 2px; }
+.dbadge__bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.dbadge__icon {
+  position: relative;
+  display: block;
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+.dbadge__label {
+  position: relative;
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 20px;
+  letter-spacing: 0;
+  color: #000;
+  /* keep "-۱۷ ٪" in typed order (minus on the left) like Figma */
+  direction: ltr;
+  unicode-bidi: isolate-override;
+}
+
+/* TextBadge ("Typo badge" on the product card): #B1ADA8, r 4,
+   padding 0 2 1 2, h 16, label Bold 13/20 white (overflows the 16px box) */
+.tbadge {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 16px;
+  padding: 0 2px 1px;
+  box-sizing: border-box;
+  border-radius: 4px;
+  background: #b1ada8;
+  white-space: nowrap;
+  font-family: "Digikala", system-ui, sans-serif;
+}
+.tbadge__label {
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 20px;
+  color: #fff;
+  text-align: center;
+}

@@ -1,0 +1,218 @@
+/* BottomNavigation — Figma: Home-Page › bottom navigation (2070:6835)
+   variants: simple (2070:6813) · with assistant (2070:6788) */
+.bnav {
+  --bnav-safe: max(21px, env(safe-area-inset-bottom, 0px)); /* safeAreaInsetBottom */
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  direction: rtl;
+  font-family: "Digikala", system-ui, sans-serif;
+  letter-spacing: 0;
+  pointer-events: none;            /* only the bar & buttons take taps */
+}
+.bnav--static { position: relative; }
+
+/* white gradient + blur behind the bar, so scrolled products fade out */
+.bnav__scrim {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(64px + var(--bnav-safe) + 40px);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.7) 50%, rgba(255, 255, 255, 0.92) 100%);
+  -webkit-backdrop-filter: blur(3px);
+          backdrop-filter: blur(3px);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 55%);
+          mask-image: linear-gradient(180deg, transparent 0%, #000 55%);
+  pointer-events: none;
+}
+
+/* the bar: white 90% + background blur (Figma 24 → CSS 12px) */
+.bnav__bar {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.9);
+  -webkit-backdrop-filter: blur(12px);
+          backdrop-filter: blur(12px);
+  pointer-events: auto;
+}
+.bnav--simple .bnav__bar { box-shadow: 0 0 16px 0 rgba(0, 0, 0, 0.08); overflow: hidden; }
+.bnav--assistant .bnav__bar { box-shadow: 0 -0.5px 0 0 #e8e8e8; }   /* 0.5px top stroke, outside */
+
+.bnav__tabs {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 64px;
+}
+.bnav--simple .bnav__tabs > .bnav__tab { flex: 1 1 0; min-width: 0; }
+.bnav--assistant .bnav__tabs { justify-content: space-between; }
+.bnav__group { display: flex; align-items: center; padding: 0 24px; }
+.bnav__group--start { gap: 40px; }   /* خانه · سفارش‌ها */
+.bnav__group--end { gap: 32px; }     /* سبد · پروفایل */
+
+.bnav__safe { width: 100%; height: var(--bnav-safe); flex: none; }
+
+/* TabItem: 64 high, padding 16 0 12, gap 2 (content overflows → icon at y 11) */
+.bnav__tab {
+  all: unset;
+  box-sizing: border-box;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  height: 64px;
+  padding: 16px 0 12px;
+  overflow: hidden;
+  color: #737373;                      /* content/secondary */
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  text-decoration: none;
+}
+.bnav__tab:focus-visible { outline: 2px solid #ed1944; outline-offset: -4px; border-radius: 12px; }
+.bnav__icon { display: block; width: 24px; height: 24px; flex: none; transition: transform 160ms ease-out; }
+.bnav__tab:active .bnav__icon { transform: scale(0.9); }
+.bnav__label {
+  font-weight: 500;                    /* Base/Small */
+  font-size: 13px;
+  line-height: 20px;
+  text-align: center;
+  white-space: nowrap;
+  flex: none;
+}
+.bnav__tab.is-selected { color: #000; }
+.bnav__tab.is-selected .bnav__label { font-weight: 700; }   /* Prominent/Small */
+
+/* ---------- assistant (72 × 72 at x 155, y −19 on a 390 bar) ---------- */
+.bnav__assistant {
+  all: unset;
+  position: absolute;
+  top: -19px;
+  left: calc(50% - 40px);
+  width: 72px;
+  height: 72px;
+  cursor: pointer;
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+  /* a bit bigger than the 72px Figma frame (ball Ø52 → Ø58.5), same centre */
+  transform: scale(var(--bnav-assistant-scale, 1.125));
+}
+.bnav__assistant:focus-visible { outline: 2px solid #ed1944; outline-offset: 2px; border-radius: 50%; }
+.bnav__assistant:active .bnav__ball { transform: scale(0.94); }
+
+/* soft pink glow hugging the ball (the Lottie halo: #FA5351, fades outward) */
+.bnav__halo {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 88px;
+  height: 88px;
+  margin: -44px 0 0 -44px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side,
+    rgba(250, 83, 81, 0.34) 0%,
+    rgba(250, 83, 81, 0.34) 58.8%,
+    rgba(250, 83, 81, 0.24) 61.8%,
+    rgba(250, 83, 81, 0.16) 64.7%,
+    rgba(250, 83, 81, 0.09) 69.4%,
+    rgba(250, 83, 81, 0.045) 75.3%,
+    rgba(250, 83, 81, 0.02) 82.4%,
+    rgba(250, 83, 81, 0.006) 91.2%,
+    rgba(250, 83, 81, 0) 100%);
+  pointer-events: none;
+}
+
+/* light red shadow below the ball */
+.bnav__shadow {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 46px;
+  height: 14px;
+  margin: 17px 0 0 -23px;            /* sits under the bottom edge of the Ø52 ball */
+  border-radius: 50%;
+  background: rgba(237, 25, 68, 0.32);
+  filter: blur(6px);
+  pointer-events: none;
+}
+
+/* pulse: thin rings leave the ball edge and travel outward at a constant
+   (linear) speed while fading — one pulse every 3 s, two rings per pulse */
+.bnav__ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 52px;
+  height: 52px;
+  margin: -26px 0 0 -26px;
+  border-radius: 50%;
+  border: 1px solid rgba(237, 25, 68, 0.42);   /* crisp ring, no red blur */
+  box-sizing: border-box;
+  opacity: 0;
+  transform: scale(1);
+  animation: bnav-ring 3s linear infinite;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+.bnav__ring + .bnav__ring { animation-delay: 0.8s; }   /* second ring follows like the reference */
+@keyframes bnav-ring {
+  0%   { transform: scale(1);    opacity: 0; }
+  4%   { transform: scale(1.02); opacity: 1; }
+  50%  { transform: scale(1.36); opacity: 0; }
+  100% { transform: scale(1.36); opacity: 0; }
+}
+.bnav__ball { transform: scale(0.94); }
+
+/* halo: the Lottie halo ring (#FA5351, starts at the ball edge, fades out),
+   pulsing every 3 s */
+.bnav__halo {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 88px;
+  height: 88px;
+  margin: -44px 0 0 -44px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side,
+    rgba(250, 83, 81, 0.6) 0%,            /* filled under the ball: no gap while it hops */
+    rgba(250, 83, 81, 0.6) 58.8%,
+    rgba(250, 83, 81, 0.42) 61.8%,
+    rgba(250, 83, 81, 0.29) 64.7%,
+    rgba(250, 83, 81, 0.16) 69.4%,
+    rgba(250, 83, 81, 0.08) 75.3%,
+    rgba(250, 83, 81, 0.034) 82.4%,
+    rgba(250, 83, 81, 0.011) 91.2%,
+    rgba(250, 83, 81, 0) 100%);
+  opacity: 0.55;
+  transform: scale(1);
+  animation: bnav-pulse 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  pointer-events: none;
+}
+@keyframes bnav-pulse {
+  0%   { transform: scale(1);    opacity: 0.55; }
+  18%  { transform: scale(1.14); opacity: 1; }
+  45%  { transform: scale(1.02); opacity: 0.6; }
+  100% { transform: scale(1);    opacity: 0.55; }
+}
+.bnav__ball {
+  position: absolute;
+  /* 480×480 comp, ball Ø360 → Ø52 px, ball centred in the 72 box */
+  left: 1.33px;
+  top: -0.11px;
+  width: 69.33px;
+  height: 69.33px;
+  transition: transform 160ms ease-out;
+  pointer-events: none;
+}
+.bnav__ball svg { display: block; }
+
+@media (prefers-reduced-motion: reduce) {
+  .bnav__ring { animation: none; }
+}

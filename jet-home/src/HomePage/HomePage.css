@@ -1,0 +1,269 @@
+/* ============================================================
+   HomePage — Figma: Home-Page › Home (2073:6867)
+   states: top (2073:6867) · scrolling down (2073:7548) · scrolling up (2073:11899)
+   ============================================================ */
+.home {
+  /* Safe areas
+     · Safari (browser tab): top = status-bar inset reported by the browser,
+       bottom = 0 — the bar sits right on Safari's toolbar.
+     · Home-screen app (PWA, standalone): top AND bottom insets. */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: 0px;
+  --t: 460ms;                              /* one rhythm for every moving part */
+  --ease: cubic-bezier(0.32, 0.72, 0, 1);  /* iOS sheet curve: fast out, soft landing */
+
+  position: relative;
+  width: 100%;
+  max-width: 720px;                        /* responsive up to 720px, centred beyond */
+  height: 100%;
+  margin: 0 auto;
+  overflow: hidden;
+  background: #000;                        /* page fill: black (visible in the 8px gap) */
+  direction: rtl;
+  font-family: "Digikala", system-ui, sans-serif;
+  isolation: isolate;
+
+  /* state: top (default) */
+  --chrome-h: calc(var(--safe-top) + 90px);        /* 44 + Pillars 82 + 8 = 134 */
+  --chrome-r: 24px;
+  --pillars-y: 0px;
+  --card-y: calc(var(--safe-top) + 98px);          /* 142: 8px black gap */
+  --card-r: 24px;
+}
+@media (display-mode: standalone) {
+  .home { --safe-bottom: env(safe-area-inset-bottom, 0px); }
+}
+.home[data-standalone] { --safe-bottom: env(safe-area-inset-bottom, 0px); }   /* iOS navigator.standalone */
+
+.home[data-mode="up"] {
+  --chrome-h: calc(var(--safe-top) + 52px);        /* 52 + compact Pillars 44 = 96 */
+  --chrome-r: 0px;
+  --pillars-y: 8px;
+  --card-y: calc(var(--safe-top) + 52px);          /* 96 */
+  --card-r: 0px;
+}
+.home[data-mode="down"] {
+  --t: 720ms;                                      /* leaving is slower, so it reads */
+  --ease: cubic-bezier(0.45, 0, 0.2, 1);           /* gentle start, eased landing: Pillars and content move as one */
+  --chrome-h: calc(var(--safe-top) + 8px);         /* safe area only: 52 */
+  --chrome-r: 0px;
+  --pillars-y: calc(-100% - var(--safe-top));      /* slides up, out of the frame */
+  --card-y: calc(var(--safe-top) + 8px);           /* 52 */
+  --card-r: 0px;
+}
+
+/* ---------- top chrome: safe area + Pillars (white sheet, rounded bottom at top) ---------- */
+.home__chrome {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  pointer-events: none;
+  overflow: hidden;                                /* the Pillars leave through the top edge */
+  height: calc(var(--safe-top) + 140px);
+}
+.home__chromeBg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--chrome-h);
+  background: #fff;
+  border-radius: 0 0 var(--chrome-r) var(--chrome-r);
+  transition: height var(--t) var(--ease), border-radius var(--t) var(--ease);
+}
+.home__pillars {
+  position: absolute;
+  top: var(--safe-top);
+  left: 0;
+  right: 0;
+  pointer-events: auto;
+  transform: translateY(var(--pillars-y));
+  opacity: 1;
+  transition: transform var(--t) var(--ease), opacity calc(var(--t) * 0.6) ease;
+  /* Pillars move on the page rhythm */
+  --pillars-duration: var(--t);
+  --pillars-ease: var(--ease);
+}
+.home[data-mode="down"] .home__pillars {
+  opacity: 0;
+  pointer-events: none;
+  /* stays solid while it slides, fades only at the very end */
+  transition: transform var(--t) var(--ease), opacity 240ms ease 480ms;
+}
+.home__pillars .pillars { background: transparent; }
+
+/* ---------- content card: scrolls inside itself ---------- */
+.home__card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: calc(100% - var(--safe-top) - 8px);      /* tallest needed (down state) */
+  z-index: 2;
+  transform: translate3d(0, var(--card-y), 0);
+  transition: transform var(--t) var(--ease);
+  will-change: transform;
+}
+.home__scroller {
+  position: absolute;
+  inset: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  z-index: 0;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  background: #fff;
+  border-radius: var(--card-r) var(--card-r) 0 0;
+  transition: border-radius var(--t) var(--ease);
+  scrollbar-width: none;
+  /* keeps the clip on the GPU while the radius animates */
+  transform: translateZ(0);
+}
+.home__scroller::-webkit-scrollbar { display: none; }
+.home__inner {
+  /* room for the bottom navigation + the card's travel between states */
+  padding-bottom: calc(64px + var(--safe-bottom) + 39px + 90px);
+}
+.home__inner .top-nav { padding-bottom: 0; }
+.home__inner .banner { padding-bottom: 0; }
+/* categoryFrame has no fill in Figma: the sky fades straight into the page */
+.home__inner .category { background: transparent; }
+
+/* contentFrame: 1px INSIDE top stroke, white 24% (follows the rounded corners) */
+.home__card::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 32px;
+  border-top: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: var(--card-r) var(--card-r) 0 0;
+  transition: border-radius var(--t) var(--ease);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* ---------- compact sticky header — driven by the scroll position ----------
+   The header's search pill IS the page's search field: it rides up with the
+   content (top = 84 − scrollTop), parks at 8px, then shrinks into the 52px
+   circle while the black location slides in. All scroll-linked.
+   --hy  pill top (px)            --hs  1 once scrolled (pill replaces the field)
+   --hp  white header 0→1         --hm  pill → circle 0→1 (scrollTop 76→136) */
+.home {
+  --hy: 84px;
+  --hs: 0;
+  --hp: 0;
+  --hm: 0;
+}
+.home__header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  height: 72px;
+  padding: 8px 24px 12px 84px;             /* 16 + 52 button + 16 gap on the left */
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, var(--hp));
+  pointer-events: none;
+}
+.home[data-header] .home__header { pointer-events: auto; }
+.home__header .home__loc {
+  opacity: var(--hm);
+  transform: translate3d(calc((1 - var(--hm)) * 16px), 0, 0);
+}
+/* the real field hands over to the pill as soon as the page moves */
+.home .top-nav__search { opacity: calc(1 - var(--hs)); }
+
+.home__loc {
+  opacity: var(--hp);
+  transform: translate3d(calc((1 - var(--hp)) * 12px), 0, 0);
+}
+
+.home__loc {
+  all: unset;
+  direction: rtl;
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.home__locRow { display: flex; align-items: center; gap: 4px; max-width: 100%; color: #000; }
+.home__locLabel { font-weight: 400; font-size: 17px; line-height: 32px; white-space: nowrap; }  /* Subtle/Large */
+.home__locPlace {                                                                                  /* Prominent/Medium */
+  font-weight: 700; font-size: 19px; line-height: 30px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
+}
+.home__locChevron { width: 24px; height: 24px; flex: none; display: block; }
+.home__locAddr {
+  font-weight: 400; font-size: 13px; line-height: 20px; color: #737373;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+}
+
+.home__search {
+  all: unset;
+  box-sizing: border-box;
+  position: absolute;
+  left: 16px;
+  top: var(--hy);
+  height: calc(56px - 4px * var(--hm));                       /* 56 field → 52 circle */
+  width: calc(52px + (100% - 32px - 52px) * (1 - var(--hm)));  /* full width → 52 */
+  border-radius: 999px;
+  cursor: pointer;
+  opacity: var(--hs);
+  pointer-events: none;
+  -webkit-tap-highlight-color: transparent;
+  will-change: width, top;
+}
+.home[data-header] .home__search,
+.home[data-pill] .home__search { pointer-events: auto; }
+/* glass look of the page field → ghost-circle look of the button */
+.home__searchGlass { position: absolute; inset: 0; border-radius: inherit; opacity: calc(1 - var(--hm)); }
+.home__searchGhost {
+  position: absolute; inset: 0; border-radius: inherit;
+  background: #f5f5f5;                                         /* surface/secondary */
+  box-shadow: inset 0 0 0 1px #d6d6d6, inset 0 4px 8px 0 rgba(255, 255, 255, 0.7);
+  opacity: var(--hm);
+}
+.home__searchGlass .top-nav__search-glass,
+.home__searchGlass .top-nav__search-stroke,
+.home__searchGlass .top-nav__search-inner { z-index: 0; }
+.home__searchGlass { box-shadow: 0 4px 24px 0 rgba(20, 72, 175, 0.08); }
+.home__search:active { filter: brightness(0.97); }
+.home__search:focus-visible { outline: 2px solid #ed1944; outline-offset: 2px; }
+/* icon: 16px from the right in the field, 14px (= centred) in the circle */
+.home__search svg {
+  position: absolute;
+  right: calc(16px - 2px * var(--hm));
+  top: 50%;
+  margin-top: -12px;
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+.home__searchText {
+  position: absolute;
+  right: 48px;
+  top: 50%;
+  margin-top: -14px;
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 28px;
+  color: rgba(0, 0, 0, 0.4);
+  white-space: nowrap;
+  opacity: calc(1 - var(--hm) * 2.5);
+}
+
+/* bottom navigation sits on top of everything; its safe area follows the page rule */
+.home .bnav { z-index: 4; --bnav-safe: var(--safe-bottom); }
+
+@media (prefers-reduced-motion: reduce) {
+  .home { --t: 1ms; }
+}

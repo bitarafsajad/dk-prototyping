@@ -1,0 +1,175 @@
+/* ============================================================
+   Carousel — Figma: Components › Carousel (43:660)
+   appearance: default | promotion   (line = single)
+   SectionHeading — Figma 43:5868 (simple | countdown, light | dark)
+   ============================================================ */
+
+.carousel {
+  --carousel-bg: #ffffff;
+  position: relative;
+  width: 100%;
+  direction: rtl;
+  font-family: "Digikala", system-ui, sans-serif;
+  letter-spacing: 0;
+}
+
+/* ---------- default ---------- */
+.carousel--default {
+  background: var(--carousel-bg);
+  padding: 8px 0 16px;
+}
+
+/* ---------- promotion: coloured band with wavy top/bottom edges ---------- */
+.carousel--promotion { --carousel-bg: #003eff; }
+.carousel__content {
+  position: relative;
+  background: var(--carousel-bg);
+  padding: 8px 0 16px;
+  overflow: hidden;
+}
+/* 3px wave strips — exact Figma export: 26×3 tile scaled to 39.52×4.56,
+   top tile anchored at 0,0; bottom tile offset 174.74,−1.56 (drawn as SVG) */
+.carousel__wave {
+  display: block;
+  width: 100%;
+  height: 3px;
+  overflow: hidden;
+  color: var(--carousel-bg);
+}
+.carousel__wave svg { display: block; }
+
+/* visual artwork (isVisualized): 200×160, top-left of the coloured band */
+.carousel__visual {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 200px;
+  height: 160px;
+  object-fit: cover;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ---------- cards row ---------- */
+.carousel__scroller {
+  position: relative;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.carousel__scroller::-webkit-scrollbar { display: none; }
+.carousel__track {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: max-content;
+  min-width: 100%;
+  padding: 8px 16px;
+}
+/* promotion: every card as tall as the tallest one in its row */
+.carousel--promotion .carousel__track,
+.carousel--promotion .carousel__row { align-items: stretch; }
+
+/* line = double: two rows inside ONE scroller (they move together) */
+.carousel__track--double {
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+}
+.carousel__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 8px 16px;
+}
+
+/* =============================================================
+   SectionHeading
+   ============================================================= */
+.sheading {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 16px 16px 8px;
+  direction: rtl;
+}
+.sheading--visual { padding: 24px 16px; }
+
+.sheading__text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;            /* right edge in RTL */
+  gap: 4px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.sheading__titleRow {
+  all: unset;
+  direction: rtl;                     /* title first (right), arrow after it (left) */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.sheading__titleRow:focus-visible { outline: 2px solid #ed1944; outline-offset: 2px; border-radius: 8px; }
+/* Prominent/Large */
+.sheading__title {
+  font-weight: 700;
+  font-size: 19px;
+  line-height: 30px;
+  color: #000;
+  white-space: nowrap;
+}
+.sheading__arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.12);
+  color: #000;
+  flex: none;
+}
+.sheading__arrow svg { display: block; width: 18px; height: 18px; }
+/* Subtle/Small */
+.sheading__desc {
+  margin: 0;
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 20px;
+  color: #737373;
+  text-align: right;
+}
+
+.sheading--dark .sheading__title { color: #fff; }
+.sheading--dark .sheading__arrow { background: rgba(0, 0, 0, 0.24); color: #fff; }
+.sheading--dark .sheading__desc { color: rgba(255, 255, 255, 0.8); }
+
+/* countdown (left side): Bold 22/24 digits, Regular 24/32 colons at 48% */
+.sheading__timer {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  direction: ltr;
+  flex: none;
+  color: #000;
+}
+.sheading--dark .sheading__timer { color: #fff; }
+.sheading__digits {
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 24px;
+  font-variant-numeric: tabular-nums;
+}
+.sheading__sep {
+  font-weight: 400;
+  font-size: 24px;
+  line-height: 32px;
+  opacity: 0.48;
+}

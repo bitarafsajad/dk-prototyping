@@ -1,0 +1,166 @@
+/* ============================================================
+   Pillars — horizontal venture tab row (carousel)
+   Figma: Components › Carousel Pillars (1034:5764)
+   ============================================================ */
+
+@font-face {
+  font-family: "Digikala";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("./fonts/Digikala-Medium.woff2") format("woff2"),
+       url("./fonts/Digikala-Medium.woff") format("woff");
+}
+
+.pillars {
+  /* tokens */
+  --pillars-surface: #ffffff;
+  --pillars-border: #eeeeee;
+  --pillars-text: #5c5c5c;
+  --pillars-brand: var(--surface-brand, #ed1944);
+  --pillars-on-brand: #fafafa;
+  --pillars-radius: 8px;
+  --pillars-gap: 8px;
+  --pillars-card-w: 68px;
+  --pillars-card-h: 66px;
+  --pillars-card-h-collapsed: 28px;
+  --pillars-all-w: 48px;
+  --pillars-ease: cubic-bezier(0.23, 1, 0.32, 1);
+  --pillars-duration: 220ms;
+
+  position: relative;
+  width: 100%;
+  direction: rtl;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.pillars::-webkit-scrollbar { display: none; }
+
+.pillars__track {
+  display: flex;
+  align-items: center;
+  gap: var(--pillars-gap);
+  width: max-content;
+  min-width: 100%;
+  padding: 8px 16px;
+  box-sizing: border-box;
+}
+
+/* ---------- card ---------- */
+.pillars__item {
+  all: unset;
+  box-sizing: border-box;
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: var(--pillars-card-w);
+  height: var(--pillars-card-h);
+  padding: 6px 2px;
+  background: var(--pillars-surface);
+  border: 1px solid var(--pillars-border);
+  border-radius: var(--pillars-radius);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  transition:
+    height var(--pillars-duration) var(--pillars-ease),
+    gap var(--pillars-duration) var(--pillars-ease),
+    background-color 150ms ease,
+    transform 120ms ease-out;
+}
+.pillars__item--wide { padding-left: 4px; padding-right: 4px; }
+
+.pillars__item:active { transform: scale(0.97); }
+.pillars__item:focus-visible {
+  outline: 2px solid var(--pillars-brand);
+  outline-offset: 2px;
+}
+
+.pillars__item.is-active {
+  background: var(--pillars-brand);
+  border-color: transparent;
+}
+.pillars__item.is-active .pillars__label {
+  color: var(--pillars-on-brand);
+  white-space: nowrap;
+}
+
+/* ---------- icon slot (32×32, art may overhang like in Figma) ---------- */
+.pillars__icon {
+  position: relative;
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  transition:
+    height var(--pillars-duration) var(--pillars-ease),
+    opacity 140ms ease,
+    transform var(--pillars-duration) var(--pillars-ease);
+}
+.pillars__icon img {
+  position: absolute;
+  display: block;
+  max-width: none;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+
+/* ---------- label: Base/xSmall ---------- */
+.pillars__label {
+  display: block;
+  width: 100%;
+  margin: 0;
+  font-family: "Digikala", system-ui, sans-serif;
+  font-weight: 500;
+  font-size: 11px;
+  line-height: 16px;
+  letter-spacing: 0;
+  text-align: center;
+  color: var(--pillars-text);
+  white-space: nowrap;
+  /* Figma lets the label hug its content, so long titles may use the
+     2px side padding instead of being clipped */
+  overflow: visible;
+}
+
+/* ---------- "all" button ---------- */
+.pillars__all {
+  width: var(--pillars-all-w);
+  padding: 0 4px;
+}
+.pillars__all .pillars__icon { height: 32px !important; opacity: 1 !important; transform: none !important; }
+
+/* ---------- collapsed (scrolled) state ---------- */
+.pillars--collapsed .pillars__item {
+  height: var(--pillars-card-h-collapsed);
+  gap: 0;
+}
+.pillars--collapsed .pillars__icon {
+  height: 0;
+  opacity: 0;
+  transform: scale(0.6);
+}
+
+/* ---------- hidden (scrolling down) ---------- */
+.pillars {
+  transition:
+    transform var(--pillars-duration) var(--pillars-ease),
+    opacity 160ms ease;
+}
+.pillars--hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pillars,
+  .pillars__item,
+  .pillars__icon { transition: none; }
+}

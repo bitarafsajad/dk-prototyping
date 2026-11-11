@@ -1,0 +1,96 @@
+/* Price — Figma: Components › Price (43:5131) */
+.price {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 8px;
+  font-family: "Digikala", system-ui, sans-serif;
+  letter-spacing: 0;
+  white-space: nowrap;
+  direction: ltr;              /* alignment is set explicitly below */
+}
+.price--rtl { align-items: flex-end; }
+.price--ltr { align-items: flex-start; }
+
+/* finalPriceFrame: vertical, gap -8, first child on top */
+.price__final {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 16px;
+}
+.price__row {
+  position: relative;
+  z-index: 1;                 /* price sits above the highlight */
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  height: 16px;
+  direction: ltr;             /* toman sign on the left, digits on the right */
+}
+.price__toman {
+  display: block;
+  width: 13px;
+  height: 8px;
+  flex: none;
+}
+/* Prominent/Small */
+.price__value {
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 24px;
+  margin: -4px 0;             /* 24px line box inside the 16px row */
+  color: #000;
+}
+.price--rtl .price__value { text-align: right; }
+
+/* highlightFrame: 5px, y 11, full width — wave tile 14×5 masks a lime gradient */
+.price__highlight {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 11px;
+  height: 5px;
+  background: linear-gradient(0deg, #ccff33 0%, rgba(241, 255, 51, 0) 100%);
+  -webkit-mask: var(--price-wave) 0 0 / 14px 5px repeat-x;
+          mask: var(--price-wave) 0 0 / 14px 5px repeat-x;
+}
+
+/* previousPriceFrame: h 14 (text box 20 overflows), red strike at -5° */
+.price__prev {
+  position: relative;
+  height: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+/* Subtle/Small */
+.price__prev-value {
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 20px;
+  margin: -3px 0;
+  color: #999999;
+}
+.price__strike {
+  position: absolute;
+  left: 0.057px;
+  top: 8.811px;
+  width: calc(100% - 0.015px);
+  height: 1px;
+  background: rgba(237, 25, 68, 0.48);
+  transform: rotate(-5deg);
+  transform-origin: 0 0;
+}
+
+/* states */
+.price--out .price__value { color: #bdbdbd; }
+.price--out .price__toman { color: #bdbdbd; }
+
+.price__pending {
+  font-weight: 400;
+  font-size: 11px;
+  line-height: 16px;
+  color: #737373;
+}
+.price--rtl .price__pending { text-align: right; }

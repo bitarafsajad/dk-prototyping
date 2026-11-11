@@ -1,0 +1,114 @@
+/* ============================================================
+   Category — two-row category carousel (both rows scroll together)
+   Figma: Home-Page › Category (2058:6482) — V1 (2057:6455), V2 (2057:6422)
+   ============================================================ */
+
+@font-face {
+  font-family: "Digikala";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./fonts/Digikala-Regular.woff2") format("woff2"),
+       url("./fonts/Digikala-Regular.woff") format("woff");
+}
+
+.category {
+  --category-bg: #ffffff;
+  --category-card: var(--surface-terra-secondary, #f6f4f1);
+  --category-text: #000000;
+  --category-radius: 24px;
+  --category-gap: 12px;
+
+  position: relative;
+  width: 100%;
+  background: var(--category-bg);
+  direction: rtl;
+}
+
+/* One scroller for both rows -> they always move together */
+.category__scroller {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.category__scroller::-webkit-scrollbar { display: none; }
+
+.category__track {
+  display: flex;
+  flex-direction: column;
+  width: max-content;
+  min-width: 100%;
+}
+
+.category__row {
+  display: flex;
+  align-items: center;
+  gap: var(--category-gap);
+  padding: 6px 16px;
+}
+
+/* ---------- card ---------- */
+.category__item {
+  all: unset;
+  box-sizing: border-box;
+  position: relative;
+  flex: 0 0 auto;
+  display: block;
+  background: var(--category-card);
+  border-radius: var(--category-radius);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  transition: transform 140ms ease-out;
+}
+.category__item:active { transform: scale(0.97); }
+.category__item:focus-visible { outline: 2px solid #ed1944; outline-offset: 2px; }
+
+.category__label {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  font-family: "Digikala", system-ui, sans-serif;
+  font-weight: 400;
+  font-size: 11px;
+  line-height: 16px;
+  letter-spacing: 0;
+  color: var(--category-text);
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* image frame: exact box from Figma, optional rotation + inner crop */
+.category__art {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.category__art-inner {
+  position: relative;
+  flex: none;
+}
+.category__art-inner img {
+  position: absolute;
+  display: block;
+  max-width: none;
+  -webkit-user-drag: none;
+}
+
+/* ---------- V1: 96×96 cards, image inside ---------- */
+.category--v1 .category__item { width: 96px; height: 96px; }
+.category--v1 .category__label { top: 72px; }
+
+/* ---------- V2: 72×80 cards, tilted image popping out of the top ---------- */
+.category--v2 { padding: 8px 0; }
+.category--v2 .category__item { width: 72px; height: 80px; }
+.category--v2 .category__label { top: 50px; }
+/* room for the artwork that overhangs the first row, without changing layout */
+.category--v2 .category__scroller { padding-top: 28px; margin-top: -28px; }
+.category--v2 .category__track { position: relative; }

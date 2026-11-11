@@ -1,0 +1,230 @@
+/* ============================================================
+   TopNavigation — live weather sky header, delivery location, glass search
+   Figma: Home-Page › TopNavigation (2059:6485) — 390 × 156
+   ============================================================ */
+
+@font-face { font-family: "Digikala"; font-weight: 400; font-style: normal; font-display: swap;
+  src: url("./fonts/Digikala-Regular.woff2") format("woff2"), url("./fonts/Digikala-Regular.woff") format("woff"); }
+@font-face { font-family: "Digikala"; font-weight: 500; font-style: normal; font-display: swap;
+  src: url("./fonts/Digikala-Medium.woff2") format("woff2"), url("./fonts/Digikala-Medium.woff") format("woff"); }
+@font-face { font-family: "Digikala"; font-weight: 700; font-style: normal; font-display: swap;
+  src: url("./fonts/Digikala-Bold.woff2") format("woff2"), url("./fonts/Digikala-Bold.woff") format("woff"); }
+
+.top-nav {
+  --top-nav-on-inverse: #ffffff;           /* content/on-inverse */
+  --top-nav-bg-height: 154px;              /* weather-cover 1 */
+  --top-nav-sky-ratio: 1560 / 760;
+
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  padding-bottom: 8px;
+  overflow: visible;           /* let the search field's soft shadow fade out naturally (no seam) */
+  direction: rtl;
+  font-family: "Digikala", system-ui, sans-serif;
+  letter-spacing: 0;
+}
+
+/* ---------- weather background (code-driven sky + overlay gradient) ---------- */
+.top-nav__bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--top-nav-bg-height);
+  overflow: hidden;
+  z-index: -1;
+  pointer-events: none;
+  /* sky + tint dissolve completely before the bottom edge: no visible seam
+     between the search field and whatever follows */
+  -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 40px), transparent calc(100% - 6px));
+          mask-image: linear-gradient(180deg, #000 calc(100% - 40px), transparent calc(100% - 6px));
+}
+/* Figma: cover fill, CROP, full width, anchored to the top (1560:760) */
+.top-nav__sky {
+  position: relative;
+  width: 100%;
+  /* Figma crops the 1560:760 cover to 81% at 390px → 190px tall sky.
+     A fixed height keeps the soft bottom fade inside the 154px crop at any width. */
+  height: 190px;
+}
+/* bottom third removed: soft fade, transparent from 2/3 down */
+.top-nav__sky--fade {
+  --top-nav-fade: linear-gradient(
+    180deg,
+    #000 0%,
+    #000 40%,
+    rgba(0, 0, 0, 0.85) 46%,
+    rgba(0, 0, 0, 0.6) 52%,
+    rgba(0, 0, 0, 0.33) 58%,
+    rgba(0, 0, 0, 0.12) 63%,
+    transparent 66.667%,
+    transparent 100%
+  );
+  -webkit-mask-image: var(--top-nav-fade);
+          mask-image: var(--top-nav-fade);
+}
+.top-nav__sky canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+/* light haze so the clouds sit inside the sky */
+.top-nav__sky::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(44, 77, 110, 0.14) 0%, rgba(44, 77, 110, 0) 45%);
+}
+/* Figma: linear gradient top→bottom, layer opacity 48% */
+.top-nav__overlay {
+  position: absolute;
+  inset: 0;
+  opacity: 0.48;
+  background: linear-gradient(180deg, rgba(33, 0, 123, 0.9) 0%, rgba(82, 0, 123, 0) 100%);
+}
+
+/* ---------- location ---------- */
+.top-nav__location {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;     /* right edge in RTL */
+  justify-content: center;
+  padding: 16px 24px 8px 16px; /* top right bottom left */
+  border-radius: 20px 20px 0 0;
+}
+
+.top-nav__deliver {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  cursor: pointer;
+  color: var(--top-nav-on-inverse);
+  -webkit-tap-highlight-color: transparent;
+}
+.top-nav__deliver:focus-visible { outline: 2px solid #fff; outline-offset: 2px; border-radius: 6px; }
+
+/* Subtle/Large */
+.top-nav__deliver-label {
+  font-weight: 400;
+  font-size: 17px;
+  line-height: 32px;
+  white-space: nowrap;
+}
+/* Prominent/Medium */
+.top-nav__deliver-place {
+  font-weight: 700;
+  font-size: 19px;
+  line-height: 30px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.top-nav__chevron {
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+.top-nav__address {
+  margin: 0;
+  max-width: 100%;
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--top-nav-on-inverse);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- search (headerFrame) ---------- */
+.top-nav__header {
+  display: flex;
+  justify-content: center;
+  padding: 8px 16px;
+}
+
+.top-nav__search {
+  all: unset;
+  box-sizing: border-box;
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px 12px 4px;  /* right 16 (icon side), left 4 */
+  border-radius: 999px;
+  cursor: text;
+  -webkit-tap-highlight-color: transparent;
+  /* drop shadow: 0 4 24 rgba(20,72,175,.08) */
+  box-shadow: 0 4px 24px 0 rgba(20, 72, 175, 0.08);
+}
+.top-nav__search:focus-visible { outline: 2px solid #ed1944; outline-offset: 2px; }
+
+/* fill 68% white + background blur (Figma 12 → CSS 6px) */
+/* (z-index -1 keeps the glass under the icon/text while letting
+   backdrop-filter see the sky behind it) */
+.top-nav__search-glass {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: rgba(255, 255, 255, 0.68);
+  -webkit-backdrop-filter: blur(6px);
+          backdrop-filter: blur(6px);
+  pointer-events: none;
+}
+
+/* 1px INSIDE stroke, linear gradient white → transparent (49.52%) → white */
+.top-nav__search-stroke {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(97.68deg, #ffffff 0%, rgba(255, 255, 255, 0) 49.52%, #ffffff 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  pointer-events: none;
+}
+
+/* inner shadow: inset 0 4 8 rgba(255,255,255,.7) */
+.top-nav__search-inner {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 4px 8px 0 rgba(255, 255, 255, 0.7);
+  pointer-events: none;
+}
+
+.top-nav__search-icon {
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+/* Base/Medium */
+.top-nav__search-text {
+  flex: 1 1 0;
+  min-width: 0;
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 28px;
+  color: rgba(0, 0, 0, 0.4);
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
