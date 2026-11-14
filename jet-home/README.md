@@ -3,8 +3,8 @@
 A pixel-perfect, production-style implementation of the **Digikala Jet home page** and the
 component kit it is built from, translated from the Figma design files into React + plain CSS.
 
-- **Live page:** `docs/index.html` (GitHub Pages → `https://<user>.github.io/<repo>/`)
-- **All components & states:** `docs/components.html`
+- **Live page:** `index.html` (GitHub Pages → `https://<user>.github.io/<repo>/jet-home/`)
+- **All components & states:** `components.html`
 - Mobile-first, RTL (Persian), responsive up to **720 px**, iOS safe-area aware, PWA-ready.
 
 ---
@@ -13,7 +13,7 @@ component kit it is built from, translated from the Figma design files into Reac
 
 1. [Quick start](#quick-start)
 2. [Publishing on GitHub Pages](#publishing-on-github-pages)
-3. [Project structure](#project-structure)
+3. [Folder structure](#folder-structure)
 4. [The home page](#the-home-page)
 5. [Components](#components)
 6. [How the work was done](#how-the-work-was-done)
@@ -26,17 +26,20 @@ component kit it is built from, translated from the Figma design files into Reac
 
 ## Quick start
 
+The folder is **already built** — the site files sit at the top, the code in `source/`.
+
 ```bash
+cd source
 npm install
-npm run build              # → docs/ (index.html, components.html, hashed assets)
-npm run serve              # preview docs/ at http://localhost:3000
-npm run build:standalone   # optional: single-file pages in docs/standalone/
+npm run build              # rebuilds the site into the folder above (../)
+npm run serve              # preview at http://localhost:3000
+npm run build:standalone   # optional: single-file pages in ../standalone/
 ```
 
 Use the components in your own React app:
 
 ```jsx
-import { HomePage } from "./src";
+import { HomePage } from "./source/src";
 
 export default function App() {
   return <div style={{ height: "100dvh" }}><HomePage /></div>;
@@ -48,50 +51,38 @@ Styling is plain CSS imported next to each component — no Tailwind, no CSS-in-
 
 ## Publishing on GitHub Pages
 
-The repository is ready for Pages — pick **one** of the two options:
+Drop the whole `jet-home/` folder into a repository whose Pages site is served from the branch
+(**Settings → Pages → Deploy from a branch → `main` / root**), commit and push. That's it:
 
-**A. GitHub Actions (recommended)** — `.github/workflows/pages.yml` builds and deploys on every push
-to `main`. In **Settings → Pages → Source** choose **GitHub Actions**.
+- Home page: `https://<user>.github.io/<repo>/jet-home/`
+- Components: `https://<user>.github.io/<repo>/jet-home/components.html`
 
-**B. Branch** — commit the built `docs/` folder, then **Settings → Pages → Deploy from a branch →
-`main` / `docs`**.
+All URLs are relative, so the folder works at any depth and under any repository name.
 
-The site is served at `https://<user>.github.io/<repo>/` (home) and `…/components.html`.
-All URLs are relative, so it works under the `/<repo>/` sub-path without configuration.
+## Folder structure
 
-What is in `docs/`:
-
-| File | Purpose |
-|---|---|
-| `index.html`, `components.html` | tiny HTML shells (CSS inlined, one deferred script) |
-| `assets/` | content-hashed JS, images (WebP/PNG) and Digikala fonts — safe to cache forever |
-| `manifest.webmanifest`, `icons/` | PWA manifest, app / Apple touch icons, favicon, social preview image |
-| `.nojekyll` | serve files as-is (no Jekyll processing) |
+```
+jet-home/
+  index.html               home page (HTML shell, CSS inlined, one deferred script)
+  components.html          every component & state
+  assets/                  content-hashed JS, images (WebP/PNG) and Digikala fonts
+  icons/                   app / Apple touch icons, favicon, social preview image
+  manifest.webmanifest     PWA manifest
+  .nojekyll                serve files as-is (no Jekyll processing)
+  README.md
+  source/
+    package.json, build.mjs
+    preview/               entry points of the two pages
+    src/
+      index.js             public exports
+      shared/  fonts/      squircle maths, Digikala fonts
+      HomePage/            page: scroll states, compact header, safe areas
+      Pillars/ TopNavigation/ Category/ Banner/ Carousel/
+      ProductCard/ Thumbnail/ Counter/ Price/ Badge/ BottomNavigation/
+```
 
 **Add to Home Screen (PWA):** open the site in Safari → Share → *Add to Home Screen*. It opens
 full-screen with a translucent status bar and switches to the home-screen safe-area rules.
-
-## Project structure
-
-```
-src/
-  index.js                 public exports
-  shared/                  squircle (Figma corner-smoothing) maths, Digikala fonts
-  fonts/                   Digikala Regular / Medium / Bold (woff2 + woff)
-  HomePage/                the page: scroll states, compact header, safe areas
-  Pillars/                 venture tab row (default ↔ compact)
-  TopNavigation/           live rain sky, location, glass search field
-  Category/                two-row category carousel (V1 / V2)
-  Banner/                  infinite, auto-scrolling promo banners
-  Carousel/                product sections (default / promotion, single / double)
-  ProductCard/             card composed of the four "odds and ends" below
-  Thumbnail/ Counter/ Price/ Badge/
-  BottomNavigation/        tabs + animated shopping assistant
-preview/                   entry points for the two demo pages
-build.mjs                  esbuild → docs/ (HTML shells + hashed assets)
-docs/                      built site for GitHub Pages (+ manifest, icons, .nojekyll)
-.github/workflows/         pages.yml — build & deploy to GitHub Pages
-```
 
 ## The home page
 
@@ -196,7 +187,7 @@ within Figma's 328–360 px card limits.
   travel and label are removed.
 - **Pillars scroll rule:** down → hidden, up → compact, top → default.
 - **Product data** is sample data (names, sizes, prices) — the production site blocks automated
-  access. Replace `src/Carousel/demoData.js` with real data.
+  access. Replace `source/src/Carousel/demoData.js` with real data.
 
 ## Accessibility & performance
 

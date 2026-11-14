@@ -1,4 +1,4 @@
-// Production build for GitHub Pages → /docs
+// Production build for GitHub Pages → ../ (the jet-home/ folder)
 //   docs/index.html          Home page
 //   docs/components.html     every component & state
 //   docs/assets/*            hashed JS / CSS / images / fonts (long-cacheable)
@@ -8,7 +8,7 @@ import { build } from "esbuild";
 import fs from "fs";
 import path from "path";
 
-const OUT = "docs";
+const OUT = "..";                       // the site is published from the folder above (jet-home/)
 const inline = process.argv.includes("--inline");
 
 fs.rmSync(path.join(OUT, "assets"), { recursive: true, force: true });

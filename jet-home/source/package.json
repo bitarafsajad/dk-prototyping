@@ -7,7 +7,7 @@
   "scripts": {
     "build": "node build.mjs",
     "build:standalone": "node build.mjs --inline",
-    "serve": "npx --yes serve docs"
+    "serve": "npx --yes serve .."
   },
   "dependencies": {
     "lottie-web": "5.12.2",
