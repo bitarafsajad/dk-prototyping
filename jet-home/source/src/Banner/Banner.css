@@ -21,7 +21,6 @@
 }
 
 .banner__scroller {
-  container-type: inline-size;
   overflow-x: auto;
   overflow-y: hidden;
   scroll-snap-type: x mandatory;
@@ -47,7 +46,10 @@
   display: flex;
   align-items: center;
   /* 358px on a 390px screen; Figma limits: 328–360 */
-  width: clamp(328px, calc(100cqw - 32px), 360px);
+  /* 358px on a 390px screen; Figma limits 328–360. Viewport-based (the page is max 720px)
+     instead of container units, which older WebKit (iOS Safari/Chrome < 16) can't resolve */
+  width: 358px;
+  width: min(360px, max(328px, calc(min(100vw, 720px) - 32px)));
   height: 148px;
   border-radius: 24px;
   overflow: hidden;
@@ -159,4 +161,25 @@
 
 @media (hover: hover) {
   .banner__item:hover .banner__button { filter: brightness(0.96); }
+}
+
+/* ---------- transform carousel (no native horizontal scroll) ---------- */
+.banner__viewport {
+  position: relative;
+  height: 148px;
+  overflow: hidden;
+  touch-action: pan-y;              /* vertical page scroll stays native; we handle horizontal */
+  user-select: none;
+  -webkit-user-select: none;
+}
+.banner__viewport .banner__item {
+  position: absolute;
+  top: 0;
+  left: 0;
+  will-change: transform;
+  transition: transform 520ms cubic-bezier(0.32, 0.72, 0, 1);
+  -webkit-touch-callout: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .banner__viewport .banner__item { transition: none; }
 }

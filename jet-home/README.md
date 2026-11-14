@@ -148,7 +148,7 @@ within Figma's 328–360 px card limits.
 | **Pillars** | Default ↔ compact variants with animated height; active pill `#ED1944`; horizontal RTL scroll; keeps the active pill in view. |
 | **TopNavigation** | Live code-drawn rain sky (canvas): randomized cloud "conveyor belts" in 3 depth layers + rain streaks; Figma overlay gradient; glass search field (68 % white, 6 px backdrop blur, gradient 1 px inside stroke, inner + drop shadow); swappable `background` prop for other weather. |
 | **Category** | V1 (96×96), V2 (72×80, tilted art) and **V3** (64×80 pastel tiles + 136×80 wide "سوپر‌های محل" / "هایپر مارکت" tiles) with per-card image geometry from Figma; both rows in one scroller; scales to fill wide screens. The home page uses **V3**. |
-| **Banner** | Snap carousel, infinite loop (triple-set trick with silent re-centring), auto-advance every 2.5 s, pauses on touch / hover / off-screen / hidden tab. |
+| **Banner** | Transform-based carousel (no native horizontal scrolling, so it behaves the same on iPhone/WebKit, Android and desktop): infinite loop, auto-advance every 2.5 s, swipe with pointer events (`touch-action: pan-y` keeps vertical page scroll native), pauses while dragging / off-screen / hidden tab. |
 | **Carousel** | Default (white) and Promotion (colour band with Figma's exact wave edges, reproduced from Figma's own SVG pattern export), single / double line, optional artwork, countdown heading. |
 | **SectionHeading** | Title + trailing chevron, description, live `hh:mm:ss` countdown in Persian digits. |
 | **ProductCard** | No-background / white-background, price-only, text badge, discount badge, responsive 112–184 px, equal-height mode for promotion rows. |

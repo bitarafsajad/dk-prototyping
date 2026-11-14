@@ -119,8 +119,14 @@ export function createLoopCarousel(
   });
   io.observe(scroller);
 
-  // start centred on the requested slide of the middle set (no animation)
-  scrollToSlide(current, false);
+  // start centred on the requested slide of the middle set (no animation).
+  // Done again on the next frames and once fonts/images settle: WebKit can report
+  // zero sizes while the page is still laying out.
+  const centre = () => { if (scroller.clientWidth) scrollToSlide(current, false); };
+  centre();
+  requestAnimationFrame(() => requestAnimationFrame(centre));
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(centre);
+  window.addEventListener("load", centre, { once: true });
   schedule();
 
   return {
