@@ -32,7 +32,7 @@ The folder is **already built** — the site files sit at the top, the code in `
 cd source
 npm install
 npm run build              # rebuilds the site into the folder above (../)
-npm run serve              # preview at http://localhost:3000
+npm run serve              # preview at http://localhost:3000 (pages use ES modules → open them over http, not file://)
 npm run build:standalone   # optional: single-file pages in ../standalone/
 ```
 
@@ -46,7 +46,9 @@ export default function App() {
 }
 ```
 
-Requirements: Node ≥ 18 to build; React 18 and `lottie-web` (shopping assistant) at runtime.
+Requirements: Node ≥ 18 to build. The components are written against the React 18 API; the
+published site is built with **Preact** (`preact/compat`, ≈4 KB instead of ≈130 KB) via build
+aliases, plus `lottie-web` for the shopping assistant (loaded lazily).
 Styling is plain CSS imported next to each component — no Tailwind, no CSS-in-JS.
 
 ## Publishing on GitHub Pages
@@ -191,6 +193,30 @@ within Figma's 328–360 px card limits.
 
 ## Accessibility & performance
 
+Page weight (published site):
+- Home page JS ≈ 88 KB (≈29 KB gzipped) — Preact instead of React; the Lottie player and the
+  assistant animation are split into a separate chunk loaded after the page is idle.
+- Images are WebP sized for 2–3× screens; fonts are WOFF2 only and preloaded; CSS is inlined.
+- Everything outside the HTML has a content hash in its name, so repeat visits come from cache.
+
+Load size (home page): **~70 KB of JavaScript (gzipped)** on first load, images and fonts on top —
+down from a single 2.5 MB page:
+- Images re-encoded to WebP at their display resolution (category/pillar art 3×, banners 2×,
+  product photos 3× of 104 px, clouds 560 px): 1.4 MB → 0.58 MB.
+- The Lottie player and the assistant animation (~300 KB) are split into a lazy chunk that loads
+  when the browser is idle; a CSS ball stands in until then.
+- Only WOFF2 fonts (WOFF fallbacks dropped), preloaded; below-the-fold images lazy-load.
+- Hashed file names → GitHub Pages / browsers cache everything long-term.
+
+Header transitions (scroll up → top) are compositor-only:
+- The default and compact Pillars are two layers that cross-fade (outgoing clears first, incoming
+  follows — no overlapping text), instead of animating heights of every pill.
+- The white sheet behind them slides (transform) instead of animating its height.
+- Idle steppers no longer run their hidden loader animation.
+- Result in a scroll test: p95 frame time 16.8 ms, from 33 ms.
+
+The white compact header casts **X 0 · Y 2 · Blur 16 · #000 8 %**, fading in with the header.
+
 Scrolling performance (fix for blinking / lag while scrolling):
 - Scroll-linked header values are written to the **header element only**, not the page root, so a
   scroll frame never restyles the whole page.
@@ -211,8 +237,8 @@ Scrolling performance (fix for blinking / lag while scrolling):
   screen) before release.
 - CSS `zoom` (Category scaling on wide screens) needs Firefox ≥ 126; older Firefox shows the
   unscaled rows.
-- Total payload ≈2.4 MB (mostly product/cloud images and fonts, all cache-busted); the home page
-  JS bundle includes the Lottie player for the assistant.
+- Pages use ES modules, so they must be served over http(s) (GitHub Pages, `npm run serve`);
+  opening `index.html` straight from disk won't run the scripts.
 
 ## Figma sources
 

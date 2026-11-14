@@ -145,7 +145,28 @@ export default function HomePage({
     if (mode === "down") leavingCompact.current = prevMode.current === "up";
     prevMode.current = mode;
   }
-  const pillarsCompact = mode === "up" || (mode === "down" && leavingCompact.current);
+  const leaving = leavingCompact.current ? "compact" : "default";
+
+  // the two Pillars layers share the active venture and the horizontal scroll
+  const [venture, setVenture] = useState("supermarket");
+  const pillarsRef = useRef(null);
+  useEffect(() => {
+    const root = pillarsRef.current;
+    if (!root) return;
+    const navs = [...root.querySelectorAll(".pillars")];
+    let syncing = false;
+    const handlers = navs.map((nav) => {
+      const h = () => {
+        if (syncing) return;
+        syncing = true;
+        navs.forEach((o) => { if (o !== nav) o.scrollLeft = nav.scrollLeft; });
+        requestAnimationFrame(() => { syncing = false; });
+      };
+      nav.addEventListener("scroll", h, { passive: true });
+      return h;
+    });
+    return () => navs.forEach((nav, i) => nav.removeEventListener("scroll", handlers[i]));
+  }, []);
   const [tab, setTab] = useState("home");
   // iOS home-screen apps report navigator.standalone (older iOS lacks display-mode)
   const [standalone, setStandalone] = useState(false);
@@ -166,6 +187,7 @@ export default function HomePage({
     <div
       className={`home ${className}`.trim()}
       data-mode={mode}
+      data-leaving={leaving}
       data-standalone={standalone ? "" : undefined}
       style={{ ...vars, ...style }}
     >
@@ -173,8 +195,13 @@ export default function HomePage({
       {/* top: safe area + Pillars */}
       <div className="home__chrome">
         <div className="home__chromeBg" />
-        <div className="home__pillars">
-          <MemoPillars collapsed={pillarsCompact} />
+        <div ref={pillarsRef}>
+          <div className="home__pillars home__pillars--default" aria-hidden={mode !== "top"} inert={mode !== "top" ? "" : undefined}>
+            <MemoPillars collapsed={false} activeId={venture} onChange={setVenture} />
+          </div>
+          <div className="home__pillars home__pillars--compact" aria-hidden={mode !== "up"} inert={mode !== "up" ? "" : undefined}>
+            <MemoPillars collapsed activeId={venture} onChange={setVenture} />
+          </div>
         </div>
       </div>
 

@@ -304,3 +304,6 @@ button.counter { transition: transform 140ms ease-out; }
 }
 .counter--fixed.counter--collapsed .counter__unit { flex: 1 1 0; min-width: 0; color: #000; }
 .counter--fixed.counter--collapsed .counter__qty { color: #000; }
+
+/* performance: idle steppers don't run their (hidden) loader animation */
+.counter--float:not(.is-loading) .qs__plus-loader { display: none; }

@@ -112,7 +112,7 @@ export default function Carousel({
         <>
           {hasTopPattern && <Wave edge="top" />}
           <div className="carousel__content">
-            {visual && <img className="carousel__visual" src={visual.src} alt={visual.alt || ""} />}
+            {visual && <img className="carousel__visual" src={visual.src} alt={visual.alt || ""} loading="lazy" decoding="async" />}
             {heading}
             {cards}
           </div>

@@ -1,17 +1,17 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import "./Category.css";
 
-import pharmacy from "./assets/pharmacy.png";
-import confectionary from "./assets/confectionary.png";
-import flower from "./assets/flower.png";
-import icecream from "./assets/icecream.png";
-import protein from "./assets/protein.png";
-import fruit from "./assets/fruit.png";
-import petshop from "./assets/petshop.png";
-import vegetable from "./assets/vegetable.png";
-import bread from "./assets/bread.png";
-import shop from "./assets/shop.png";
-import hypermarket from "./assets/hypermarket.png";
+import pharmacy from "./assets/pharmacy.webp";
+import confectionary from "./assets/confectionary.webp";
+import flower from "./assets/flower.webp";
+import icecream from "./assets/icecream.webp";
+import protein from "./assets/protein.webp";
+import fruit from "./assets/fruit.webp";
+import petshop from "./assets/petshop.webp";
+import vegetable from "./assets/vegetable.webp";
+import bread from "./assets/bread.webp";
+import shop from "./assets/shop.webp";
+import hypermarket from "./assets/hypermarket.webp";
 
 /*
  * Artwork geometry copied from Figma, per card:

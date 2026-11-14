@@ -8,8 +8,7 @@
   font-style: normal;
   font-weight: 500;
   font-display: swap;
-  src: url("./fonts/Digikala-Medium.woff2") format("woff2"),
-       url("./fonts/Digikala-Medium.woff") format("woff");
+  src: url("./fonts/Digikala-Medium.woff2") format("woff2");
 }
 
 .pillars {

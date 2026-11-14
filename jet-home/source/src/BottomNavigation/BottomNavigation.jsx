@@ -1,7 +1,5 @@
 import { useEffect, useRef } from "react";
-import lottie from "lottie-web/build/player/lottie_light";
 import { ICONS } from "./icons";
-import assistantData from "./assets/assistant.json";
 import "./BottomNavigation.css";
 
 function Icon({ name }) {
@@ -45,20 +43,36 @@ function Tab({ tab, selected, onSelect }) {
 function Assistant({ onClick, label = "دستیار خرید" }) {
   const ref = useRef(null);
   useEffect(() => {
+    // The Lottie player + animation (~300 KB) load lazily, after the page is idle,
+    // so they never block the first paint.
+    let anim, cancelled = false, onVis;
     const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    const anim = lottie.loadAnimation({
-      container: ref.current,
-      renderer: "svg",
-      loop: true,
-      autoplay: !reduced,
-      animationData: assistantData,
-      rendererSettings: { preserveAspectRatio: "xMidYMid meet", progressiveLoad: false },
-    });
-    if (reduced) anim.goToAndStop(0, true);
-    // pause when the tab is hidden
-    const onVis = () => (document.hidden ? anim.pause() : !reduced && anim.play());
-    document.addEventListener("visibilitychange", onVis);
-    return () => { document.removeEventListener("visibilitychange", onVis); anim.destroy(); };
+    const start = async () => {
+      const [{ default: lottie }, { default: data }] = await Promise.all([
+        import("lottie-web/build/player/lottie_light"),
+        import("./assets/assistant.json"),
+      ]);
+      if (cancelled || !ref.current) return;
+      anim = lottie.loadAnimation({
+        container: ref.current,
+        renderer: "svg",
+        loop: true,
+        autoplay: !reduced,
+        animationData: data,
+        rendererSettings: { preserveAspectRatio: "xMidYMid meet", progressiveLoad: false },
+      });
+      if (reduced) anim.goToAndStop(0, true);
+      onVis = () => (document.hidden ? anim.pause() : !reduced && anim.play());
+      document.addEventListener("visibilitychange", onVis);
+    };
+    const idle = window.requestIdleCallback || ((cb) => setTimeout(cb, 300));
+    const id = idle(() => start(), { timeout: 1500 });
+    return () => {
+      cancelled = true;
+      (window.cancelIdleCallback || clearTimeout)(id);
+      if (onVis) document.removeEventListener("visibilitychange", onVis);
+      anim?.destroy();
+    };
   }, []);
   return (
     <button type="button" className="bnav__assistant" onClick={onClick} aria-label={label}>

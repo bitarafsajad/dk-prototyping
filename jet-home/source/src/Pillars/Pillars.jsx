@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import "./Pillars.css";
 
-import pharmacyImg from "./assets/pharmacy.png";
-import styleImg from "./assets/style.png";
-import bazaarImg from "./assets/bazaar.png";
-import goldImg from "./assets/gold.png";
-import supermarketImg from "./assets/supermarket.png";
-import digikalaImg from "./assets/digikala.png";
-import allImg from "./assets/all.png";
+import pharmacyImg from "./assets/pharmacy.webp";
+import styleImg from "./assets/style.webp";
+import bazaarImg from "./assets/bazaar.webp";
+import goldImg from "./assets/gold.webp";
+import supermarketImg from "./assets/supermarket.webp";
+import digikalaImg from "./assets/digikala.webp";
+import allImg from "./assets/all.webp";
 
 /**
  * Each icon sits in a 32×32 slot. `w/h/x/y` reproduce the exact

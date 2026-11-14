@@ -212,6 +212,18 @@
   pointer-events: none;
 }
 .bnav__ball svg { display: block; }
+/* until the Lottie player arrives: a matching red ball (Ø52) so nothing pops */
+.bnav__ball:empty::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 52px;
+  height: 52px;
+  margin: -26px 0 0 -26px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 30%, #ff6b7d 0%, #f0284c 45%, #b5133a 100%);
+}
 
 @media (prefers-reduced-motion: reduce) {
   .bnav__ring { animation: none; }

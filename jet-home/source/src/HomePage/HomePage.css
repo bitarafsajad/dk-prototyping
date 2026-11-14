@@ -59,7 +59,7 @@
   z-index: 0;
   background: #000;
   opacity: 1;
-  transition: opacity calc(var(--t) * 0.6) ease;
+  transition: opacity var(--t) var(--ease);        /* black corners appear with the 8px gap, not before */
   pointer-events: none;
 }
 .home:not([data-mode="top"]) .home__backdrop { opacity: 0; }
@@ -75,36 +75,65 @@
   overflow: hidden;                                /* the Pillars leave through the top edge */
   height: calc(var(--safe-top) + 140px);
 }
+/* white sheet: a fixed-size layer that slides (transform only — no height/layout animation) */
 .home__chromeBg {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: var(--chrome-h);
+  height: calc(var(--safe-top) + 90px);           /* tallest state */
   background: #fff;
   border-radius: 0 0 24px 24px;
-  transition: height var(--t) var(--ease);
+  transform: translate3d(0, calc(var(--chrome-h) - var(--safe-top) - 90px), 0);
+  transition: transform var(--t) var(--ease);
+  will-change: transform;
 }
+
+/* Pillars: the default and the compact variant are two layers that cross-fade.
+   Nothing resizes, so texts and surfaces never jump — only transform + opacity. */
 .home__pillars {
   position: absolute;
   top: var(--safe-top);
   left: 0;
   right: 0;
-  pointer-events: auto;
-  transform: translateY(var(--pillars-y));
+  opacity: 0;
+  pointer-events: none;
+  transform: translate3d(0, 0, 0);
+  /* the outgoing layer clears quickly… */
+  transition: transform var(--t) var(--ease), opacity calc(var(--t) * 0.28) ease-out;
+  will-change: transform, opacity;
+}
+.home__pillars--default { transform: translate3d(0, 0, 0) scale(0.985); transform-origin: 50% 0; }
+.home__pillars--compact { transform: translate3d(0, 4px, 0); }
+
+/* …and the incoming one fades in right behind it (short overlap, no empty frame) */
+.home[data-mode="top"] .home__pillars--default,
+.home[data-mode="up"] .home__pillars--compact {
   opacity: 1;
-  transition: transform var(--t) var(--ease), opacity calc(var(--t) * 0.6) ease;
-  /* Pillars move on the page rhythm */
+  pointer-events: auto;
+  /* starts while the outgoing layer is still fading: the sheet is never empty */
+  transition: transform var(--t) var(--ease), opacity calc(var(--t) * 0.36) ease-out calc(var(--t) * 0.08);
+}
+.home[data-mode="top"] .home__pillars--default { transform: none; }
+.home[data-mode="up"] .home__pillars--compact { transform: translate3d(0, 8px, 0); }
+
+/* scrolling down: whichever layer is showing slides up out of the frame,
+   solid while it moves, fading only at the very end */
+.home[data-mode="down"] .home__pillars {
+  transform: translate3d(0, calc(-100% - var(--safe-top)), 0);
+  transition: transform var(--t) var(--ease), opacity 240ms ease 480ms;
+}
+.home[data-mode="down"][data-leaving="default"] .home__pillars--default,
+.home[data-mode="down"][data-leaving="compact"] .home__pillars--compact { opacity: 0; }
+.home[data-mode="down"][data-leaving="default"] .home__pillars--compact,
+.home[data-mode="down"][data-leaving="compact"] .home__pillars--default { opacity: 0; transition: none; }
+.home__pillars .pillars {
+  background: transparent;
+  /* the Pillars' own default/compact animation runs on the page rhythm, so the
+     tiles grow exactly as fast as the white sheet and the content card move */
   --pillars-duration: var(--t);
   --pillars-ease: var(--ease);
 }
-.home[data-mode="down"] .home__pillars {
-  opacity: 0;
-  pointer-events: none;
-  /* stays solid while it slides, fades only at the very end */
-  transition: transform var(--t) var(--ease), opacity 240ms ease 480ms;
-}
-.home__pillars .pillars { background: transparent; }
 
 /* ---------- content card: scrolls inside itself ---------- */
 .home__card {
@@ -176,9 +205,21 @@
   display: flex;
   align-items: center;
   background: rgba(255, 255, 255, var(--hp));
+  box-shadow: 0 2px 16px 0 rgba(0, 0, 0, calc(0.08 * var(--hp)));   /* X0 Y2 Blur16 #000 8% */
+  clip-path: inset(0 0 -32px 0);           /* shadow falls on the content only, never up onto the status-bar sheet */
   pointer-events: none;
 }
 .home__header[data-header] { pointer-events: auto; }
+/* white header shadow — X 0 · Y 2 · Blur 16 · #000 8% — fades in with the white */
+.home__header::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  box-shadow: 0 2px 16px 0 rgba(0, 0, 0, 0.08);
+  clip-path: inset(0 -32px -48px -32px);           /* cast downward only (nothing over the status area) */
+  opacity: var(--hp);
+  pointer-events: none;
+}
 .home__header .home__loc {
   opacity: var(--hm);
   transform: translate3d(calc((1 - var(--hm)) * 16px), 0, 0);
@@ -278,3 +319,6 @@
 @media (prefers-reduced-motion: reduce) {
   .home { --t: 1ms; }
 }
+
+/* pill icon: 40% black like the page field (seamless hand-off) → solid black in the circle */
+.home__search svg path { fill: rgba(0, 0, 0, calc(0.4 + 0.6 * var(--hm))); }

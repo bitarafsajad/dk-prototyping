@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { createRoot } from "react-dom/client";
 import { Counter, Thumbnail, Price, DiscountBadge, TextBadge, ProductCard, BottomNavigation, Carousel, SECTIONS, Category } from "../src";
-import sunscreen from "../src/assets/product-sunscreen.jpg";
-import shampoo from "../src/assets/product-shampoo.jpg";
-import cereal from "../src/assets/product-cereal.jpg";
+import sunscreen from "../src/assets/product-sunscreen.webp";
+import shampoo from "../src/assets/product-shampoo.webp";
+import cereal from "../src/assets/product-cereal.webp";
 import "./preview.css";
 
 const P = {

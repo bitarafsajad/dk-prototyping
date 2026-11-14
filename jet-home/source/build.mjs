@@ -12,6 +12,7 @@ const OUT = "..";                       // the site is published from the folder
 const inline = process.argv.includes("--inline");
 
 fs.rmSync(path.join(OUT, "assets"), { recursive: true, force: true });
+for (const f of fs.readdirSync(OUT)) if (/^(index|components)-[A-Z0-9]+\.js$/.test(f)) fs.rmSync(path.join(OUT, f));
 fs.mkdirSync(path.join(OUT, "assets"), { recursive: true });
 
 const HEAD = (title, desc) => `<meta charset="utf-8">
@@ -30,8 +31,17 @@ const HEAD = (title, desc) => `<meta charset="utf-8">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">`;
 
+// Preact (≈4 KB) stands in for React (≈130 KB) — same API via preact/compat.
+const alias = {
+  "react": "preact/compat",
+  "react-dom": "preact/compat",
+  "react-dom/client": "preact/compat/client",
+  "react/jsx-runtime": "preact/jsx-runtime",
+};
+
 const common = {
-  bundle: true, minify: true, target: ["es2020", "safari15"],
+  alias,
+  bundle: true, minify: true, target: ["es2020", "safari15"], legalComments: "none",
   jsx: "automatic", define: { "process.env.NODE_ENV": '"production"' }, logLevel: "error",
 };
 
@@ -45,16 +55,22 @@ for (const p of PAGES) {
   const r = await build({
     ...common,
     entryPoints: { [name]: p.entry },
-    outdir: path.join(OUT, "assets"),
+    format: "esm",
+    splitting: true,                  // lazy chunks (Lottie assistant) load after first paint
+    chunkNames: "assets/chunk-[hash]",
+    // entry JS sits next to the HTML; chunks, images and fonts in assets/.
+    // Every URL is then relative to the page → works under /<repo>/<folder>/.
+    outdir: OUT,
     entryNames: "[name]-[hash]",
-    assetNames: "[name]-[hash]",
-    publicPath: "assets/",            // image/font URLs resolve from the page, works under /<repo>/
-    loader: { ".jsx": "jsx", ".png": "file", ".jpg": "file", ".webp": "file", ".woff2": "file", ".woff": "file", ".json": "json" },
+    assetNames: "assets/[name]-[hash]",
+    loader: { ".jsx": "jsx", ".png": "file", ".jpg": "file", ".webp": "file", ".woff2": "file", ".json": "json" },
     metafile: true,
     write: true,
   });
   const outs = Object.keys(r.metafile.outputs).map((f) => path.relative(OUT, f).split(path.sep).join("/"));
-  const js = outs.find((f) => f.endsWith(".js"));
+  const entryOut = Object.entries(r.metafile.outputs).find(([, o]) => o.entryPoint)[0];
+  const js = path.relative(OUT, entryOut).split(path.sep).join("/");
+  const fonts = outs.filter((f) => /Digikala-(Regular|Medium|Bold)-.*\.woff2$/.test(f));
   const cssFile = outs.find((f) => f.endsWith(".css"));
   // CSS is inlined: its asset URLs ("assets/…") are page-relative, like the JS ones
   const css = cssFile ? fs.readFileSync(path.join(OUT, cssFile), "utf8") : "";
@@ -63,12 +79,13 @@ for (const p of PAGES) {
 <html lang="fa" dir="rtl">
 <head>
 ${HEAD(p.title, p.desc)}
+${fonts.map((f) => `<link rel="preload" href="${f}" as="font" type="font/woff2" crossorigin>`).join("\n")}
 ${css ? `<style>${css}</style>` : ""}
 </head>
 <body>
 <div id="root"></div>
 <noscript>This page needs JavaScript.</noscript>
-<script src="${js}" defer></script>
+<script type="module" src="${js}"></script>
 </body>
 </html>
 `;
