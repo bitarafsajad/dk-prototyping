@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import Pillars from "../Pillars";
 import TopNavigation from "../TopNavigation";
 import Category from "../Category";
@@ -18,12 +18,15 @@ const MAGNIFIER =
  *  "down" while scrolling down            → Pillars hidden, compact location header
  *  "up"   while scrolling up (not at top) → Pillars compact, compact location header
  */
-function useScrollMode(ref, rootRef, { topOffset = 4, threshold = 6 } = {}) {
+function useScrollMode(ref, headerRef, { topOffset = 4, threshold = 6 } = {}) {
   const [mode, setMode] = useState("top");
   useEffect(() => {
     const el = ref.current;
-    const root = rootRef.current;
-    if (!el || !root) return;
+    const header = headerRef.current;
+    if (!el || !header) return;
+    const field = el.querySelector(".top-nav__search");
+    let prev = {};
+    const set = (k, v) => { if (prev[k] !== v) { header.style.setProperty(k, v); prev[k] = v; } };
     let last = el.scrollTop;
     let raf = 0;
     const clamp = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
@@ -36,12 +39,13 @@ function useScrollMode(ref, rootRef, { topOffset = 4, threshold = 6 } = {}) {
       const hs = yy > 0.5 ? 1 : 0;                      // pill replaces the field once moving
       const hp = clamp((yy - 36) / 40);                 // white comes in as the sky leaves
       const hm = clamp((yy - (FIELD - PARK)) / MORPH);  // then the pill becomes the circle
-      root.style.setProperty("--hy", `${top.toFixed(2)}px`);
-      root.style.setProperty("--hs", String(hs));
-      root.style.setProperty("--hp", hp.toFixed(3));
-      root.style.setProperty("--hm", hm.toFixed(3));
-      if (hm > 0.5) root.setAttribute("data-header", ""); else root.removeAttribute("data-header");
-      if (hs) root.setAttribute("data-pill", ""); else root.removeAttribute("data-pill");
+      // only the header (and the one search field) are touched per frame
+      set("--hy", `${top.toFixed(1)}px`);
+      set("--hs", String(hs));
+      set("--hp", hp.toFixed(3));
+      set("--hm", hm.toFixed(3));
+      if (prev.h !== (hm > 0.5)) { prev.h = hm > 0.5; header.toggleAttribute("data-header", prev.h); }
+      if (prev.p !== !!hs) { prev.p = !!hs; header.toggleAttribute("data-pill", prev.p); if (field) field.style.opacity = hs ? "0" : ""; }
     };
     const read = () => {
       raf = 0;
@@ -57,13 +61,13 @@ function useScrollMode(ref, rootRef, { topOffset = 4, threshold = 6 } = {}) {
     paint(el.scrollTop);
     el.addEventListener("scroll", onScroll, { passive: true });
     return () => { el.removeEventListener("scroll", onScroll); cancelAnimationFrame(raf); };
-  }, [ref, rootRef, topOffset, threshold]);
+  }, [ref, headerRef, topOffset, threshold]);
   return mode;
 }
 
-function CompactHeader({ place, address, onLocationClick, onSearchClick }) {
+const CompactHeader = memo(function CompactHeader({ headerRef, place, address, onLocationClick, onSearchClick }) {
   return (
-    <div className="home__header">
+    <div className="home__header" ref={headerRef}>
       <button type="button" className="home__loc" onClick={onLocationClick}>
         <span className="home__locRow">
           <span className="home__locLabel">تحویل به</span>
@@ -84,7 +88,7 @@ function CompactHeader({ place, address, onLocationClick, onSearchClick }) {
       </button>
     </div>
   );
-}
+});
 
 /**
  * HomePage — Pillars on top, a content card that scrolls inside itself,
@@ -95,6 +99,20 @@ function CompactHeader({ place, address, onLocationClick, onSearchClick }) {
  *  safeTop / safeBottom  override the safe areas in px (default: env() insets —
  *                  Safari: top only; home-screen app: top + bottom)
  */
+/** Everything inside the scrolling card — memoised so scroll-state changes never re-render it. */
+const PageContent = memo(function PageContent({ sections, place, address, onLocationClick, onSearchClick }) {
+  return (
+    <div className="home__inner">
+      <TopNavigation place={place} address={address} onLocationClick={onLocationClick} onSearchClick={onSearchClick} />
+      <Category variant="v3" />
+      <Banner />
+      {sections.map(({ id, ...s }) => <Carousel key={id} {...s} />)}
+    </div>
+  );
+});
+
+const MemoPillars = memo(Pillars);
+
 /** Home order: the first default section right after the banners, then شگفت‌انگیز. */
 const HOME_ORDER = ["kharbar", "amazing", "labaniat", "nivea", "meat"];
 const homeSections = (list) =>
@@ -103,8 +121,10 @@ const homeSections = (list) =>
     return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
   });
 
+const DEFAULT_SECTIONS = homeSections(SECTIONS);
+
 export default function HomePage({
-  sections = homeSections(SECTIONS),
+  sections = DEFAULT_SECTIONS,
   place = "محل‌کار",
   address = "ونک، هتل هما، ۴۰ دقیقه",
   safeTop,
@@ -115,8 +135,8 @@ export default function HomePage({
   style,
 }) {
   const scrollerRef = useRef(null);
-  const rootRef = useRef(null);
-  const mode = useScrollMode(scrollerRef, rootRef);
+  const headerRef = useRef(null);
+  const mode = useScrollMode(scrollerRef, headerRef);
   // Pillars keep the shape they had when they start leaving (default from the
   // top, compact after scrolling up) — no resize while sliding out.
   const prevMode = useRef(mode);
@@ -144,30 +164,25 @@ export default function HomePage({
 
   return (
     <div
-      ref={rootRef}
       className={`home ${className}`.trim()}
       data-mode={mode}
       data-standalone={standalone ? "" : undefined}
       style={{ ...vars, ...style }}
     >
+      <div className="home__backdrop" />
       {/* top: safe area + Pillars */}
       <div className="home__chrome">
         <div className="home__chromeBg" />
         <div className="home__pillars">
-          <Pillars collapsed={pillarsCompact} />
+          <MemoPillars collapsed={pillarsCompact} />
         </div>
       </div>
 
       {/* contentFrame */}
       <div className="home__card">
-        <CompactHeader place={place} address={address} onLocationClick={onLocationClick} onSearchClick={onSearchClick} />
+        <CompactHeader headerRef={headerRef} place={place} address={address} onLocationClick={onLocationClick} onSearchClick={onSearchClick} />
         <div className="home__scroller" ref={scrollerRef}>
-          <div className="home__inner">
-            <TopNavigation place={place} address={address} onLocationClick={onLocationClick} onSearchClick={onSearchClick} />
-            <Category variant="v2" />
-            <Banner />
-            {sections.map(({ id, ...s }) => <Carousel key={id} {...s} />)}
-          </div>
+          <PageContent sections={sections} place={place} address={address} onLocationClick={onLocationClick} onSearchClick={onSearchClick} />
         </div>
       </div>
 

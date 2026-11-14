@@ -28,8 +28,9 @@ component kit it is built from, translated from the Figma design files into Reac
 
 ```bash
 npm install
-npm run build          # writes docs/index.html and docs/components.html
-open docs/index.html   # both pages are single, self-contained HTML files
+npm run build              # → docs/ (index.html, components.html, hashed assets)
+npm run serve              # preview docs/ at http://localhost:3000
+npm run build:standalone   # optional: single-file pages in docs/standalone/
 ```
 
 Use the components in your own React app:
@@ -42,22 +43,33 @@ export default function App() {
 }
 ```
 
-Requirements: React 18, `lottie-web` (only for the shopping assistant in the bottom navigation).
+Requirements: Node ≥ 18 to build; React 18 and `lottie-web` (shopping assistant) at runtime.
 Styling is plain CSS imported next to each component — no Tailwind, no CSS-in-JS.
 
 ## Publishing on GitHub Pages
 
-1. Push this repository to GitHub.
-2. **Settings → Pages → Build and deployment → Deploy from a branch**, branch `main`, folder **`/docs`**.
-3. The home page is served at `https://<user>.github.io/<repo>/`, the component sheet at
-   `.../components.html`.
+The repository is ready for Pages — pick **one** of the two options:
 
-The pages are fully self-contained (fonts, images and scripts are inlined), so they work from any
-static host or even when opened from disk.
+**A. GitHub Actions (recommended)** — `.github/workflows/pages.yml` builds and deploys on every push
+to `main`. In **Settings → Pages → Source** choose **GitHub Actions**.
 
-**Add to Home Screen (PWA):** open the page in Safari → Share → *Add to Home Screen*. The page ships
-`apple-mobile-web-app-capable`, a translucent status bar and an inline web-app manifest, so it opens
-full-screen and switches to the home-screen safe-area rules (see below).
+**B. Branch** — commit the built `docs/` folder, then **Settings → Pages → Deploy from a branch →
+`main` / `docs`**.
+
+The site is served at `https://<user>.github.io/<repo>/` (home) and `…/components.html`.
+All URLs are relative, so it works under the `/<repo>/` sub-path without configuration.
+
+What is in `docs/`:
+
+| File | Purpose |
+|---|---|
+| `index.html`, `components.html` | tiny HTML shells (CSS inlined, one deferred script) |
+| `assets/` | content-hashed JS, images (WebP/PNG) and Digikala fonts — safe to cache forever |
+| `manifest.webmanifest`, `icons/` | PWA manifest, app / Apple touch icons, favicon, social preview image |
+| `.nojekyll` | serve files as-is (no Jekyll processing) |
+
+**Add to Home Screen (PWA):** open the site in Safari → Share → *Add to Home Screen*. It opens
+full-screen with a translucent status bar and switches to the home-screen safe-area rules.
 
 ## Project structure
 
@@ -76,14 +88,15 @@ src/
   Thumbnail/ Counter/ Price/ Badge/
   BottomNavigation/        tabs + animated shopping assistant
 preview/                   entry points for the two demo pages
-build.mjs                  esbuild → single-file HTML pages in /docs
-docs/                      built pages (GitHub Pages)
+build.mjs                  esbuild → docs/ (HTML shells + hashed assets)
+docs/                      built site for GitHub Pages (+ manifest, icons, .nojekyll)
+.github/workflows/         pages.yml — build & deploy to GitHub Pages
 ```
 
 ## The home page
 
 `<HomePage />` stacks: **Pillars** (fixed) → **content card** that scrolls inside itself
-(TopNavigation with the live rain sky, Category, Banner, five product Carousels) → **BottomNavigation**
+(TopNavigation with the live rain sky, Category V3, Banner, five product Carousels) → **BottomNavigation**
 with the assistant.
 
 ### Scroll states (Figma frames 2073:6867 / 7548 / 11899)
@@ -136,7 +149,7 @@ within Figma's 328–360 px card limits.
 |---|---|
 | **Pillars** | Default ↔ compact variants with animated height; active pill `#ED1944`; horizontal RTL scroll; keeps the active pill in view. |
 | **TopNavigation** | Live code-drawn rain sky (canvas): randomized cloud "conveyor belts" in 3 depth layers + rain streaks; Figma overlay gradient; glass search field (68 % white, 6 px backdrop blur, gradient 1 px inside stroke, inner + drop shadow); swappable `background` prop for other weather. |
-| **Category** | V1 (96×96) and V2 (72×80, tilted art) with per-card image geometry from Figma; both rows in one scroller; scales to fill wide screens. |
+| **Category** | V1 (96×96), V2 (72×80, tilted art) and **V3** (64×80 pastel tiles + 136×80 wide "سوپر‌های محل" / "هایپر مارکت" tiles) with per-card image geometry from Figma; both rows in one scroller; scales to fill wide screens. The home page uses **V3**. |
 | **Banner** | Snap carousel, infinite loop (triple-set trick with silent re-centring), auto-advance every 2.5 s, pauses on touch / hover / off-screen / hidden tab. |
 | **Carousel** | Default (white) and Promotion (colour band with Figma's exact wave edges, reproduced from Figma's own SVG pattern export), single / double line, optional artwork, countdown heading. |
 | **SectionHeading** | Title + trailing chevron, description, live `hh:mm:ss` countdown in Persian digits. |
@@ -187,6 +200,14 @@ within Figma's 328–360 px card limits.
 
 ## Accessibility & performance
 
+Scrolling performance (fix for blinking / lag while scrolling):
+- Scroll-linked header values are written to the **header element only**, not the page root, so a
+  scroll frame never restyles the whole page.
+- The page content is **memoised**: scroll-state changes re-render only the chrome.
+- Corner radii no longer animate (a black backdrop layer fades instead), removing clip repaints.
+- Redundant backdrop blurs over scrolling content were removed (card steppers on white images,
+  bottom-nav scrim).
+
 - Semantic buttons/links with Persian `aria-label`s; focus-visible outlines.
 - `prefers-reduced-motion` respected everywhere (instant state changes, static sky / assistant).
 - Animations paused when off-screen or when the tab is hidden (sky, banners, assistant).
@@ -199,13 +220,16 @@ within Figma's 328–360 px card limits.
   screen) before release.
 - CSS `zoom` (Category scaling on wide screens) needs Firefox ≥ 126; older Firefox shows the
   unscaled rows.
-- The demo pages inline every asset (≈2.4 MB); in production, serve images/fonts as separate files.
+- Total payload ≈2.4 MB (mostly product/cloud images and fonts, all cache-busted); the home page
+  JS bundle includes the Lottie player for the assistant.
 
 ## Figma sources
 
 | Item | File | Node |
 |---|---|---|
 | Home (top / down / up) | Home-Page | 2073:6867 · 2073:7548 · 2073:11899 |
+| Home — category version (final) | Home-Page | 2117:16941 |
+| Category V3 | Home-Page | 2117:16267 |
 | TopNavigation | Home-Page | 2059:6485 |
 | Category | Home-Page | 2058:6482 |
 | Banner | Home-Page | 2064:6651 |

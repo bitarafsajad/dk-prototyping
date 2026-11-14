@@ -18,7 +18,7 @@
   height: 100%;
   margin: 0 auto;
   overflow: hidden;
-  background: #000;                        /* page fill: black (visible in the 8px gap) */
+  background: #fff;
   direction: rtl;
   font-family: "Digikala", system-ui, sans-serif;
   isolation: isolate;
@@ -52,6 +52,18 @@
   --card-r: 0px;
 }
 
+/* black page fill (8px gap + rounded corners) — only at the top; fades, never repaints */
+.home__backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: #000;
+  opacity: 1;
+  transition: opacity calc(var(--t) * 0.6) ease;
+  pointer-events: none;
+}
+.home:not([data-mode="top"]) .home__backdrop { opacity: 0; }
+
 /* ---------- top chrome: safe area + Pillars (white sheet, rounded bottom at top) ---------- */
 .home__chrome {
   position: absolute;
@@ -70,8 +82,8 @@
   right: 0;
   height: var(--chrome-h);
   background: #fff;
-  border-radius: 0 0 var(--chrome-r) var(--chrome-r);
-  transition: height var(--t) var(--ease), border-radius var(--t) var(--ease);
+  border-radius: 0 0 24px 24px;
+  transition: height var(--t) var(--ease);
 }
 .home__pillars {
   position: absolute;
@@ -115,11 +127,8 @@
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
   background: #fff;
-  border-radius: var(--card-r) var(--card-r) 0 0;
-  transition: border-radius var(--t) var(--ease);
+  border-radius: 24px 24px 0 0;            /* constant: corners only show over the black backdrop */
   scrollbar-width: none;
-  /* keeps the clip on the GPU while the radius animates */
-  transform: translateZ(0);
 }
 .home__scroller::-webkit-scrollbar { display: none; }
 .home__inner {
@@ -130,6 +139,8 @@
 .home__inner .banner { padding-bottom: 0; }
 /* categoryFrame has no fill in Figma: the sky fades straight into the page */
 .home__inner .category { background: transparent; }
+/* final home (2117:16941): Category V3 rows are 88px (4px vertical padding, 8px gap) → 208px block */
+.home__inner .category--v3 .category__row { padding: 4px 16px; gap: 8px; }
 
 /* contentFrame: 1px INSIDE top stroke, white 24% (follows the rounded corners) */
 .home__card::after {
@@ -138,8 +149,7 @@
   inset: 0 0 auto;
   height: 32px;
   border-top: 1px solid rgba(255, 255, 255, 0.24);
-  border-radius: var(--card-r) var(--card-r) 0 0;
-  transition: border-radius var(--t) var(--ease);
+  border-radius: 24px 24px 0 0;
   pointer-events: none;
   z-index: 2;
 }
@@ -150,13 +160,11 @@
    circle while the black location slides in. All scroll-linked.
    --hy  pill top (px)            --hs  1 once scrolled (pill replaces the field)
    --hp  white header 0→1         --hm  pill → circle 0→1 (scrollTop 76→136) */
-.home {
+.home__header {
   --hy: 84px;
   --hs: 0;
   --hp: 0;
   --hm: 0;
-}
-.home__header {
   position: absolute;
   top: 0;
   left: 0;
@@ -170,13 +178,11 @@
   background: rgba(255, 255, 255, var(--hp));
   pointer-events: none;
 }
-.home[data-header] .home__header { pointer-events: auto; }
+.home__header[data-header] { pointer-events: auto; }
 .home__header .home__loc {
   opacity: var(--hm);
   transform: translate3d(calc((1 - var(--hm)) * 16px), 0, 0);
 }
-/* the real field hands over to the pill as soon as the page moves */
-.home .top-nav__search { opacity: calc(1 - var(--hs)); }
 
 .home__loc {
   opacity: var(--hp);
@@ -220,10 +226,10 @@
   opacity: var(--hs);
   pointer-events: none;
   -webkit-tap-highlight-color: transparent;
-  will-change: width, top;
+  contain: layout style;                     /* no paint containment: it would clip the drop shadow */
 }
-.home[data-header] .home__search,
-.home[data-pill] .home__search { pointer-events: auto; }
+.home__header[data-header] .home__search,
+.home__header[data-pill] .home__search { pointer-events: auto; }
 /* glass look of the page field → ghost-circle look of the button */
 .home__searchGlass { position: absolute; inset: 0; border-radius: inherit; opacity: calc(1 - var(--hm)); }
 .home__searchGhost {
@@ -260,6 +266,11 @@
   white-space: nowrap;
   opacity: calc(1 - var(--hm) * 2.5);
 }
+
+/* performance: product-card steppers sit on white thumbnails — their glass blur is
+   invisible but costs a backdrop pass per card while scrolling */
+.home__scroller .qs__bg { -webkit-backdrop-filter: none; backdrop-filter: none; }
+.home .bnav__scrim { -webkit-backdrop-filter: none; backdrop-filter: none; }
 
 /* bottom navigation sits on top of everything; its safe area follows the page rule */
 .home .bnav { z-index: 4; --bnav-safe: var(--safe-bottom); }

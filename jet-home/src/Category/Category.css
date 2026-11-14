@@ -112,3 +112,27 @@
 /* room for the artwork that overhangs the first row, without changing layout */
 .category--v2 .category__scroller { padding-top: 28px; margin-top: -28px; }
 .category--v2 .category__track { position: relative; }
+
+/* ---------- V3: pastel tiles (Figma 2117:16267) ---------- */
+.category--v3 { padding: 0; }
+.category--v3 .category__scroller { padding: 16px 0; margin: 0; }   /* room for the art that sticks out */
+.category--v3 .category__item {
+  width: 64px;
+  height: 80px;
+  border-radius: 12px;
+  background: #f6f4f1;
+}
+.category--v3 .category__item--wide { width: 136px; }
+.category--v3 .category__label { top: 56px; }                        /* Subtle/xSmall 11/16 */
+/* wide tiles: Subtle/Small 13/20, right-aligned 14px from the edge */
+.category--v3 .category__label--wide {
+  left: auto;
+  right: 14px;
+  transform: none;
+  top: 44px;
+  font-size: 13px;
+  line-height: 20px;
+  text-align: right;
+}
+/* two-line label (میوه / سبزی): 12px leading */
+.category--v3 .category__label--two { top: 48px; line-height: 12px; }

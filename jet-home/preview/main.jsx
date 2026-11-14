@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createRoot } from "react-dom/client";
-import { Counter, Thumbnail, Price, DiscountBadge, TextBadge, ProductCard, BottomNavigation, Carousel, SECTIONS } from "../src";
+import { Counter, Thumbnail, Price, DiscountBadge, TextBadge, ProductCard, BottomNavigation, Carousel, SECTIONS, Category } from "../src";
 import sunscreen from "../src/assets/product-sunscreen.jpg";
 import shampoo from "../src/assets/product-shampoo.jpg";
 import cereal from "../src/assets/product-cereal.jpg";
@@ -67,6 +67,10 @@ function Phone({ variant }) {
 function App() {
   return (
     <div className="pv">
+      <section className="pv-section">
+        <h2>Category — V3</h2>
+        <div className="pv-home"><Category variant="v3" /></div>
+      </section>
       <section className="pv-section">
         <h2>Carousel — home page sections (390px)</h2>
         <p className="pv-note">Swipe the rows · countdown is live · tap + to add.</p>

@@ -10,6 +10,8 @@ import fruit from "./assets/fruit.png";
 import petshop from "./assets/petshop.png";
 import vegetable from "./assets/vegetable.png";
 import bread from "./assets/bread.png";
+import shop from "./assets/shop.png";
+import hypermarket from "./assets/hypermarket.png";
 
 /*
  * Artwork geometry copied from Figma, per card:
@@ -57,6 +59,26 @@ export const CATEGORY_V2 = [
   ],
 ];
 
+// V3: 64×80 tiles (136×80 for the two wide "store" tiles), 12px radius, pastel fills
+const ICE = { src: icecream, box: { x: -4.95, y: -16.95, size: 75.908 }, rot: -12, inset: 5.7 };
+const PROT = { src: protein, box: { x: -5.95, y: -16.95, size: 75.908 }, rot: -12, inset: 5.88, labelX: 0.5 };
+export const CATEGORY_V3 = [
+  [
+    { id: "local-supers", title: "سوپر‌های محل", wide: true, bg: "#fff2c6", src: shop, box: { x: -5.2, y: -17.2, size: 68.309 }, rot: -4 },
+    { id: "pharmacy", title: "داروخانه", bg: "#fbece7", src: pharmacy, box: { x: -1.08, y: -13.05, size: 67.205 }, rot: -4, inner: 62.966 },
+    { id: "protein", title: "پروتئینی", bg: "#fce7ea", ...PROT },
+    { id: "icecream", title: "بستنی", bg: "#f4ebf0", ...ICE },
+    { id: "icecream-2", title: "بستنی", bg: "#f4ebf0", ...ICE },
+  ],
+  [
+    { id: "fruit-veg", title: ["میوه", "سبزی"], bg: "#e3f1f3", src: fruit, box: { x: 0, y: -7, size: 64 }, rot: 0 },
+    { id: "bread", title: "نان", bg: "#f6f4f1", src: bread, box: { x: -8.73, y: -13.73, size: 79.466 }, rot: -12, inner: 67, labelX: 0.5 },
+    { id: "hypermarket", title: "هایپر مارکت", wide: true, bg: "#f0f9d3", src: hypermarket, box: { x: -9, y: -17, size: 75.908 }, rot: -12 },
+    { id: "petshop", title: "پت شاپ", bg: "#fde7e6", src: petshop, box: { x: -5.95, y: -15.95, size: 75.908 }, rot: -12, inset: 5.41 },
+    { id: "protein-2", title: "پروتئینی", bg: "#fce7ea", ...PROT },
+  ],
+];
+
 function Art({ src, box, inner = 64, rot = 0, inset = 0 }) {
   const imgSize = 100 - inset * 2;
   return (
@@ -92,11 +114,12 @@ function Art({ src, box, inner = 64, rot = 0, inset = 0 }) {
  *
  * Props
  *  variant   "v1" (96×96 cards) | "v2" (72×80 cards, tilted art)
+ *            | "v3" (64×80 pastel tiles + 136×80 wide store tiles)
  *  rows      [[item, …], [item, …]] — defaults to the Figma content
  *  onSelect(item)  called when a category is tapped
  */
 export default function Category({ variant = "v1", rows, onSelect, className = "", ...rest }) {
-  const data = rows ?? (variant === "v2" ? CATEGORY_V2 : CATEGORY_V1);
+  const data = rows ?? (variant === "v3" ? CATEGORY_V3 : variant === "v2" ? CATEGORY_V2 : CATEGORY_V1);
 
   // When the container is wider than the rows, scale everything up so the
   // rows fill it (no empty space on wide screens). Never scales down.
@@ -137,18 +160,21 @@ export default function Category({ variant = "v1", rows, onSelect, className = "
                 <button
                   key={item.id}
                   type="button"
-                  className="category__item"
+                  className={`category__item${item.wide ? " category__item--wide" : ""}`}
+                  style={item.bg ? { background: item.bg } : undefined}
                   onClick={() => onSelect?.(item)}
                 >
                   <span
-                    className="category__label"
+                    className={`category__label${item.wide ? " category__label--wide" : ""}${Array.isArray(item.title) ? " category__label--two" : ""}`}
                     dir="auto"
                     style={{
                       top: item.labelTop,
                       left: item.labelX ? `calc(50% + ${item.labelX}px)` : undefined,
                     }}
                   >
-                    {item.title}
+                    {Array.isArray(item.title)
+                      ? item.title.map((t, i) => (i ? [<br key={i} />, t] : t))
+                      : item.title}
                   </span>
                   <Art {...item} />
                 </button>
