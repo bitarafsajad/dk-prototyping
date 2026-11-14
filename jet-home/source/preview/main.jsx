@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createRoot } from "react-dom/client";
-import { Counter, Thumbnail, Price, DiscountBadge, TextBadge, ProductCard, BottomNavigation, Carousel, SECTIONS, Category } from "../src";
+import { Counter, Thumbnail, Price, DiscountBadge, TextBadge, ProductCard, BottomNavigation, Carousel, SECTIONS, Category, Banner, Pillars, TopNavigation } from "../src";
 import sunscreen from "../src/assets/product-sunscreen.webp";
 import shampoo from "../src/assets/product-shampoo.webp";
 import cereal from "../src/assets/product-cereal.webp";
@@ -67,6 +67,25 @@ function Phone({ variant }) {
 function App() {
   return (
     <div className="pv">
+      <section className="pv-section">
+        <h2>Pillars</h2>
+        <div className="pv-home"><Pillars /></div>
+        <div className="pv-home" style={{ marginTop: 12 }}><Pillars collapsed /></div>
+      </section>
+      <section className="pv-section">
+        <h2>TopNavigation</h2>
+        <div className="pv-home"><TopNavigation /></div>
+      </section>
+      <section className="pv-section">
+        <h2>Banner</h2>
+        <p className="pv-note">Auto-scrolls every 2.5s, loops forever.</p>
+        <div className="pv-home"><Banner /></div>
+      </section>
+      <section className="pv-section">
+        <h2>Category — V1 · V2</h2>
+        <div className="pv-home"><Category variant="v1" /></div>
+        <div className="pv-home" style={{ marginTop: 12 }}><Category variant="v2" /></div>
+      </section>
       <section className="pv-section">
         <h2>Category — V3</h2>
         <div className="pv-home"><Category variant="v3" /></div>

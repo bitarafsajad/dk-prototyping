@@ -117,6 +117,11 @@ The header follows the finger, so it is correct at any scroll speed:
 3. `76 → 136` — the pill shrinks from full width into the 52 px ghost circle (glass → `#F5F5F5`,
    magnifier slides to the centre) while the black "تحویل به محل‌کار" slides in.
 
+**Never stuck half-way:** if scrolling stops inside the transition (scrollTop 1–135) and no
+finger is on the screen for 180 ms, the page finishes the move the user started — down to the
+circle state (136 px) or back up to the top (0) — with a smooth scroll, so the header always lands
+in a real Figma state.
+
 Values are written straight to CSS custom properties from a `requestAnimationFrame` scroll handler
 (no React re-render per frame).
 

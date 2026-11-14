@@ -57,10 +57,44 @@ function useScrollMode(ref, headerRef, { topOffset = 4, threshold = 6 } = {}) {
       setMode(dy > 0 ? "down" : "up");
       last = y;
     };
-    const onScroll = () => { if (!raf) raf = requestAnimationFrame(read); };
+    // Never rest half-way through the header transition: when scrolling stops
+    // inside it, finish the move the user started (or the nearest end).
+    const ZONE_END = FIELD - PARK + MORPH;              // 136: pill fully a circle
+    let touching = false, idle = 0, dir = 0, snapping = false;
+    const settle = () => {
+      if (touching) return;
+      const y = el.scrollTop;
+      if (y <= 0.5 || y >= ZONE_END - 0.5) { snapping = false; return; }
+      const goDown = dir > 0 ? true : dir < 0 ? false : y >= ZONE_END / 2;
+      snapping = true;
+      el.scrollTo({ top: goDown ? ZONE_END : 0, behavior: "smooth" });
+    };
+    // "stopped" = no scroll movement for 180ms and no finger on the screen
+    // (scrollend is not used: browsers fire it after every mouse-wheel notch)
+    const scheduleSettle = () => { clearTimeout(idle); idle = setTimeout(settle, 180); };
+    let lastY = el.scrollTop;
+    const onScroll = () => {
+      const y = el.scrollTop;
+      if (!snapping && Math.abs(y - lastY) > 0.5) dir = y > lastY ? 1 : -1;
+      lastY = y;
+      if (!raf) raf = requestAnimationFrame(read);
+      scheduleSettle();
+    };
+    const onTouchStart = () => { touching = true; snapping = false; clearTimeout(idle); };
+    const onTouchEnd = () => { touching = false; scheduleSettle(); };
     paint(el.scrollTop);
     el.addEventListener("scroll", onScroll, { passive: true });
-    return () => { el.removeEventListener("scroll", onScroll); cancelAnimationFrame(raf); };
+    el.addEventListener("touchstart", onTouchStart, { passive: true });
+    el.addEventListener("touchend", onTouchEnd, { passive: true });
+    el.addEventListener("touchcancel", onTouchEnd, { passive: true });
+    return () => {
+      el.removeEventListener("scroll", onScroll);
+      el.removeEventListener("touchstart", onTouchStart);
+      el.removeEventListener("touchend", onTouchEnd);
+      el.removeEventListener("touchcancel", onTouchEnd);
+      cancelAnimationFrame(raf);
+      clearTimeout(idle);
+    };
   }, [ref, headerRef, topOffset, threshold]);
   return mode;
 }
