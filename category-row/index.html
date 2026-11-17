@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CategoryRow – RTL grid</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/category-row.css">
+<link rel="stylesheet" href="css/demo.css">
+</head>
+<body>
+<main class="demo">
+  <h1>CategoryRow — گرید راست‌به‌چپ</h1>
+  <p>در عرض ۳۹۰ پیکسل دقیقاً مطابق فیگماست. با تغییر عرض، آیتم کوچک بزرگ‌تر می‌شود و آیتم بزرگ همیشه برابر ۲ × کوچک + گپ می‌ماند. هر دو ردیف با هم اسکرول می‌شوند.</p>
+
+  <div class="stage">
+    <div class="frame" id="frame">
+      <!-- ===== Component markup ===== -->
+      <section class="category-row" aria-label="دسته‌بندی‌ها">
+        <div class="category-row__grid">
+          <a href="#" class="cat-item cat-item--large bg-yellow">
+            <img class="cat-item__art" src="assets/artwork/shop.png" alt="" width="64" height="64">
+            <span class="cat-item__label-wrap"><span class="cat-item__label" dir="auto">سوپرهای محل</span></span>
+          </a>
+          <a href="#" class="cat-item cat-item--large bg-green">
+            <img class="cat-item__art" src="assets/artwork/hypermarket.png" alt="" width="64" height="64">
+            <span class="cat-item__label-wrap"><span class="cat-item__label" dir="auto">هایپر مارکت</span></span>
+          </a>
+          <a href="#" class="cat-item cat-item--small bg-brown">
+            <img class="cat-item__art" src="assets/artwork/bread.png" alt="" width="56" height="56">
+            <span class="cat-item__label-wrap"><span class="cat-item__label" dir="auto">نان</span></span>
+          </a>
+          <a href="#" class="cat-item cat-item--small bg-lime">
+            <img class="cat-item__art" src="assets/artwork/fruit.png" alt="" width="56" height="56">
+            <span class="cat-item__label-wrap"><span class="cat-item__label" dir="auto">میوه / سبزیجات</span></span>
+          </a>
+          <a href="#" class="cat-item cat-item--small bg-rose">
+            <img class="cat-item__art" src="assets/artwork/meat.png" alt="" width="56" height="56">
+            <span class="cat-item__label-wrap"><span class="cat-item__label" dir="auto">پروتئینی</span></span>
+          </a>
+          <a href="#" class="cat-item cat-item--small bg-yellow">
+            <img class="cat-item__art" src="assets/artwork/sweet.png" alt="" width="56" height="56">
+            <span class="cat-item__label-wrap"><span class="cat-item__label" dir="auto">شیرینی</span></span>
+          </a>
+          <a href="#" class="cat-item cat-item--small bg-rose">
+            <img class="cat-item__art" src="assets/artwork/ice-cream.png" alt="" width="56" height="56">
+            <span class="cat-item__label-wrap"><span class="cat-item__label" dir="auto">آبمیوه بستنی</span></span>
+          </a>
+          <a href="#" class="cat-item cat-item--small bg-blue">
+            <img class="cat-item__art" src="assets/artwork/pet-shop.png" alt="" width="56" height="56">
+            <span class="cat-item__label-wrap"><span class="cat-item__label" dir="auto">پت‌ شاپ</span></span>
+          </a>
+        </div>
+      </section>
+      <!-- ===== /Component markup ===== -->
+    </div>
+
+    <!-- Demo only: width control -->
+    <div class="width-ctl" id="ctl">
+      <div class="width-ctl__head">
+        <label class="width-ctl__title" for="w">عرض CategoryRow</label>
+        <output class="width-ctl__value" id="val" for="w">390<small>px</small></output>
+      </div>
+      <div class="range-wrap">
+        <input class="range" id="w" type="range" min="320" max="760" step="1" value="390" aria-describedby="out">
+        <div class="ticks" aria-hidden="false">
+          <span class="tick" style="left:0%">320</span>
+          <button type="button" class="tick tick--figma" data-v="390" style="left:15.91%">390 · Figma</button>
+          <span class="tick" style="left:50%">540</span>
+          <span class="tick" style="left:100%">760</span>
+        </div>
+      </div>
+      <div class="chips" id="out" aria-live="polite">
+        <span class="chip">small <b id="s">78</b></span>
+        <span class="chip">large <b id="l">164</b></span>
+        <span class="chip chip--ok" id="eq">2s + g <b id="e">164</b></span>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="js/demo.js"></script>
+</body>
+</html>

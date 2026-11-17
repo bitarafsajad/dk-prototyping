@@ -1,0 +1,155 @@
+/* Digikala is the design font. If it is installed (or served by your app),
+   it is used; otherwise Vazirmatn 500 is the closest fallback. */
+@font-face {
+  font-family: "Digikala";
+  font-weight: 500;
+  src: local("Digikala Medium"), local("Digikala-Medium"), local("Digikala");
+}
+
+/* =========================================================
+   CategoryRow — component CSS (copy from here)
+   ---------------------------------------------------------
+   Rule:  large = 2 × small + gap   (at every width)
+   The large item spans 2 grid columns, so its width is
+   2 columns + 1 column-gap — no extra math needed.
+   ========================================================= */
+.category-row {
+  /* Tokens (Figma: CategoryRow 1189:561) */
+  --cr-pad-inline: 16px;   /* Row padding-inline               */
+  --cr-pad-block: 20px;    /* 16 (CategoryRow) + 4 (Row)        */
+  --cr-gap: 8px;           /* item gap (row gap = 4 + 4)        */
+  --cr-visible: 4.35;      /* visible columns incl. the peek    */
+  --cr-item-h: 92px;
+  --cr-small-min: 78px;
+
+  container-type: inline-size;
+  direction: rtl;
+  padding-block: var(--cr-pad-block);
+  background: var(--surface-primary, #ffffff);
+  overflow: hidden;
+}
+
+.category-row__grid {
+  /* s = (W − P) / N − g */
+  --cr-small: max(
+    var(--cr-small-min),
+    calc((100cqi - var(--cr-pad-inline)) / var(--cr-visible) - var(--cr-gap))
+  );
+
+  display: grid;
+  grid-template-rows: repeat(2, var(--cr-item-h));
+  grid-auto-flow: column dense;         /* top → bottom, then next column */
+  grid-auto-columns: var(--cr-small);
+  gap: var(--cr-gap);
+  padding-inline: var(--cr-pad-inline);
+
+  overflow-x: auto;                     /* one scroller: both rows move together */
+  overscroll-behavior-x: contain;
+  scroll-padding-inline: var(--cr-pad-inline);
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+.category-row__grid::-webkit-scrollbar { display: none; }
+
+/* ---------- CategoryItem (shared) ---------- */
+.cat-item {
+  position: relative;
+  display: flex;
+  height: var(--cr-item-h);
+  border-radius: 16px;
+  background: var(--cat-bg);
+  color: var(--content-primary, #000000);
+  text-decoration: none;
+  scroll-snap-align: start;
+  -webkit-tap-highlight-color: transparent;
+}
+.cat-item:focus-visible { outline: 2px solid var(--page-accent); outline-offset: 2px; }
+.cat-item__art {
+  position: absolute;
+  top: 0;
+  display: block;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+.cat-item__label {
+  flex: 1 0 0;
+  min-width: 1px;
+  margin: 0;
+  font-family: "Digikala", "Vazirmatn", Tahoma, sans-serif;
+  font-weight: 500;
+  font-style: normal;
+  letter-spacing: 0;
+  word-break: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;               /* max 2 lines */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ---------- size = small  (Figma 1188:115) ---------- */
+.cat-item--small {
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+}
+.cat-item--small .cat-item__art {
+  width: 56px;
+  height: 56px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.cat-item--small .cat-item__label-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 36px;
+  padding: 0 4px 12px;
+}
+.cat-item--small .cat-item__label {
+  font-size: 11px;
+  line-height: 16px;
+  text-align: center;
+}
+
+/* ---------- size = large  (Figma 1189:455) ---------- */
+.cat-item--large {
+  grid-column: span 2;                 /* ← large = 2 × small + gap */
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 12px;
+}
+.cat-item--large .cat-item__art {
+  width: 64px;
+  height: 64px;                        /* 92 − bottom 28 */
+  left: 0;                             /* physical left, as in Figma */
+  object-position: bottom;
+}
+.cat-item--large .cat-item__label-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 1 0 0;
+  min-width: 1px;
+  height: 48px;
+  padding: 0 12px 8px 52px;            /* top, right, bottom, left */
+}
+.cat-item--large .cat-item__label {
+  font-size: 13px;
+  line-height: 20px;
+  text-align: right;
+}
+
+/* Colour tokens (Figma variables) */
+.bg-yellow { --cat-bg: var(--yellow-100, #fff2c6); }
+.bg-green  { --cat-bg: var(--green-100,  #e2f1e6); }
+.bg-rose   { --cat-bg: var(--rose-100,   #fce7ea); }
+.bg-brown  { --cat-bg: var(--brown-100,  #f3ebe7); }
+.bg-lime   { --cat-bg: var(--lime-100,   #f0f9d3); }
+.bg-blue   { --cat-bg: var(--blue-100,   #e2ecff); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .category-row__grid { scroll-behavior: smooth; }
+}
+/* ===================== end component ===================== */
