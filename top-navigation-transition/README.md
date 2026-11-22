@@ -34,6 +34,7 @@ Crossing the threshold always plays the **full 360 ms transition**; stopping the
   ```
 - Status bar removed; 12 px top padding plus `env(safe-area-inset-top)`.
 - Header heights: 132 px expanded, 68 px collapsed. Max content width 480 px.
+- Collapsed state shows the `hasScrollDivider` divider (Divider / Type=Medium, no paddings): full-width 1 px `#DAD7D3` (Border/Terra – Secondary) as the header's last row; fades in as the header lands, out at once on expand.
 
 ## Browser support
 
@@ -69,4 +70,3 @@ python3 -m http.server 8080
 
 - One threshold only (CSS can't do hysteresis); hovering exactly at 32 px can flip back and forth. Two thresholds need a few lines of JS.
 - The hint ticker's 18 px window (from Figma) can clip tall Persian glyphs mid-roll; consider a 22–24 px window.
-- `hasScrollDivider` is off in both Figma variants; a divider in the collapsed state would separate the header from scrolled content.
