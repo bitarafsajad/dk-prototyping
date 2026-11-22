@@ -108,29 +108,29 @@ body {
 .tn-circle { top: 14px; width: 44px; height: 44px; opacity: 0; }
 
 /* ---- Rig (visible only between the rest points) ----
-   left cap  : half circle, uniform scale s (1 → 44/52)
-   right part: half circle + a long band attached to its left, one transform.
-               The band is clipped at x=22 (under the left cap), so the pill
-               body always reaches the left cap without scaling the band.   */
+   Two plain rounded shapes, no clipped pseudo-elements inside moving layers:
+   .rig-l : a full 52px circle (left end), uniform scale s (1 → 44/52).
+   .rig-r : one long pill whose ROUNDED right end is the field's right end.
+            Its body is cut by .rig-clip at x=22 (under the left circle), so it
+            always reaches the left end without any width animation.
+   Why: the previous right end was a 26px box holding a clipped half-circle
+   plus a band whose painted ::before overflowed under it. Chrome's GPU path
+   treated that moving layer as fully opaque, so the transparent corners
+   around the rounded end were never cleared and drew BLACK on screen.
+   Shapes with their own border-radius are never marked opaque. */
 .tn-rig { position: absolute; left: 16px; top: 12px; width: calc(100cqw - 32px); height: 52px; opacity: 0; }
+.rig-l {
+  position: absolute; left: 0; top: 0; width: 52px; height: 52px; border-radius: 50%;
+  background: var(--surface-secondary); box-shadow: var(--outline);
+  transform-origin: 0 0;
+}
 .rig-clip { position: absolute; left: 22px; right: 0; top: 0; height: 52px; overflow: hidden; }
-.rig-r, .rig-l { position: absolute; left: 0; top: 0; width: 26px; height: 52px; transform-origin: 0 0; }
-.rig-l { overflow: hidden; }
-.rig-l::before {
-  content: ""; position: absolute; top: 0; width: 52px; height: 52px; border-radius: 50%;
+/* right edge sits at x=26 of the moving frame (frame origin = left of right end) */
+.rig-r {
+  position: absolute; top: 0; left: -1174px; width: 1200px; height: 52px; border-radius: 26px;
   background: var(--surface-secondary); box-shadow: var(--outline);
-}
-.rig-l::before { left: 0; }
-.rig-r { overflow: visible; transform: translate(calc(100cqw - 80px), 0); }
-.rig-r-cap { position: absolute; left: 0; top: 0; width: 26px; height: 52px; overflow: hidden; }
-.rig-r-cap::before {
-  content: ""; position: absolute; top: 0; left: -26px; width: 52px; height: 52px; border-radius: 50%;
-  background: var(--surface-secondary); box-shadow: var(--outline);
-}
-.rig-band { position: absolute; top: 0; right: 25px; width: 1200px; height: 52px; overflow: hidden; }
-.rig-band::before {
-  content: ""; position: absolute; top: 0; left: 0; right: -30px; height: 52px;
-  background: var(--surface-secondary); box-shadow: var(--outline);
+  transform-origin: 1174px 0;
+  transform: translate(calc(100cqw - 80px), 0);
 }
 
 /* Hit target for search (field, or the circle once location covers the rest) */
@@ -271,10 +271,10 @@ body {
     <div class="tn-bg"></div>
 
     <div class="tn-rig" aria-hidden="true">
-      <div class="rig-clip">
-        <div class="rig-r"><div class="rig-band"></div><div class="rig-r-cap"></div></div>
-      </div>
       <div class="rig-l"></div>
+      <div class="rig-clip">
+        <div class="rig-r"></div>
+      </div>
     </div>
     <div class="tn-field" aria-hidden="true"></div>
     <div class="tn-circle" aria-hidden="true"></div>
