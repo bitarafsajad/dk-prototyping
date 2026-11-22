@@ -21,7 +21,7 @@ Crossing the threshold always plays the **full 360 ms transition**; stopping the
 1. A scroll-driven animation (`animation-timeline: scroll(root)`) writes a registered integer `--c` on the header: `0` below 32px, `1` from 32px (`steps(1, end)` makes it a hard threshold).
 2. Children read it with a container style query `@container style(--c: 1)`. When it flips, normal CSS **transitions** run the collapse/expand.
 3. Every animated property is `transform` or `opacity`, so motion runs on the compositor thread:
-   - The field width is faked with a rig: a left half-circle and a right half-circle carrying a long clipped band — no `width` animation.
+   - The field width is faked with a rig: two half-circles (clip-path painted inside each moving layer) and a flat gradient band scaled between their centres — no `width` animation, no overflow-clipping layers (these caused black corners on Safari / some Chrome GPU paths).
    - The header height change is a translated white backdrop — no `height` animation.
    - Pixel-exact static field / circle cover the rig at rest; the rig is only visible while moving.
 4. The rotating search hint is a pure CSS keyframe loop (800 ms hold + 1250 ms move, 36 px steps).

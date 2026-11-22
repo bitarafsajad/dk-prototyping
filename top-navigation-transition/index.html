@@ -108,29 +108,33 @@ body {
 .tn-circle { top: 14px; width: 44px; height: 44px; opacity: 0; }
 
 /* ---- Rig (visible only between the rest points) ----
-   Two plain rounded shapes, no clipped pseudo-elements inside moving layers:
-   .rig-l : a full 52px circle (left end), uniform scale s (1 → 44/52).
-   .rig-r : one long pill whose ROUNDED right end is the field's right end.
-            Its body is cut by .rig-clip at x=22 (under the left circle), so it
-            always reaches the left end without any width animation.
-   Why: the previous right end was a 26px box holding a clipped half-circle
-   plus a band whose painted ::before overflowed under it. Chrome's GPU path
-   treated that moving layer as fully opaque, so the transparent corners
-   around the rounded end were never cleared and drew BLACK on screen.
-   Shapes with their own border-radius are never marked opaque. */
-.tn-rig { position: absolute; left: 16px; top: 12px; width: calc(100cqw - 32px); height: 52px; opacity: 0; }
-.rig-l {
-  position: absolute; left: 0; top: 0; width: 52px; height: 52px; border-radius: 50%;
+   Three moving layers, NO overflow clipping, NO pseudo-elements, NO opacity group:
+   .rig-l / .rig-r : 52px circles (field ends), uniform scale s (1 → 44/52).
+                     Each shows only its outer HALF (clip-path painted inside
+                     the layer), so their inner arcs never show when they meet.
+   .rig-band       : flat rectangle between the two circle CENTRES; scaleX
+                     shrinks it to 0 as the halves meet.
+   Left half + band + right half tile the pill exactly at the centre lines.
+   The band uses a vertical gradient sampled from the real fill +
+   Action/Outline inner shadow + 1px stroke, so it has no side edges.
+   Why: the black edge came from a clipping layer (overflow:hidden) holding
+   moving content inside an opacity-animated parent. Mobile Safari and some
+   Chrome GPU paths never cleared the uncovered corners of that layer, so
+   they showed BLACK. There is no clip layer and no opacity group any more. */
+.tn-rig { position: absolute; left: 16px; top: 12px; width: calc(100cqw - 32px); height: 52px; visibility: hidden; }
+.rig-l, .rig-r { position: absolute; left: 0; top: 0; width: 52px; height: 52px; transform-origin: 0 0; }
+.rig-disc {
+  position: absolute; inset: 0; border-radius: 50%;
   background: var(--surface-secondary); box-shadow: var(--outline);
-  transform-origin: 0 0;
 }
-.rig-clip { position: absolute; left: 22px; right: 0; top: 0; height: 52px; overflow: hidden; }
-/* right edge sits at x=26 of the moving frame (frame origin = left of right end) */
-.rig-r {
-  position: absolute; top: 0; left: -1174px; width: 1200px; height: 52px; border-radius: 26px;
-  background: var(--surface-secondary); box-shadow: var(--outline);
-  transform-origin: 1174px 0;
-  transform: translate(calc(100cqw - 80px), 0);
+.rig-l .rig-disc { clip-path: inset(0 26px 0 0); }
+.rig-r .rig-disc { clip-path: inset(0 0 0 26px); }
+.rig-r { transform: translate(calc(100cqw - 84px), 0); }           /* x = W−52 */
+.rig-band {
+  position: absolute; left: 26px; top: 0; height: 52px;
+  width: calc(100cqw - 84px);                                       /* W−52: centre to centre */
+  transform-origin: 0 0;
+  background: linear-gradient(to bottom, #eeeeee 0px 0.25px, #ededed 0.25px 0.75px, #ececec 0.75px 1px, #fafafa 1px 2.5px, #f9f9f9 2.5px 3.75px, #f8f8f8 3.75px 5px, #f7f7f7 5px 6.5px, #f6f6f6 6.5px 8.25px, #f5f5f5 8.25px 51px, #d9d9d9 51px 51.75px, #dadada 51.75px 52px);
 }
 
 /* Hit target for search (field, or the circle once location covers the rest) */
@@ -214,13 +218,14 @@ body {
   @keyframes k-c { from { --c: 0; } to { --c: 1; } }
 
   /* Layers moved by transitions, promoted once */
-  .tn-bg, .tn-location, .rig-l, .rig-r, .tn-icon, .ic-field, .ic-btn,
-  .tn-placeholder, .tn-mic, .tn-rig { will-change: transform, opacity; }
+  .tn-bg, .tn-location, .rig-l, .rig-r, .rig-band, .tn-icon, .ic-field, .ic-btn,
+  .tn-placeholder, .tn-mic { will-change: transform, opacity; }
 
   /* ---------- EXPANDED (homePage) + expand timing ---------- */
   .tn-bg, .tn-location { transform: translate3d(0,0,0); transition: transform var(--d) var(--ease); }
   .rig-l { transform: translate(0,0) scale(1); transition: transform var(--d) var(--ease); }
-  .rig-r { transform: translate(calc(100cqw - 80px),0) scale(1); transition: transform var(--d) var(--ease); }
+  .rig-r { transform: translate(calc(100cqw - 84px),0) scale(1); transition: transform var(--d) var(--ease); }
+  .rig-band { transform: translate(0,0) scale(1,1); transition: transform var(--d) var(--ease); }
   .tn-icon { transform: translate(0,0); transition: transform var(--d) var(--ease); }
   .tn-icon svg { transition: opacity 200ms linear; }
   .tn-placeholder {
@@ -231,16 +236,18 @@ body {
   /* statics: field appears exactly when motion ends; circle hides at once */
   .tn-field  { opacity: 1; transition: opacity 0s linear var(--d); }
   .tn-circle { opacity: 0; transition: opacity 0s; }
-  /* rig: visible only while moving (animation restarts on each state change) */
-  .tn-rig { opacity: 0; animation: k-rig-a calc(var(--d) + 50ms) linear; }
-  @keyframes k-rig-a { from, to { opacity: 1; } }
-  @keyframes k-rig-b { from, to { opacity: 1; } }
+  /* rig: visible only while moving (visibility flips twice per transition; nothing
+     animates per frame on the main thread). Restarts on each state change. */
+  .tn-rig { visibility: hidden; animation: k-rig-a calc(var(--d) + 50ms) linear; }
+  @keyframes k-rig-a { from, to { visibility: visible; } }
+  @keyframes k-rig-b { from, to { visibility: visible; } }
 
   /* ---------- COLLAPSED (homePageScroll) + collapse timing ---------- */
   @container style(--c: 1) {
     .tn-bg, .tn-location { transform: translate3d(0,-64px,0); }
     .rig-l { transform: translate(0,2px) scale(.846154); }
     .rig-r { transform: translate(0,2px) scale(.846154); }
+    .rig-band { transform: translate(-4px,2px) scale(.0001,.846154); }
     .tn-icon { transform: translate(calc(80px - 100cqw), -2px); }
     .tn-icon .ic-field { opacity: 0; transition-delay: 100ms; }
     .tn-icon .ic-btn   { opacity: 1; transition-delay: 100ms; }
@@ -271,10 +278,9 @@ body {
     <div class="tn-bg"></div>
 
     <div class="tn-rig" aria-hidden="true">
-      <div class="rig-l"></div>
-      <div class="rig-clip">
-        <div class="rig-r"></div>
-      </div>
+      <div class="rig-l"><span class="rig-disc"></span></div>
+      <div class="rig-r"><span class="rig-disc"></span></div>
+      <div class="rig-band"></div>
     </div>
     <div class="tn-field" aria-hidden="true"></div>
     <div class="tn-circle" aria-hidden="true"></div>
