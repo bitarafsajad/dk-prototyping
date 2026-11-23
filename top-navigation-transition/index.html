@@ -55,7 +55,7 @@ body {
    No JavaScript. No status bar. No corner radius.
    Geometry = Figma minus the 44px status bar, with 12px top padding:
      expanded : field y12 h52 · location text y76 · header 132
-     collapsed: circle y14 44×44 · location text y12 · header 68
+     collapsed: search pill y14 64×44 · location text x84 y12 · header 68
    The collapse is scrubbed by the first 64px of scroll (1:1 with the
    content), using CSS scroll-driven animations. Every animated property is
    transform or opacity, so Chrome runs it on the compositor thread:
@@ -83,7 +83,7 @@ body {
 /* Location (homePage x24 right, y76) */
 .tn-location { position: absolute; left: 0; right: 0; top: 76px; height: 56px; }
 .tn-loc-frame {
-  position: absolute; right: 24px; left: 64px; top: 0; height: 48px;
+  position: absolute; right: 24px; left: 84px; top: 0; height: 48px;   /* 16 + 64 button + 4 gap */
   display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
   direction: rtl; pointer-events: auto;
 }
@@ -105,17 +105,21 @@ body {
 /* ---- Exact statics (shown only at the two rest points) ---- */
 .tn-field, .tn-circle { position: absolute; left: 16px; border-radius: 999px; background: var(--surface-secondary); box-shadow: var(--outline); }
 .tn-field  { top: 12px; width: calc(100cqw - 32px); height: 52px; }
-/* Button — ghost / medium / circle (41:464) */
-.tn-circle { top: 14px; width: 44px; height: 44px; opacity: 0; }
+/* Button — ghost / medium / circle, as placed in homePageScroll (1378:5190):
+   64×44, radius 999, px16, icon 24 centred (x+20, y+10). */
+.tn-circle { top: 14px; width: 64px; height: 44px; opacity: 0; }
 
 /* ---- Rig (visible only between the rest points) ----
    Three moving layers, NO overflow clipping, NO pseudo-elements, NO opacity group:
    .rig-l / .rig-r : 52px circles (field ends), uniform scale s (1 → 44/52).
                      Each shows only its outer HALF (clip-path painted inside
                      the layer), so their inner arcs never show when they meet.
-   .rig-band       : flat rectangle between the two circle CENTRES; scaleX
-                     shrinks it to 0 as the halves meet.
-   Left half + band + right half tile the pill exactly at the centre lines.
+   .rig-band-a     : fixed 20px flat segment after the left centre = the body
+                     of the final 64×44 pill (44 of ends + 20 of body).
+   .rig-band-b     : the rest of the body (W−72); scaleX shrinks it to 0.
+                     Splitting the body this way needs no length÷length math,
+                     so it works at any screen width.
+   Left half + bands + right half tile the pill exactly at the centre lines.
    The band uses a vertical gradient sampled from the real fill +
    Action/Outline inner shadow + 1px stroke, so it has no side edges.
    Why: the black edge came from a clipping layer (overflow:hidden) holding
@@ -131,10 +135,10 @@ body {
 .rig-l .rig-disc { clip-path: inset(0 26px 0 0); }
 .rig-r .rig-disc { clip-path: inset(0 0 0 26px); }
 .rig-r { transform: translate(calc(100cqw - 84px), 0); }           /* x = W−52 */
-.rig-band {
-  position: absolute; left: 26px; top: 0; height: 52px;
-  width: calc(100cqw - 84px);                                       /* W−52: centre to centre */
-  transform-origin: 0 0;
+.rig-band-a, .rig-band-b { position: absolute; top: 0; height: 52px; transform-origin: 0 0; }
+.rig-band-a { left: 26px; width: 21px; }                           /* 20 + 1px overlap under b */
+.rig-band-b { left: 46px; width: calc(100cqw - 104px); }            /* W−72 */
+.rig-band-a, .rig-band-b {
   background: linear-gradient(to bottom, #eeeeee 0px 0.25px, #ededed 0.25px 0.75px, #ececec 0.75px 1px, #fafafa 1px 2.5px, #f9f9f9 2.5px 3.75px, #f8f8f8 3.75px 5px, #f7f7f7 5px 6.5px, #f6f6f6 6.5px 8.25px, #f5f5f5 8.25px 51px, #d9d9d9 51px 51.75px, #dadada 51.75px 52px);
 }
 
@@ -146,7 +150,7 @@ body {
 
 /* Circle hit target (collapsed). Swapped by visibility: no layout on flip. */
 .tn-hit-c {
-  position: absolute; left: 16px; top: 14px; width: 44px; height: 44px; visibility: hidden;
+  position: absolute; left: 16px; top: 14px; width: 64px; height: 44px; visibility: hidden;
   border: 0; padding: 0; margin: 0; background: none; border-radius: 999px; cursor: pointer;
 }
 
@@ -229,7 +233,7 @@ body {
   @keyframes k-c { from { --c: 0; } to { --c: 1; } }
 
   /* Layers moved by transitions, promoted once */
-  .tn-bg, .tn-location, .rig-l, .rig-r, .rig-band, .tn-icon, .ic-field, .ic-btn,
+  .tn-bg, .tn-location, .rig-l, .rig-r, .rig-band-a, .rig-band-b, .tn-icon, .ic-field, .ic-btn,
   .tn-placeholder, .tn-mic, .tn-divider { will-change: transform, opacity; }
   /* divider: gone at once when expanding */
   .tn-divider { opacity: 0; transition: opacity 80ms linear; }
@@ -238,7 +242,7 @@ body {
   .tn-bg, .tn-location { transform: translate3d(0,0,0); transition: transform var(--d) var(--ease); }
   .rig-l { transform: translate(0,0) scale(1); transition: transform var(--d) var(--ease); }
   .rig-r { transform: translate(calc(100cqw - 84px),0) scale(1); transition: transform var(--d) var(--ease); }
-  .rig-band { transform: translate(0,0) scale(1,1); transition: transform var(--d) var(--ease); }
+  .rig-band-a, .rig-band-b { transform: translate(0,0) scale(1,1); transition: transform var(--d) var(--ease); }
   .tn-icon { transform: translate(0,0); transition: transform var(--d) var(--ease); }
   .tn-icon svg { transition: opacity 200ms linear; }
   .tn-placeholder {
@@ -259,13 +263,16 @@ body {
   @container style(--c: 1) {
     .tn-bg, .tn-location { transform: translate3d(0,-64px,0); }
     .rig-l { transform: translate(0,2px) scale(.846154); }
-    .rig-r { transform: translate(0,2px) scale(.846154); }
-    .rig-band { transform: translate(-4px,2px) scale(.0001,.846154); }
-    .tn-icon { transform: translate(calc(80px - 100cqw), -2px); }
+    /* end pill 64×44: left half 0–22, body 22–42, right half 42–64 */
+    .rig-r { transform: translate(20px,2px) scale(.846154); }
+    .rig-band-a { transform: translate(-4px,2px) scale(1,.846154); }
+    .rig-band-b { transform: translate(-4px,2px) scale(.0001,.846154); }
+    /* icon x (W−22) → 36 (centre of the 64px pill) */
+    .tn-icon { transform: translate(calc(90px - 100cqw), -2px); }
     .tn-icon .ic-field { opacity: 0; transition-delay: 100ms; }
     .tn-icon .ic-btn   { opacity: 1; transition-delay: 100ms; }
     .tn-placeholder {
-      opacity: 0; transform: translateX(calc(80px - 100cqw));
+      opacity: 0; transform: translateX(calc(96px - 100cqw));   /* rides the right edge: W+16 → 80 */
       transition: transform var(--d) var(--ease), opacity 80ms linear;
     }
     .tn-mic { opacity: 0; transform: translateX(-200px); transition: opacity 80ms linear, transform 0s linear 80ms; }
@@ -295,7 +302,8 @@ body {
     <div class="tn-rig" aria-hidden="true">
       <div class="rig-l"><span class="rig-disc"></span></div>
       <div class="rig-r"><span class="rig-disc"></span></div>
-      <div class="rig-band"></div>
+      <div class="rig-band-a"></div>
+      <div class="rig-band-b"></div>
     </div>
     <div class="tn-field" aria-hidden="true"></div>
     <div class="tn-circle" aria-hidden="true"></div>

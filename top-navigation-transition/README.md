@@ -5,14 +5,14 @@ A zero-JavaScript implementation of the Digikala-style home **TopNavigation**: t
 Built from Figma `Components`:
 - `977:721` — TopNavigation / homePage (expanded)
 - `1378:5184` — TopNavigation / homePageScroll (collapsed)
-- `41:464` — Button / ghost / medium / circle (collapsed search button)
+- `1378:5190` — Button / ghost / medium (64×44 pill, px 16) — collapsed search button
 
 ## Behaviour
 
 | Scroll position | State |
 |---|---|
 | `< 32px` | Expanded — full search field (mic, rotating hint, search icon) |
-| `≥ 32px` | Collapsed — 44×44 circle button in front of the location |
+| `≥ 32px` | Collapsed — 64×44 search pill in front of the location |
 
 Crossing the threshold always plays the **full 360 ms transition**; stopping the scroll can never freeze the header half-way. The field compacts into the circle and the location rises **at the same time**; the reverse plays when scrolling back above the threshold.
 
@@ -21,7 +21,7 @@ Crossing the threshold always plays the **full 360 ms transition**; stopping the
 1. A scroll-driven animation (`animation-timeline: scroll(root)`) writes a registered integer `--c` on the header: `0` below 32px, `1` from 32px (`steps(1, end)` makes it a hard threshold).
 2. Children read it with a container style query `@container style(--c: 1)`. When it flips, normal CSS **transitions** run the collapse/expand.
 3. Every animated property is `transform` or `opacity`, so motion runs on the compositor thread:
-   - The field width is faked with a rig: two half-circles (clip-path painted inside each moving layer) and a flat gradient band scaled between their centres — no `width` animation, no overflow-clipping layers (these caused black corners on Safari / some Chrome GPU paths).
+   - The field width is faked with a rig: two half-circles (clip-path painted inside each moving layer) plus a fixed 20 px body segment and a second body segment that scales to 0, so the pill always ends at exactly 64×44 — no `width` animation, no overflow-clipping layers (these caused black corners on Safari / some Chrome GPU paths).
    - The header height change is a translated white backdrop — no `height` animation.
    - Pixel-exact static field / circle cover the rig at rest; the rig is only visible while moving.
 4. The rotating search hint is a pure CSS keyframe loop (800 ms hold + 1250 ms move, 36 px steps).
