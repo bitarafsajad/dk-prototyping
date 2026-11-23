@@ -6,7 +6,8 @@ Interactive prototype of the ModalPDP component (product carousel modal) on top 
 
 - `index.html` – the page (loads images and fonts from `assets/`)
 - `assets/fonts/` – Digikala Regular, Medium, Bold (woff2)
-- `assets/images/` – home screenshot, product images, promo-badge icon
+- `assets/images/` – home screenshot, product images
+- `assets/icons/` – fire (promo badge) and cross (close button) icons
 - `preview.html` – the same page as one self-contained file (no `assets/` needed), for quick previews
 - `.nojekyll` – tells GitHub Pages to serve the files as they are
 

@@ -72,13 +72,20 @@ button:focus-visible{outline:2px solid #2f6bff;outline-offset:2px}
 .ghost{position:absolute;left:0;top:0;z-index:6;pointer-events:none;background-repeat:no-repeat;background-color:#fff;opacity:0;visibility:hidden}
 .thumb-hole{position:absolute;z-index:1;pointer-events:none;background:#fff;border-radius:12px;opacity:0}
 .btn-close{
+  /* Button — variant=ghost, size=medium, shape=circle (Figma 41:464) */
   position:absolute;left:16px;top:16px;width:44px;height:44px;border-radius:999px;z-index:3;
-  display:grid;place-items:center;background:var(--surface-secondary);border:1px solid var(--border-secondary);
-  box-shadow:inset 0 4px 8px rgba(255,255,255,.7),0 4px 16px rgba(0,0,0,.1);
-  transition:transform 140ms ease-out;
+  display:grid;place-items:center;border:0;
+  background:var(--surface-secondary);                      /* fill #f5f5f5 */
+  transition:transform 510ms cubic-bezier(.34,1.45,.5,1); /* Figma: smart animate, spring ~0.51s */
 }
-.btn-close:active{transform:scale(.94)}
-.btn-close svg{width:24px;height:24px;display:block}
+/* Stroke: 1px inside, #d6d6d6 — drawn as its own layer so the inner shadow can sit on top of it */
+.btn-close::before{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 1px var(--border-secondary);pointer-events:none}
+/* Inner shadow: #fff 70%, y 4, blur 8 — painted over fill AND stroke (as Figma composites layer effects),
+   so the top of the border is washed out to white and only the lower part of the ring stays grey */
+.btn-close::after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 4px 8px rgba(255,255,255,.7);pointer-events:none}
+.btn-close svg{position:relative;z-index:1;width:24px;height:24px;display:block}
+/* state=pressed: grows to 48px (44 → 48) */
+.btn-close:active{transform:scale(1.0909);transition-duration:300ms}
 
 .content{display:flex;flex-direction:column;gap:16px}
 .badges{display:flex;gap:4px;align-items:center;justify-content:flex-start;padding:0 16px;direction:rtl}
@@ -135,20 +142,21 @@ button:focus-visible{outline:2px solid #2f6bff;outline-offset:2px}
 @media (hover:hover) and (pointer:fine){
   .btn-cart:hover{background:#d6143c}
   .btn-cart.is-added:hover{background:#1b8a4b}
-  .btn-close:hover{background:#ececec}
+  /* state=hover: extra fill rgba(0,0,0,.04) over the base fill */
+  .btn-close:hover{background:linear-gradient(rgba(0,0,0,.04),rgba(0,0,0,.04)),var(--surface-secondary)}
 }
 
 /* modalIndicator */
-.indicator{position:absolute;left:0;right:0;bottom:0;height:85px;padding:16px 0 21px;display:flex;gap:8px;align-items:center;justify-content:center;direction:rtl;opacity:0}
-.thumb{
-  position:relative;width:40px;height:40px;border-radius:10px;background:var(--surface-primary);border:1px solid var(--border-terra);
-  transition:width 220ms var(--ease-sheet),height 220ms var(--ease-sheet),border-radius 220ms var(--ease-sheet);flex:none;
-}
-.thumb img{position:absolute;left:50%;top:50%;width:32px;height:32px;transform:translate(-50%,-50%);object-fit:cover;pointer-events:none}
-.thumb::before{content:"";position:absolute;inset:-1px;border-radius:inherit;background:radial-gradient(closest-side,rgba(47,43,37,0) 0%,rgba(47,43,37,.06) 100%);pointer-events:none}
-.thumb::after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 3.6px 7.3px rgba(255,255,255,.7);pointer-events:none}
-.thumb[aria-current="true"]{width:48px;height:48px;border-radius:12px;border:2px solid var(--border-selected)}
-.thumb[aria-current="true"] img{width:39px;height:39px}
+.indicator{position:absolute;left:0;right:0;bottom:0;height:85px;overflow:hidden;opacity:0}
+/* Thumbnail (size=Small). The ring is the outer box's own fill and the white face sits inside it,
+   so no white background can bleed through the anti-aliased edge of the border. */
+.thumb{position:absolute;left:50%;top:0;width:40px;height:40px;border-radius:10px;background:#efeeeb;will-change:transform}
+.thumb-in{position:absolute;inset:1px;border-radius:9px;background:#fff;overflow:hidden;transition:filter 120ms ease-out}
+.thumb:active .thumb-in{filter:brightness(.94)}
+.thumb-in img{will-change:width,height}
+.thumb-in img{position:absolute;left:50%;top:50%;width:32px;height:32px;transform:translate(-50%,-50%);object-fit:contain;pointer-events:none}
+.thumb-in::before{content:"";position:absolute;inset:0;background:radial-gradient(closest-side,rgba(47,43,37,0) 0%,rgba(47,43,37,.06) 100%);pointer-events:none}
+.thumb-in::after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 3.6px 7.3px rgba(255,255,255,.7);pointer-events:none}
 
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 </style>
@@ -175,7 +183,7 @@ button:focus-visible{outline:2px solid #2f6bff;outline-offset:2px}
         <div class="image-frame"><img class="place-image" alt=""></div>
         <div class="content">
           <div class="badges">
-            <div class="promo"><img alt="" width="14" height="14" src="assets/images/fire.png"><span class="promo-text"></span></div>
+            <div class="promo"><img alt="" width="14" height="14" src="assets/icons/fire.svg"><span class="promo-text"></span></div>
           </div>
           <div class="text-frame">
             <h2 class="title"></h2>
@@ -185,7 +193,7 @@ button:focus-visible{outline:2px solid #2f6bff;outline-offset:2px}
         </div>
       </div>
     </div>
-    <button class="btn-close" type="button" aria-label="بستن"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="#000" stroke-width="1.8" stroke-linecap="round" fill="none"/></svg></button>
+    <button class="btn-close" type="button" aria-label="بستن"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path fill="#000" d="M13.4101 12.0063L17.7001 7.71626C18.0901 7.32626 18.0901 6.69626 17.7001 6.30626C17.3101 5.91626 16.6801 5.91626 16.2901 6.30626L12.0001 10.5963L7.71006 6.29628C7.32006 5.90628 6.68006 5.90628 6.29006 6.29628C5.90006 6.68628 5.90006 7.32628 6.29006 7.71628L10.5801 12.0063L6.29006 16.2963C5.90006 16.6863 5.90006 17.3163 6.29006 17.7063C6.49006 17.9063 6.74006 17.9963 7.00006 17.9963C7.26006 17.9963 7.51006 17.8963 7.71006 17.7063L12.0001 13.4163L16.2901 17.7063C16.4901 17.9063 16.7401 17.9963 17.0001 17.9963C17.2601 17.9963 17.5101 17.8963 17.7101 17.7063C18.1001 17.3163 18.1001 16.6863 17.7101 16.2963L13.4201 12.0063H13.4101Z"/></svg></button>
     <div class="cart-fab">
       <div class="price-col">
         <div class="price">
@@ -284,14 +292,69 @@ for (let i = 0; i < 5; i++) {
     setTimeout(() => { b.classList.remove('is-added'); s.textContent = 'افزودن به سبد'; }, 1600);
   });
 }
-P.forEach((prod, i) => {
+// modalIndicator: a looping strip of 5 recycled thumbnails that follows the carousel,
+// so the selected product is always the centred, larger one
+const thumbs = [];
+for (let i = 0; i < 5; i++) {
   const b = document.createElement('button');
-  b.className = 'thumb'; b.type = 'button'; b.setAttribute('role', 'tab');
-  b.setAttribute('aria-label', prod.title);
-  b.innerHTML = `<img alt="" src="${prod.img}">`;
-  b.addEventListener('click', () => goToProduct(i));
-  indicator.appendChild(b);
-});
+  b.className = 'thumb'; b.type = 'button'; b.setAttribute('role', 'tab'); b.k = null;
+  b.innerHTML = '<span class="thumb-in"><img alt="" decoding="async"></span>';
+  b.addEventListener('click', () => { if (state === 'card' && b.k !== Math.round(pos)) goTo(b.k); });
+  indicator.appendChild(b); thumbs.push(b);
+}
+const RING_OFF = [239, 238, 235], RING_ON = [0, 0, 0];
+const smooth = x => x * x * (3 - 2 * x); // smoothstep: no kinks where a thumbnail starts/stops changing
+// The strip follows the carousel through a critically damped spring, so taps, snaps and fast
+// swipes glide into place instead of jumping, with no overshoot.
+let ipos = null, ivel = 0, iraf = 0, ilast = 0;
+function kickThumbs() {
+  if (ipos === null || reduce.matches) { ipos = pos; ivel = 0; renderThumbs(); return; }
+  if (!iraf) { ilast = performance.now(); iraf = requestAnimationFrame(stepThumbs); }
+}
+function stepThumbs(now) {
+  const dt = Math.min(0.032, Math.max(0.001, (now - ilast) / 1000)); ilast = now;
+  const k = 420, c = 2 * Math.sqrt(k);
+  for (let i = 0; i < 4; i++) { // 4 sub-steps for a stable, smooth integration
+    const h = dt / 4, a = k * (pos - ipos) - c * ivel;
+    ivel += a * h; ipos += ivel * h;
+  }
+  if (Math.abs(pos - ipos) < 0.0004 && Math.abs(ivel) < 0.003) { ipos = pos; ivel = 0; iraf = 0; renderThumbs(); return; }
+  renderThumbs();
+  iraf = requestAnimationFrame(stepThumbs);
+}
+function renderThumbs() {
+  const k0 = Math.round(ipos), sel = Math.round(pos);
+  for (let s = -2; s <= 2; s++) {
+    const k = k0 + s, b = thumbs[mod(k, 5)];
+    if (b.k !== k) {
+      const prod = P[mod(k, N)];
+      b.k = k; b.querySelector('img').src = prod.img; b.setAttribute('aria-label', prod.title);
+    }
+    const dist = k - ipos, ad = Math.abs(dist);
+    const c = smooth(Math.max(0, 1 - ad));                       // 1 = centred/selected
+    // Size follows position: the thumbnail leaving the centre shrinks as it moves away,
+    // the one arriving grows as it moves in — continuously, during the movement itself.
+    const g = 1 - Math.min(1, ad);                               // 1 at the centre, 0 one slot away
+    const size = 40 + 8 * g, ring = 1 + g, rad = 10 + 2 * g;
+    const off = -Math.sign(dist) * (48 * ad + 4 * (1 - g));      // 52px centre↔neighbour, 48px beyond; RTL      // 52px between centre and neighbours, 48px beyond; RTL
+    const fade = ad <= 1 ? 1 : 1 - smooth(Math.min(1, (ad - 1) / 0.8));
+    const sc = 0.8 + 0.2 * fade;                                 // outgoing thumbnails shrink as they fade
+    const col = RING_OFF.map((v, j) => (v + (RING_ON[j] - v) * g).toFixed(1));
+    b.style.width = b.style.height = size + 'px';
+    b.style.borderRadius = rad + 'px';
+    b.style.background = `rgb(${col})`;
+    b.style.transform = `translate3d(${off - size / 2}px,${40 - size / 2}px,0) scale(${sc})`;
+    b.style.opacity = fade;
+    b.style.pointerEvents = fade > 0.5 ? '' : 'none';
+    b.tabIndex = fade > 0.5 ? 0 : -1;
+    const inner = b.firstElementChild;
+    inner.style.inset = ring + 'px';
+    inner.style.borderRadius = (rad - ring) + 'px';
+    const img = inner.firstElementChild, is = size * 0.8;
+    img.style.width = img.style.height = is + 'px';
+    b.setAttribute('aria-selected', k === sel);
+  }
+}
 
 function fill(el, k) {
   const prod = P[mod(k, N)];
@@ -410,7 +473,7 @@ function render() {
   } else thumbHole.style.opacity = 0;
   indicator.style.pointerEvents = p > 0.5 ? 'none' : '';
   const cur = mod(k0, N);
-  [...indicator.children].forEach((t, i) => { t.setAttribute('aria-current', i === cur); t.setAttribute('aria-selected', i === cur); });
+  kickThumbs();
 }
 const activeEl = () => nodes[mod(Math.round(pos), 5)];
 const activeScroll = () => activeEl().querySelector('.scroll');
@@ -465,7 +528,7 @@ function open(productIndex, fromEl, cardIndex) {
   measure();
   openerEl = fromEl || null;
   openCard = cardIndex ?? -1;
-  pos = productIndex; p = 0; d = 0; state = 'card';
+  pos = productIndex; p = 0; d = 0; state = 'card'; ipos = null;
   src = openCard >= 0 ? thumbRect(openCard) : null;
   m = src ? 0 : 1;
   modal.classList.add('is-open');
