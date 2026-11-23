@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>Modal PDP</title>
+<style>
+@font-face{font-family:"Digikala";src:url("assets/fonts/Digikala-Regular.woff2") format("woff2");font-weight:400;font-display:block}
+@font-face{font-family:"Digikala";src:url("assets/fonts/Digikala-Medium.woff2") format("woff2");font-weight:500;font-display:block}
+@font-face{font-family:"Digikala";src:url("assets/fonts/Digikala-Bold.woff2") format("woff2");font-weight:700;font-display:block}
+
+:root{
+  --page-bg:#ffffff;
+  /* design tokens from Figma */
+  --content-primary:#000;
+  --content-secondary:#525252;
+  --content-tertiary:#737373;
+  --content-quaternary:#999;
+  --content-on-inverse:#fff;
+  --surface-primary:#fff;
+  --surface-secondary:#f5f5f5;
+  --surface-tertiary:#e8e8e8;
+  --surface-brand:#ed1944;
+  --border-secondary:#d6d6d6;
+  --border-selected:#000;
+  --border-terra:#efeeeb;
+  --lime-300:#caf200;
+  --lemon-100:#ffffb2;
+  --ease-sheet:cubic-bezier(.32,.72,0,1);
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:light;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px);-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+body{margin:0;height:100%;background:var(--page-bg);font-family:"Digikala",Tahoma,"Segoe UI",sans-serif;overflow:hidden;overscroll-behavior:none}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+button:focus-visible{outline:2px solid #2f6bff;outline-offset:2px}
+
+/* ---------- app shell (full screen; centred column on wide screens) ---------- */
+.device{position:relative;width:100%;max-width:480px;height:100%;margin:0 auto;overflow:hidden;background:#fff;isolation:isolate}
+/* ---------- home (static screenshot) ---------- */
+.home{position:absolute;inset:0;overflow:hidden;background:#fff}
+.home img{display:block;width:100%;height:auto;user-select:none;-webkit-user-drag:none;pointer-events:none}
+.hit{position:absolute;border-radius:24px;cursor:pointer}
+.hit:active{background:rgba(0,0,0,.04)}
+
+/* ---------- modal ---------- */
+.modal{position:absolute;inset:0;z-index:10;visibility:hidden;pointer-events:none;touch-action:none;user-select:none;-webkit-user-select:none}
+.modal.is-open{visibility:visible;pointer-events:auto}
+.modal:focus{outline:none}
+.scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.24) 0%,rgba(115,115,115,.94) 100%);opacity:0}
+.track{position:absolute;inset:0}
+
+.card{
+  position:absolute;top:0;left:0;width:342px;height:513px;
+  background:var(--surface-primary);border-radius:24px;overflow:hidden;
+  will-change:transform;contain:layout paint;
+}
+.card[inert]{cursor:pointer}
+.scroll{position:absolute;inset:0;overflow:hidden;overscroll-behavior:contain;scrollbar-width:none}
+.scroll::-webkit-scrollbar{display:none}
+.card.is-expanded .scroll{overflow-y:auto;touch-action:pan-y;user-select:text;-webkit-user-select:text}
+.card-body{display:flex;flex-direction:column;gap:16px;padding-top:32px;padding-bottom:105px}
+
+.image-frame{display:flex;justify-content:center}
+.place-image{width:256px;height:256px;object-fit:cover;display:block;pointer-events:none;-webkit-user-drag:none}
+
+/* Button / elevated / medium / circle */
+.ghost{position:absolute;left:0;top:0;z-index:6;pointer-events:none;background-repeat:no-repeat;background-color:#fff;opacity:0;visibility:hidden}
+.thumb-hole{position:absolute;z-index:1;pointer-events:none;background:#fff;border-radius:12px;opacity:0}
+.btn-close{
+  position:absolute;left:16px;top:16px;width:44px;height:44px;border-radius:999px;z-index:3;
+  display:grid;place-items:center;background:var(--surface-secondary);border:1px solid var(--border-secondary);
+  box-shadow:inset 0 4px 8px rgba(255,255,255,.7),0 4px 16px rgba(0,0,0,.1);
+  transition:transform 140ms ease-out;
+}
+.btn-close:active{transform:scale(.94)}
+.btn-close svg{width:24px;height:24px;display:block}
+
+.content{display:flex;flex-direction:column;gap:16px}
+.badges{display:flex;gap:4px;align-items:center;justify-content:flex-start;padding:0 16px;direction:rtl}
+.promo{
+  height:20px;display:flex;align-items:center;gap:0;padding:0 6px 0 2px;border-radius:12px;direction:ltr;
+  border:1px solid var(--surface-primary);
+  background:linear-gradient(-48.22deg,var(--lime-300) 0%,var(--lemon-100) 100%);
+  filter:drop-shadow(0 .4px .3px rgba(0,0,0,.14));
+}
+.promo img{width:14px;height:14px;display:block;flex:none;object-fit:cover}
+.promo span{font-weight:700;font-size:13px;line-height:20px;color:var(--content-primary);white-space:nowrap}
+.tag{height:20px;display:flex;align-items:center;padding:0 4px 4px;border-radius:6px;background:var(--surface-tertiary)}
+.tag span{font-weight:500;font-size:11px;line-height:16px;color:var(--content-secondary);white-space:nowrap}
+
+.text-frame{display:flex;flex-direction:column;gap:4px;padding:0 16px;min-height:68px}
+.title{margin:0;font-weight:700;font-size:15px;line-height:24px;color:var(--content-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right}
+.desc{margin:0;font-weight:400;font-size:13px;line-height:20px;color:var(--content-tertiary);text-align:right}
+.desc-short{max-height:40px;overflow:hidden}
+.desc-full{display:none;white-space:pre-line}
+.card.is-full .desc-short{display:none}
+.card.is-full .desc-full{display:block}
+.more{font-size:13px;line-height:20px;color:var(--content-primary);text-decoration:underline;text-underline-offset:3px;padding:0 1px}
+
+/* CartFab */
+.cart-fab{
+  border-radius:0 0 var(--r,24px) var(--r,24px);
+  position:absolute;left:0;right:0;bottom:0;z-index:2;display:flex;align-items:center;gap:0;direction:rtl;
+  padding:16px 16px 21px;background:linear-gradient(180deg,rgba(255,255,255,0) 0%,#fff 100%);
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+}
+.price-col{flex:1 0 0;min-width:1px;display:flex;flex-direction:column;align-items:flex-start}
+.price{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+/* Price — direction=rtl, size=large, hasDiscount=True (Figma 1628:20354) */
+.final{display:flex;flex-direction:column;align-items:stretch;isolation:isolate}
+.final-row{position:relative;z-index:2;height:16px;margin-bottom:-5px;display:flex;align-items:center;justify-content:flex-start;gap:4px;direction:rtl}
+.final-row b{font-weight:700;font-size:19px;line-height:30px;color:var(--content-primary);white-space:nowrap}
+.toman{display:block;flex:none;width:14px;height:9px}
+.highlight{
+  position:relative;z-index:1;display:block;width:100%;height:5px;
+  background:linear-gradient(0deg,#ccff33 0%,rgba(241,255,51,0) 100%);
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='5' viewBox='0 0 14 5'%3E%3Cpath d='M0 0C1.79986 0 2.7808 0.32172 3.6748 0.577148C4.40766 0.786528 5.22074 1 7 1C8.77926 1 9.59234 0.786528 10.3252 0.577148C11.2192 0.32172 12.2001 0 14 0V4C12.8 4 12.2806 4.17834 11.4248 4.42285C10.4078 4.71344 9.22043 5 7 5C4.77957 5 3.59224 4.71344 2.5752 4.42285C1.71943 4.17834 1.19996 4 0 4V0Z'/%3E%3C/svg%3E") 0 0/14px 5px repeat-x;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='5' viewBox='0 0 14 5'%3E%3Cpath d='M0 0C1.79986 0 2.7808 0.32172 3.6748 0.577148C4.40766 0.786528 5.22074 1 7 1C8.77926 1 9.59234 0.786528 10.3252 0.577148C11.2192 0.32172 12.2001 0 14 0V4C12.8 4 12.2806 4.17834 11.4248 4.42285C10.4078 4.71344 9.22043 5 7 5C4.77957 5 3.59224 4.71344 2.5752 4.42285C1.71943 4.17834 1.19996 4 0 4V0Z'/%3E%3C/svg%3E") 0 0/14px 5px repeat-x;
+}
+.prev{position:relative;height:14px;display:flex;align-items:center}
+.prev span{font-weight:400;font-size:15px;line-height:24px;color:var(--content-quaternary);white-space:nowrap}
+.prev i{position:absolute;left:.06px;top:8.81px;width:calc(100% - .12px);height:1px;background:rgba(237,25,68,.48);transform-origin:0 0;transform:matrix(.997125,-.075774,.112708,.993628,0,0)}
+.btn-cart{
+  flex:none;height:52px;min-width:104px;padding:0 16px;border-radius:999px;background:var(--surface-brand);
+  display:flex;align-items:center;justify-content:center;transition:transform 140ms ease-out,background-color 200ms;
+}
+.btn-cart:active{transform:scale(.97)}
+.btn-cart span{padding:0 8px;font-weight:500;font-size:15px;line-height:24px;color:var(--content-on-inverse);white-space:nowrap}
+.btn-cart.is-added{background:#1f9d55}
+@media (hover:hover) and (pointer:fine){
+  .btn-cart:hover{background:#d6143c}
+  .btn-cart.is-added:hover{background:#1b8a4b}
+  .btn-close:hover{background:#ececec}
+}
+
+/* modalIndicator */
+.indicator{position:absolute;left:0;right:0;bottom:0;height:85px;padding:16px 0 21px;display:flex;gap:8px;align-items:center;justify-content:center;direction:rtl;opacity:0}
+.thumb{
+  position:relative;width:40px;height:40px;border-radius:10px;background:var(--surface-primary);border:1px solid var(--border-terra);
+  transition:width 220ms var(--ease-sheet),height 220ms var(--ease-sheet),border-radius 220ms var(--ease-sheet);flex:none;
+}
+.thumb img{position:absolute;left:50%;top:50%;width:32px;height:32px;transform:translate(-50%,-50%);object-fit:cover;pointer-events:none}
+.thumb::before{content:"";position:absolute;inset:-1px;border-radius:inherit;background:radial-gradient(closest-side,rgba(47,43,37,0) 0%,rgba(47,43,37,.06) 100%);pointer-events:none}
+.thumb::after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 3.6px 7.3px rgba(255,255,255,.7);pointer-events:none}
+.thumb[aria-current="true"]{width:48px;height:48px;border-radius:12px;border:2px solid var(--border-selected)}
+.thumb[aria-current="true"] img{width:39px;height:39px}
+
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="device" id="device">
+      <div class="home" id="home" aria-label="صفحه خانه">
+        <img src="assets/images/home.jpg" alt="">
+      </div>
+
+      <div class="modal" id="modal" tabindex="-1" role="dialog" aria-modal="true" aria-label="جزئیات محصول">
+        <div class="scrim" id="scrim"></div>
+        <div class="track" id="track" aria-roledescription="carousel"></div>
+        <div class="indicator" id="indicator" role="tablist" aria-label="محصولات"></div>
+        <div class="sr" id="live" aria-live="polite"></div>
+      </div>
+    </div>
+
+<template id="card-tpl">
+  <article class="card" aria-roledescription="slide">
+    <div class="ghost" aria-hidden="true"></div>
+    <div class="scroll">
+      <div class="card-body">
+        <div class="image-frame"><img class="place-image" alt=""></div>
+        <div class="content">
+          <div class="badges">
+            <div class="promo"><img alt="" width="14" height="14" src="assets/images/fire.png"><span class="promo-text"></span></div>
+          </div>
+          <div class="text-frame">
+            <h2 class="title"></h2>
+            <p class="desc desc-short"><span class="short-text"></span><button class="more" type="button">بیشتر</button></p>
+            <p class="desc desc-full"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button class="btn-close" type="button" aria-label="بستن"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="#000" stroke-width="1.8" stroke-linecap="round" fill="none"/></svg></button>
+    <div class="cart-fab">
+      <div class="price-col">
+        <div class="price">
+          <div class="final">
+            <div class="final-row"><b class="final-price"></b><svg class="toman" width="14" height="9" viewBox="0 3.5 14 9" role="img" aria-label="تومان"><path fill="#000" d="M9.25509 5.42857H4.05749V3.5H9.25509V5.42857ZM13.8826 6.51128C13.782 5.68233 13.6311 4.81955 13.4467 3.90602L11.6359 4.65038C11.8707 5.63158 12.0551 6.59586 12.2228 7.52632C12.3234 8.11842 12.4072 8.64286 12.4743 9.16729C11.8874 9.38722 11.0323 9.59023 9.89221 9.7594C8.43353 9.97932 6.89102 10.0808 5.28144 10.0808C4.37605 10.0808 3.67186 10.0301 3.1521 9.94549C2.63234 9.84398 2.24671 9.65789 1.96168 9.38722C1.67665 9.11654 1.54251 8.69361 1.54251 8.13534C1.54251 7.52632 1.59281 6.79887 1.65988 5.93609L0.335329 5.75C0.301796 5.8515 0.28503 5.98684 0.268263 6.15602C0.201198 6.64662 0.134132 7.1203 0.0838323 7.56015C0.0335329 8.01692 0 8.42293 0 8.79511C0 10.1992 0.435928 11.1635 1.29102 11.7049C2.16287 12.2293 3.38683 12.5 4.97964 12.5C6.27066 12.5 7.51138 12.4154 8.68503 12.2632C9.87545 12.1109 10.915 11.8741 11.7868 11.5695C12.3234 11.3665 12.7425 11.1466 13.0611 10.9267C13.3796 10.7068 13.6144 10.4192 13.7653 10.0639C13.9162 9.70865 14 9.25188 14 8.65977C14 8.03383 13.9497 7.30639 13.8323 6.49436L13.8826 6.51128Z"/></svg></div>
+            <span class="highlight" aria-hidden="true"></span>
+          </div>
+          <div class="prev"><span class="prev-price"></span><i aria-hidden="true"></i></div>
+        </div>
+      </div>
+      <button class="btn-cart" type="button"><span>افزودن به سبد</span></button>
+    </div>
+  </article>
+</template>
+
+<script>
+(() => {
+'use strict';
+
+/* ---------- data (logical RTL order: index+1 sits to the LEFT) ---------- */
+const P = [
+  { id:'eggs', img:'assets/images/eggs.webp',
+    title:'تخم مرغ تلاونک - ۱۵ عدد', tags:['تخم مرغ و ماکیان','کالابرگ'], promo:'-۱۴ ٪',
+    price:'۴۱۸٬۰۰۰', prev:'۴۹۸٬۰۰۰', showShort:false,
+    desc:'۱۵ عدد تخم مرغ تازه تلاونک در بسته‌بندی شفاف که از ضربه خوردن تخم مرغ‌ها در هنگام حمل جلوگیری می‌کند.\nتخم مرغ‌ها را در یخچال نگه دارید و پیش از مصرف، تاریخ تولید روی بسته را بررسی کنید.' },
+  { id:'yogurt', img:'assets/images/yogurt.webp',
+    title:'ماست سون پرچرب کاله وزن ۱.۸ کیلوگرم', tags:['ماست','کالابرگ'], promo:'-۱۴ ٪',
+    price:'۴۱۸٬۰۰۰', prev:'۴۹۸٬۰۰۰', showShort:true,
+    desc:'ماست سون پر چرب کاله - 1.8 کیلوگرم\nماست‌های همزده یکی از محصولات محبوب در دنیای لبنیات است. این محصولات با طعم خامه‌ای و چاشنی نمکی خود توانسته‌اند جای خود را در بازار پیدا کنند و مورد توجه دوستداران محصولات لبنی قرار بگیرند. یکی از محصولات معروف در این دسته، ماست سون پر‌چرب کاله است که توانسته است استاندارد جدیدی را برای ماست‌های همزده ایجاد کند.\nماست سون پر‌چرب کاله با استفاده از فرآیند خاصی تولید می‌شود که از آب انداختن ماست و دو فازی شدن آن جلوگیری می‌کند. این فرآیند باعث می‌شود که ماست سون پر‌چرب کاله با بافت خامه‌ای و طعم خاص خود محبوبیت زیادی را بین مردم پیدا کند. این ماست معمولاً به عنوان یک میان‌وعده خوشمزه یا همراه وعده‌های اصلی مصرف می‌شود' },
+  { id:'butter', img:'assets/images/butter.webp',
+    title:'کره حیوانی پاستوریزه شکلی', tags:['کره','کالابرگ'], promo:'-۱۴ ٪',
+    price:'۴۱۸٬۰۰۰', prev:'۴۹۸٬۰۰۰', showShort:true,
+    desc:'کره حیوانی پاستوریزه شکلی از خامه شیر گاو تهیه می‌شود و طعمی ملایم و بافتی یکدست دارد.\nاین کره برای صبحانه، پخت شیرینی و تهیه انواع سس‌ها مناسب است و در دمای یخچال بافت خود را حفظ می‌کند. پس از باز کردن بسته‌بندی، کره را در ظرف دربسته نگه دارید تا بوی مواد دیگر را به خود نگیرد.\nبرای نگهداری طولانی‌تر می‌توانید کره را در فریزر قرار دهید و پیش از مصرف چند دقیقه در دمای اتاق بگذارید تا نرم شود.' },
+];
+const N = P.length;
+const mod = (a, n) => ((a % n) + n) % n;
+
+/* ---------- design constants (Figma) ---------- */
+const CARD_W = 342, CARD_H = 513, GAP = 16, INDICATOR_H = 85, GROUP_GAP = 40, RADIUS = 24;
+const EXPAND_DIST = 260;   // px of upward drag for a full expand
+const COLLAPSE_DIST = 300; // px of downward pull (at top) for a full collapse
+const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+
+/* ---------- elements ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const device = $('#device');
+const modal = $('#modal'), scrim = $('#scrim'), track = $('#track'), indicator = $('#indicator'), live = $('#live');
+const tpl = $('#card-tpl');
+
+/* ---------- state ---------- */
+let W = 390, H = 844, cardW = CARD_W, S = CARD_W + GAP, baseTop = 206, scale = 1;
+let state = 'closed';      // closed | card | expanded
+let pos = 1;               // carousel position (float, logical index)
+let p = 0;                 // expand progress 0..1
+let d = 0;                 // vertical dismiss offset (px)
+let openerEl = null;
+let m = 1;                 // thumbnail→modal morph progress (0 = sitting on the home thumbnail, 1 = modal)
+let src = null;            // current home thumbnail rect {x,y,w,h,r}
+let openCard = -1;         // index of the home card that opened the modal
+const nodes = [];          // 5 recycled card nodes
+const shortCache = {};     // computed 2-line truncation per product
+
+/* ---------- tween helper ---------- */
+const easeOut = t => 1 - Math.pow(1 - t, 4);
+const easeIn = t => t * t * t;
+const easeOutExpo = t => t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+const easeOutQuart = t => 1 - Math.pow(1 - t, 4);
+const tweens = {};
+function tween(key, from, to, dur, ease, set, done) {
+  if (tweens[key]) cancelAnimationFrame(tweens[key]);
+  if (reduce.matches) dur = Math.min(dur, 120);
+  const t0 = performance.now();
+  const step = now => {
+    const t = Math.min(1, (now - t0) / dur);
+    set(from + (to - from) * ease(t));
+    if (t < 1) tweens[key] = requestAnimationFrame(step);
+    else { tweens[key] = 0; done && done(); }
+  };
+  tweens[key] = requestAnimationFrame(step);
+}
+const stopTween = key => { if (tweens[key]) { cancelAnimationFrame(tweens[key]); tweens[key] = 0; } };
+
+/* ---------- build ---------- */
+for (let i = 0; i < 5; i++) {
+  const el = tpl.content.firstElementChild.cloneNode(true);
+  el.k = null;
+  el.firstElementChild.style.backgroundImage = `url("${document.querySelector('#home img').getAttribute('src')}")`;
+  track.appendChild(el);
+  nodes.push(el);
+  el.querySelector('.btn-close').addEventListener('click', () => close());
+  el.querySelector('.more').addEventListener('click', () => { if (el.k === Math.round(pos)) expand(); });
+  el.querySelector('.btn-cart').addEventListener('click', e => {
+    const b = e.currentTarget, s = b.firstElementChild;
+    if (b.classList.contains('is-added')) return;
+    b.classList.add('is-added'); s.textContent = 'به سبد اضافه شد';
+    setTimeout(() => { b.classList.remove('is-added'); s.textContent = 'افزودن به سبد'; }, 1600);
+  });
+}
+P.forEach((prod, i) => {
+  const b = document.createElement('button');
+  b.className = 'thumb'; b.type = 'button'; b.setAttribute('role', 'tab');
+  b.setAttribute('aria-label', prod.title);
+  b.innerHTML = `<img alt="" src="${prod.img}">`;
+  b.addEventListener('click', () => goToProduct(i));
+  indicator.appendChild(b);
+});
+
+function fill(el, k) {
+  const prod = P[mod(k, N)];
+  el.k = k;
+  el.dataset.product = prod.id;
+  el.setAttribute('aria-label', prod.title);
+  el.querySelector('.place-image').src = prod.img;
+  el.querySelector('.place-image').alt = prod.title;
+  const badges = el.querySelector('.badges');
+  badges.querySelectorAll('.tag').forEach(t => t.remove());
+  el.querySelector('.promo-text').textContent = prod.promo;
+  prod.tags.forEach(t => { const d = document.createElement('div'); d.className = 'tag'; d.innerHTML = `<span>${t}</span>`; badges.appendChild(d); });
+  el.querySelector('.title').textContent = prod.title;
+  const short = el.querySelector('.desc-short');
+  short.style.display = prod.showShort ? '' : 'none';
+  el.querySelector('.short-text').textContent = shortCache[prod.id] || '';
+  el.querySelector('.desc-full').textContent = prod.desc;
+  el.querySelector('.final-price').textContent = prod.price;
+  el.querySelector('.prev-price').textContent = prod.prev;
+  el.querySelector('.scroll').scrollTop = 0;
+}
+
+/* Truncate each description to exactly two lines followed by "… بیشتر" (as in Figma) */
+function computeShorts() {
+  const probe = document.createElement('p');
+  probe.className = 'desc';
+  probe.style.cssText = `position:absolute;visibility:hidden;width:${cardW - 32}px;left:-9999px;top:0`;
+  device.appendChild(probe);
+  P.forEach(prod => {
+    const words = prod.desc.replace(/\n/g, '، ').split(' ');
+    const fits = n => { probe.innerHTML = ''; probe.textContent = words.slice(0, n).join(' ') + '... ';
+      const m = document.createElement('span'); m.className = 'more'; m.textContent = 'بیشتر'; probe.appendChild(m);
+      return probe.offsetHeight <= 41; };
+    let lo = 1, hi = words.length;
+    if (fits(hi)) { shortCache[prod.id] = prod.desc.replace(/\n/g, '، ') + ' '; return; }
+    while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (fits(mid)) lo = mid; else hi = mid - 1; }
+    shortCache[prod.id] = words.slice(0, lo).join(' ').replace(/[،,.]$/, '') + '... ';
+  });
+  probe.remove();
+  nodes.forEach(n => { if (n.k !== null) n.querySelector('.short-text').textContent = shortCache[P[mod(n.k, N)].id]; });
+}
+
+/* ---------- measure device ---------- */
+function measure() {
+  scale = 1;
+  W = device.clientWidth; H = device.clientHeight;
+  cardW = Math.min(CARD_W, W - 48);
+  S = cardW + GAP;
+  baseTop = Math.max(16, H - INDICATOR_H - GROUP_GAP - CARD_H);
+  layoutHome();
+}
+
+/* ---------- render ---------- */
+function render() {
+  const k0 = Math.round(pos);
+  const dismissFrac = Math.min(1, Math.max(0, d) / (H * 0.55));
+  for (let s = -2; s <= 2; s++) {
+    const k = k0 + s, el = nodes[mod(k, 5)];
+    if (el.k !== k) fill(el, k);
+    const active = s === 0;
+    let x, y, w, h, r, o = 1;
+    const cx = (W - cardW) / 2 - (k - pos) * S; // RTL: next item to the left
+    if (active) {
+      x = cx * (1 - p);  y = baseTop * (1 - p) + d;
+      w = cardW + (W - cardW) * p; h = CARD_H + (H - CARD_H) * p; r = RADIUS * (1 - p);
+    } else {
+      const out = Math.sign(cx - (W - cardW) / 2) * p * 60;
+      x = cx + out; y = baseTop; w = cardW; h = CARD_H; r = RADIUS;
+      o = (1 - p) * (1 - dismissFrac);
+    }
+    el.style.transform = `translate3d(${x}px,${y}px,0)`;
+    el.style.width = w + 'px'; el.style.height = h + 'px';
+    el.style.borderRadius = r + 'px';
+    el.style.setProperty('--r', r + 'px');
+    el.style.clipPath = r > 0 ? `inset(0 round ${r}px)` : 'none';
+    el.style.opacity = o;
+    el.style.zIndex = active ? 2 : 1;
+    el.style.visibility = Math.abs(s) > 1 && Math.abs(k - pos) > 1.6 ? 'hidden' : '';
+    const ghost = el.firstElementChild;
+    if (active && m < 1 && src) {
+      // Container transform: scale the card down onto the thumbnail and crop it to the thumbnail's shape
+      const s0 = src.w / w, h0 = src.h / s0;                       // visible box height (card units) at m = 0
+      const top0 = Math.min(Math.max(160 - h0 / 2, 0), Math.max(0, h - h0)); // centre on the product image
+      const bot0 = Math.max(0, h - top0 - h0);
+      const sc = s0 + (1 - s0) * m, top = top0 * (1 - m), bot = bot0 * (1 - m);
+      const rr = (src.r / s0) * (1 - m) + r * m;
+      const bx = src.x + (x - src.x) * m, by = src.y + (y - src.y) * m;
+      el.style.transformOrigin = '0 0';
+      el.style.transform = `translate3d(${bx}px,${by - top * sc}px,0) scale(${sc})`;
+      el.style.clipPath = `inset(${top}px 0 ${bot}px 0 round ${rr}px)`;
+      el.style.borderRadius = '0px';
+      // the home thumbnail itself, growing with the card and fading out
+      const k = w / src.w;
+      ghost.style.visibility = 'visible';
+      ghost.style.top = top0 + 'px'; ghost.style.width = w + 'px'; ghost.style.height = h0 + 'px';
+      ghost.style.backgroundSize = (W * k) + 'px auto';
+      ghost.style.backgroundPosition = `${-src.x * k}px ${-src.y * k}px`;
+      ghost.style.opacity = 1 - Math.min(1, Math.max(0, (m - 0.06) / 0.42));
+    } else {
+      el.style.transformOrigin = '';
+      if (ghost.style.visibility !== 'hidden') ghost.style.visibility = 'hidden';
+    }
+    if (!active) el.style.opacity = o * m * m * m;
+    el.classList.toggle('is-full', active && p > 0);
+    el.classList.toggle('is-expanded', active && state === 'expanded' && p === 1);
+    if (active) { el.removeAttribute('inert'); el.removeAttribute('aria-hidden'); }
+    else { el.setAttribute('inert', ''); }
+  }
+  const fade = Math.min(1, m * 1.4);
+  scrim.style.opacity = (1 - dismissFrac) * fade;
+  indicator.style.opacity = (1 - p) * (1 - dismissFrac) * m * m * m;
+  if (src && state !== 'closed') {
+    thumbHole.style.left = src.x + 'px'; thumbHole.style.top = src.y + 'px';
+    thumbHole.style.width = src.w + 'px'; thumbHole.style.height = src.h + 'px';
+    thumbHole.style.opacity = m > 0 ? 1 : 0;
+  } else thumbHole.style.opacity = 0;
+  indicator.style.pointerEvents = p > 0.5 ? 'none' : '';
+  const cur = mod(k0, N);
+  [...indicator.children].forEach((t, i) => { t.setAttribute('aria-current', i === cur); t.setAttribute('aria-selected', i === cur); });
+}
+const activeEl = () => nodes[mod(Math.round(pos), 5)];
+const activeScroll = () => activeEl().querySelector('.scroll');
+
+/* ---------- carousel ---------- */
+function goTo(k, dur = 420) {
+  stopTween('pos');
+  if (state !== 'card') return;
+  tween('pos', pos, k, dur, easeOut, v => { pos = v; render(); }, () => {
+    pos = k; render(); announce();
+  });
+}
+function goToProduct(i) {
+  const k0 = Math.round(pos), cur = mod(k0, N);
+  let delta = mod(i - cur, N); if (delta > N / 2) delta -= N;
+  goTo(k0 + delta);
+}
+function announce() { live.textContent = P[mod(Math.round(pos), N)].title; }
+
+/* ---------- expand / collapse ---------- */
+// One downward pull from the full-screen view: first it collapses to the modal,
+// then (if the finger keeps going) the same pull drags the modal down to close it.
+function pullDown(dist) {
+  dist = Math.max(0, dist);
+  p = 1 - Math.min(dist, COLLAPSE_DIST) / COLLAPSE_DIST;
+  d = Math.max(0, dist - COLLAPSE_DIST);
+  render();
+}
+function releasePull(vy) {
+  if (d > 70 || (p === 0 && vy > 0.35)) { close(); return; }
+  if (d > 0) springBack();
+  if (p < 0.8 || vy > 0.5) collapse();
+  else { state = 'expanded'; tween('p', p, 1, 300, easeOut, setP, () => { p = 1; render(); }); }
+}
+function setP(v) { p = Math.max(0, Math.min(1, v)); render(); }
+function expand() {
+  if (state === 'closed') return;
+  stopTween('pos'); pos = Math.round(pos);
+  state = 'expanded'; // collapse gestures work immediately, even while the expand animation runs
+  tween('p', p, 1, 480, easeOut, setP, () => {
+    state = 'expanded'; p = 1; render();
+  });
+}
+function collapse() {
+  state = 'card';
+  activeScroll().scrollTop = 0;
+  tween('p', p, 0, 460, easeOut, setP, () => { p = 0; render(); });
+}
+
+/* ---------- open / close ---------- */
+function open(productIndex, fromEl, cardIndex) {
+  measure();
+  openerEl = fromEl || null;
+  openCard = cardIndex ?? -1;
+  pos = productIndex; p = 0; d = 0; state = 'card';
+  src = openCard >= 0 ? thumbRect(openCard) : null;
+  m = src ? 0 : 1;
+  modal.classList.add('is-open');
+  render(); announce();
+  modal.focus({ preventScroll: true });
+  if (src) tween('m', 0, 1, 620, easeOutQuart, v => { m = v; render(); }, () => { m = 1; render(); });
+}
+function close() {
+  if (state === 'closed') return;
+  stopTween('pos'); stopTween('p'); stopTween('d'); stopTween('m');
+  pos = Math.round(pos);
+  // shrink back into the thumbnail of the product being shown
+  const card = closeCard(mod(Math.round(pos), N));
+  src = thumbRect(card);
+  const p0 = p, d0 = d, m0 = m;
+  state = 'closing';
+  activeEl().classList.remove('is-expanded');
+  tween('m', 0, 1, reduce.matches ? 120 : 480, easeOutQuart, t => {
+    p = p0 * (1 - t); d = d0 * (1 - t); m = m0 * (1 - t); render();
+  }, () => {
+    state = 'closed'; modal.classList.remove('is-open');
+    d = 0; p = 0; m = 1; activeScroll().scrollTop = 0; render();
+    const back = hitEls[card];
+    if (back) back.focus({ preventScroll: true });
+  });
+}
+function springBack() { tween('d', d, 0, 380, easeOut, v => { d = v; render(); }); }
+
+/* ---------- gestures: card state (pointer, all input types) ---------- */
+let g = null, suppressClick = false;
+modal.addEventListener('pointerdown', e => {
+  if (state === 'closed' || state === 'closing' || m < 1 || e.button !== 0) return;
+  if (state === 'expanded') {
+    // touch is handled by touch events (native scroll); mouse may drag-to-collapse at top
+    if (e.pointerType !== 'mouse' || activeScroll().scrollTop > 0) return;
+    if (!activeEl().contains(e.target) || e.target.closest('button')) return;
+  }
+  stopTween('pos'); stopTween('d'); stopTween('p');
+  g = { id: e.pointerId, x0: e.clientX, y0: e.clientY, pos0: pos, p0: p, d0: d, axis: null, samples: [{ t: e.timeStamp, x: e.clientX, y: e.clientY }], target: e.target };
+});
+modal.addEventListener('pointermove', e => {
+  if (!g || e.pointerId !== g.id) return;
+  const dx = (e.clientX - g.x0) / scale, dy = (e.clientY - g.y0) / scale;
+  g.samples.push({ t: e.timeStamp, x: e.clientX, y: e.clientY }); if (g.samples.length > 6) g.samples.shift();
+  if (!g.axis) {
+    if (Math.hypot(dx, dy) < 7) return;
+    if (state === 'expanded') g.axis = dy > 0 ? 'collapse' : 'none';
+    else g.axis = Math.abs(dx) > Math.abs(dy) ? 'x' : (dy > 0 ? 'down' : 'up');
+    if (g.axis === 'none') { g = null; return; }
+    try { modal.setPointerCapture(g.id); } catch (_) {}
+    suppressClick = true;
+  }
+  if (g.axis === 'x') { pos = g.pos0 + dx / S; render(); }
+  else if (g.axis === 'down') { d = Math.max(0, g.d0 + dy); if (dy < 0) d = g.d0 + dy * 0.2; render(); }
+  else if (g.axis === 'up') { setP(g.p0 + (-dy) / EXPAND_DIST - Math.max(0, dy) / 600); }
+  else if (g.axis === 'collapse') { pullDown(dy); }
+});
+function velocity(gg) {
+  const a = gg.samples[0], b = gg.samples[gg.samples.length - 1], dt = Math.max(1, b.t - a.t);
+  return { vx: (b.x - a.x) / scale / dt, vy: (b.y - a.y) / scale / dt };
+}
+function endGesture(e) {
+  if (!g || e.pointerId !== g.id) return;
+  const gg = g; g = null;
+  if (!gg.axis) { // a tap
+    if (state === 'card' && e.type === 'pointerup') tapAt(e, gg);
+    return;
+  }
+  const { vx, vy } = velocity(gg);
+  if (gg.axis === 'x') {
+    const projected = pos + (vx * 180) / S;
+    const base = Math.round(gg.pos0);
+    const k = Math.max(base - 1, Math.min(base + 1, Math.round(projected)));
+    goTo(k, 420);
+  } else if (gg.axis === 'down') {
+    if (d > 80 || vy > 0.35) close(); else springBack();
+  } else if (gg.axis === 'up') {
+    if (p > 0.25 || vy < -0.5) expand(); else collapse();
+  } else if (gg.axis === 'collapse') {
+    releasePull(vy);
+  }
+  setTimeout(() => (suppressClick = false), 0);
+}
+modal.addEventListener('pointerup', endGesture);
+modal.addEventListener('pointercancel', endGesture);
+modal.addEventListener('click', e => { if (suppressClick) { e.stopPropagation(); e.preventDefault(); suppressClick = false; } }, true);
+
+function tapAt(e, gg) {
+  // Taps on the peeking neighbour cards move the carousel
+  const el = activeEl();
+  if (el.contains(gg.target) || indicator.contains(gg.target)) return;
+  const dv = device.getBoundingClientRect();
+  const x = (e.clientX - dv.left) / scale, y = (e.clientY - dv.top) / scale;
+  if (y < baseTop || y > baseTop + CARD_H) return;
+  const left = (W - cardW) / 2, k0 = Math.round(pos);
+  if (x < left) goTo(k0 + 1); else if (x > left + cardW) goTo(k0 - 1);
+}
+
+/* ---------- gestures: expanded state (touch; keeps native scrolling) ---------- */
+let tg = null;
+modal.addEventListener('touchstart', e => {
+  if (state !== 'expanded' || e.touches.length !== 1) { tg = null; return; }
+  const t = e.touches[0];
+  if (e.target.closest('.btn-close')) { tg = null; return; }
+  tg = { y0: t.clientY, mode: null, samples: [{ t: e.timeStamp, y: t.clientY }] };
+}, { passive: true });
+modal.addEventListener('touchmove', e => {
+  if (!tg) return;
+  const t = e.touches[0], dy = (t.clientY - tg.y0) / scale;
+  tg.samples.push({ t: e.timeStamp, y: t.clientY }); if (tg.samples.length > 6) tg.samples.shift();
+  const sc = activeScroll();
+  const movingDown = t.clientY > (tg.lastY ?? tg.y0);
+  tg.lastY = t.clientY;
+  // One continuous gesture: as soon as the content is at the top and the finger is
+  // still moving down, the same drag starts collapsing the sheet (no second swipe needed).
+  if (tg.mode !== 'collapse' && movingDown && sc.scrollTop <= 0.5) {
+    tg.mode = 'collapse'; stopTween('p'); tg.y0 = t.clientY;
+    tg.samples = [{ t: e.timeStamp, y: t.clientY }];
+  } else if (!tg.mode && Math.abs(dy) > 4) tg.mode = 'scroll';
+  if (tg.mode === 'collapse') {
+    if (e.cancelable) e.preventDefault();
+    const dd = (t.clientY - tg.y0) / scale;
+    pullDown(dd);
+  }
+}, { passive: false });
+modal.addEventListener('touchend', e => {
+  if (!tg) return;
+  const tt = tg; tg = null;
+  if (tt.mode !== 'collapse') return;
+  const a = tt.samples[0], b = tt.samples[tt.samples.length - 1];
+  const vy = (b.y - a.y) / scale / Math.max(1, b.t - a.t);
+  releasePull(vy);
+});
+
+/* ---------- wheel / trackpad ---------- */
+let wheelAcc = 0, wheelX = 0, wheelLock = 0, lastScrollMove = 0;
+modal.addEventListener('wheel', e => {
+  if (state === 'closed') return;
+  const now = performance.now();
+  if (state === 'card') {
+    e.preventDefault();
+    if (now < wheelLock) return;
+    if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+      wheelX += e.deltaX;
+      if (Math.abs(wheelX) > 50) { goTo(Math.round(pos) + (wheelX < 0 ? 1 : -1)); wheelX = 0; wheelLock = now + 450; }
+    } else if (e.deltaY < 0) {
+      wheelAcc += e.deltaY;
+      if (wheelAcc < -30) { wheelAcc = 0; wheelLock = now + 700; close(); }
+    } else if (e.deltaY > 0) {
+      wheelAcc += e.deltaY;
+      if (wheelAcc > 30) { wheelAcc = 0; wheelLock = now + 700; expand(); }
+    }
+  } else if (state === 'expanded') {
+    const sc = activeScroll();
+    if (now < wheelLock) return;
+    if (sc.scrollTop > 0.5 || e.deltaY >= 0) { wheelAcc = 0; return; }
+    // At the top and still scrolling up: the same scroll gesture returns to the modal
+    wheelAcc += e.deltaY;
+    if (wheelAcc < -12) { wheelAcc = 0; wheelLock = now + 600; collapse(); }
+  }
+  lastScrollMove = now;
+}, { passive: false });
+// reset accumulators when a wheel gesture ends (gap between events)
+setInterval(() => { if (performance.now() - lastScrollMove > 180) { wheelAcc = 0; wheelX = 0; } }, 100);
+
+/* ---------- keyboard ---------- */
+document.addEventListener('keydown', e => {
+  if (state === 'closed') return;
+  if (e.key === 'Escape') { state === 'expanded' ? collapse() : close(); }
+  else if (state === 'card' && e.key === 'ArrowLeft') goTo(Math.round(pos) + 1);
+  else if (state === 'card' && e.key === 'ArrowRight') goTo(Math.round(pos) - 1);
+  else if (e.key === 'Tab') { // trap focus within the active card + indicator
+    const f = [...activeEl().querySelectorAll('button'), ...(state === 'card' ? indicator.querySelectorAll('button') : [])];
+    const i = f.indexOf(document.activeElement);
+    if (e.shiftKey && i <= 0) { e.preventDefault(); f[f.length - 1].focus(); }
+    else if (!e.shiftKey && i === f.length - 1) { e.preventDefault(); f[0].focus(); }
+  }
+});
+
+/* ---------- home hit areas (product cards inside the screenshot) ---------- */
+// rects in % of the 390-wide screenshot (x, y, w, h); product index to open
+const HITS = [
+  [61.1, 26.8, 34.7, 28.1, 1], [23.1, 26.8, 34.7, 28.1, 2], [0, 26.8, 19.9, 28.1, 0],
+  [61.1, 56.9, 34.7, 28.1, 1], [23.1, 56.9, 34.7, 28.1, 2], [0, 56.9, 19.9, 28.1, 0],
+];
+const home = $('#home');
+// product-image rects inside each home card: [centre x, top] in 390-wide points, 104×104
+const THUMBS = [[306.5, 238], [158.5, 238], [10, 238], [306.5, 493], [158.5, 493], [10, 493]];
+function thumbRect(i) {
+  const k = W / 390, [cx, top] = THUMBS[i];
+  return { x: (cx - 52) * k, y: top * k, w: 104 * k, h: 104 * k, r: 12 * k };
+}
+function closeCard(prodIdx) {
+  if (openCard >= 0 && HITS[openCard][4] === prodIdx) return openCard;
+  const row = openCard >= 3 ? 1 : 0;
+  const i = HITS.findIndex((h, j) => h[4] === prodIdx && (j >= 3 ? 1 : 0) === row);
+  return i >= 0 ? i : HITS.findIndex(h => h[4] === prodIdx);
+}
+const thumbHole = document.createElement('div');
+thumbHole.className = 'thumb-hole';
+$('#home').appendChild(thumbHole);
+const hitEls = HITS.map(([x, y, w, h, idx], i) => {
+  const b = document.createElement('button');
+  b.className = 'hit'; b.type = 'button';
+  b.setAttribute('aria-label', 'نمایش محصول: ' + P[idx].title);
+  b.dataset.x = x; b.dataset.y = y; b.dataset.w = w; b.dataset.h = h;
+  b.addEventListener('click', () => open(idx, b, i));
+  home.appendChild(b);
+  return b;
+});
+function layoutHome() {
+  const imgH = W * 5064 / 2340;
+  hitEls.forEach(b => {
+    b.style.left = (+b.dataset.x / 100 * W) + 'px';
+    b.style.top = (+b.dataset.y / 100 * imgH) + 'px';
+    b.style.width = (+b.dataset.w / 100 * W) + 'px';
+    b.style.height = (+b.dataset.h / 100 * imgH) + 'px';
+  });
+}
+
+addEventListener('resize', () => { measure(); if (state !== 'closed') { computeShorts(); render(); } });
+
+/* ---------- boot ---------- */
+measure();
+document.fonts.ready.then(() => {
+  computeShorts();
+  render();
+  // Demo: open the modal from the yogurt card in the home screenshot
+  setTimeout(() => open(1, hitEls[3], 3), 450);
+});
+})();
+</script>
+</body>
+</html>
