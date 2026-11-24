@@ -17,3 +17,4 @@ export { CategoryRow, CATEGORY_ROW } from "./Category";
 export { default as NarrowBanner } from "./NarrowBanner";
 export { default as Vendor, VendorCard, VENDORS } from "./Vendor";
 export { default as Aisle, AisleCard, AISLES } from "./Aisle";
+export { ProductModalHost, useProductModal, toModalProduct, createProductModal } from "./ProductModal";

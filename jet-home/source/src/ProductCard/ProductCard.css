@@ -98,3 +98,9 @@
 .pcard--fill { align-self: stretch; }
 .pcard--fill .pcard__text { flex: 1 1 auto; }
 .pcard--fill .pcard__text > .price { margin-top: auto; }
+
+/* tap target for the product details modal: the image only (the Counter sits above it) */
+.pcard__open { position: absolute; inset: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; border-radius: 24px; }
+.pcard__open:focus-visible { outline: 2px solid #ed1944; outline-offset: 2px; }
+/* badges on the image are decorative: taps go through to the image (opens the modal) */
+.pcard__discount, .pcard__tag { pointer-events: none; }

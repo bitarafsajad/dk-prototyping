@@ -21,6 +21,7 @@ import "./ProductCard.css";
  *  quantity / onQuantityChange   controlled stepper (optional — uncontrolled by default)
  *  loading      stepper loader
  *  width        card width (default 128, responsive)
+ *  onOpen(imgEl) tap on the image (not the Counter) → product details modal
  *  fill         stretch to the row height (equal-height cards), price pinned to the bottom
  */
 export default function ProductCard({
@@ -32,6 +33,7 @@ export default function ProductCard({
   loading = false,
   width = 128,
   fill = false,
+  onOpen,
   className = "",
   style,
 }) {
@@ -68,7 +70,7 @@ export default function ProductCard({
   ].filter(Boolean).join(" ");
 
   return (
-    <article ref={ref} className={cls} style={{ width, ...style }}>
+    <article ref={ref} className={cls} data-pid={product.id} style={{ width, ...style }}>
       {white && (
         <svg className="pcard__bg" viewBox={`0 0 ${w || 1} ${h || 1}`} aria-hidden="true">
           <defs>
@@ -84,7 +86,20 @@ export default function ProductCard({
       {href && <a className="pcard__link" href={href} aria-label={title} />}
 
       <div className="pcard__media">
-        <Thumbnail src={image} alt={title} hasBackground={!white} />
+        {onOpen ? (
+          <div
+            className="pcard__open"
+            role="button"
+            tabIndex={0}
+            aria-label={`جزئیات ${title}`}
+            onClick={(e) => onOpen(e.currentTarget.querySelector(".thumb__img"))}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen(e.currentTarget.querySelector(".thumb__img")); } }}
+          >
+            <Thumbnail src={image} alt={title} hasBackground={!white} />
+          </div>
+        ) : (
+          <Thumbnail src={image} alt={title} hasBackground={!white} />
+        )}
         {state !== "outOfStock" && (
           <div className="pcard__stepper">
             <Counter

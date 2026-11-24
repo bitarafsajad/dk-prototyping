@@ -6,6 +6,7 @@ import Banner from "../Banner";
 import NarrowBanner from "../NarrowBanner";
 import Vendor from "../Vendor";
 import Aisle from "../Aisle";
+import { ProductModalHost } from "../ProductModal";
 import Carousel, { SECTIONS } from "../Carousel";
 import BottomNavigation from "../BottomNavigation";
 import { WEATHER_BACKGROUNDS, SearchHeader } from "../TopNavigation";
@@ -202,6 +203,7 @@ export default function HomePage({
 }) {
   const scrollerRef = useRef(null);
   const headerRef = useRef(null);
+  const homeRef = useRef(null);
   // settings (grid button in the Pillars) — remembered per device
   const load = (k, d, ok) => { try { const v = localStorage.getItem(k); return ok.includes(v) ? v : d; } catch { return d; } };
   const [layout, setLayout] = useState(() => load("jet.topnav", "search", ["search", "weather"]));
@@ -268,7 +270,9 @@ export default function HomePage({
   }, []);
 
   return (
+    <ProductModalHost containerRef={homeRef}>
     <div
+      ref={homeRef}
       className={`home ${className}`.trim()}
       data-mode={mode}
       data-layout={layout}
@@ -330,5 +334,6 @@ export default function HomePage({
         style={{ position: "absolute" }}
       />
     </div>
+    </ProductModalHost>
   );
 }

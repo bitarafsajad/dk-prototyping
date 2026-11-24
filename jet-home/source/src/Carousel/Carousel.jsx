@@ -1,4 +1,6 @@
+import { useRef } from "react";
 import ProductCard from "../ProductCard";
+import { useProductModal } from "../ProductModal";
 import SectionHeading from "./SectionHeading";
 import "./Carousel.css";
 
@@ -66,6 +68,8 @@ export default function Carousel({
   style,
 }) {
   const promo = appearance === "promotion";
+  const modal = useProductModal();
+  const sectionRef = useRef(null);
   const heading = (
     <SectionHeading
       title={title}
@@ -85,6 +89,7 @@ export default function Carousel({
       width={promo ? 136 : 128}
       isPriceOnly={priceOnly}
       fill={promo}
+      onOpen={modal ? (el) => modal.open(products, i, el, sectionRef.current) : undefined}
       onQuantityChange={onQuantityChange}
     />
   );
@@ -104,6 +109,7 @@ export default function Carousel({
 
   return (
     <section
+      ref={sectionRef}
       className={`carousel carousel--${appearance} ${className}`.trim()}
       style={{ ...(color ? { "--carousel-bg": color } : null), ...style }}
       aria-label={title}
