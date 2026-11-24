@@ -63,7 +63,7 @@ for (const p of PAGES) {
     outdir: OUT,
     entryNames: "[name]-[hash]",
     assetNames: "assets/[name]-[hash]",
-    loader: { ".jsx": "jsx", ".png": "file", ".jpg": "file", ".webp": "file", ".woff2": "file", ".json": "json" },
+    loader: { ".jsx": "jsx", ".png": "file", ".jpg": "file", ".webp": "file", ".gif": "file", ".woff2": "file", ".json": "json" },
     metafile: true,
     write: true,
   });
@@ -94,7 +94,7 @@ ${css ? `<style>${css}</style>` : ""}
 
   if (inline) {
     const ri = await build({ ...common, entryPoints: [p.entry], write: false, outdir: "out",
-      loader: { ".jsx": "jsx", ".png": "dataurl", ".jpg": "dataurl", ".webp": "dataurl", ".woff2": "dataurl", ".woff": "dataurl" } });
+      loader: { ".jsx": "jsx", ".png": "dataurl", ".jpg": "dataurl", ".webp": "dataurl", ".gif": "dataurl", ".woff2": "dataurl", ".woff": "dataurl" } });
     const ijs = ri.outputFiles.find((f) => f.path.endsWith(".js")).text;
     const icss = (ri.outputFiles.find((f) => f.path.endsWith(".css")) || { text: "" }).text;
     fs.mkdirSync(path.join(OUT, "standalone"), { recursive: true });

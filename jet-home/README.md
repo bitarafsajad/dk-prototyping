@@ -92,6 +92,49 @@ full-screen with a translucent status bar and switches to the home-screen safe-a
 (TopNavigation with the live rain sky, Category V3, Banner, five product Carousels) → **BottomNavigation**
 with the assistant.
 
+### Search-first header + CategoryRow (final home, Figma 2404:5081)
+
+Default layout. **TopNavigation homePage ⇄ homePageScroll** (Components 43:467 / 2584:5487–5488):
+status bar · Pillars · SearchField (358×52: mic, rotating placeholder «جستجوی …», search icon) ·
+Location («تحویل به» 13/20 #525252, address 15/24 bold + chevron chip). Fixed on white; the content
+scrolls underneath.
+
+- Past **32 px** of scroll the header collapses (below 24 px it expands again): the field shrinks
+  into the 64×44 ghost circle (icon #999 → #000, mic + placeholder fade), the Location moves up
+  64 px next to it, a 1 px #DAD7D3 divider appears. Two states only, 360 ms
+  `cubic-bezier(.32,.72,0,1)`, so it can never stop half-way.
+- The Pillars rules still apply on top: down → hidden, up → compact, top → default.
+
+**CategoryRow** (Components 1184:2): two-row RTL grid in one scroller, item height 92, radius 16,
+`small = max(78, (W − 16) / 4.35 − 8)`, `large = 2 × small + gap` at every width; large art 64,
+label 13/20 right; small art 56, label 11/16 centred; max 2 lines.
+
+**NarrowBanner** (Components 1638:25533, Property 1 = Narrow): animated GIF 358×55, radius 16,
+image fill; on the home it sits 16 px under the header with CategoryRow right after it (Figma
+2404:5081). The GIF is made from the motion video: 716×110 (2×), 20 fps, 2.05 s loop, 430 KB.
+
+**شگفت انگیز** (Figma 2621:4316): promotion · double line · visualized · simple heading
+(«تخفیف‌ها رو از دست نده!»), #ED1944 band with wave edges, 200×160 artwork top-left, 136×238
+white cards in two rows that scroll together — 640 px in total, measured equal to Figma.
+
+The previous versions are kept and selectable in Settings.
+
+### Settings (grid button in the Pillars)
+
+The first Pillar (the grid icon) opens a bottom sheet **تنظیمات** with:
+
+- **سربرگ** — header: **جستجو در بالا** (new, default) or **آب‌وهوا** (previous weather header).
+- **پس‌زمینهٔ آب‌وهوا** — for the weather header: **بارانی** (rain) or **آفتابی** (sunny morning).
+- **نوع دسته‌بندی** — **ردیفی** (CategoryRow, new, default) or the previous **V1 / V2 / V3**.
+
+Changes apply instantly and are remembered on the device (`localStorage`, safe in private mode).
+
+**Sun shining (morning)** — `TopNavigation/sunScene.js`: a clear blue sky (no clouds), a soft sun
+on the left with slowly turning light rays, a breathing glow, a faint lens flare and drifting light
+motes. The sun sits away from the right-aligned text and the sky is deepest blue behind it; measured
+worst-case contrast of the white text on the moving background: **6.1:1** (title) and **5.0:1**
+(address) — above WCAG AA 4.5:1.
+
 ### Scroll states (Figma frames 2073:6867 / 7548 / 11899)
 
 | State | Trigger | Pillars | Content card | Header |
@@ -146,8 +189,11 @@ within Figma's 328–360 px card limits.
 | Component | Highlights |
 |---|---|
 | **Pillars** | Default ↔ compact variants with animated height; active pill `#ED1944`; horizontal RTL scroll; keeps the active pill in view. |
-| **TopNavigation** | Live code-drawn rain sky (canvas): randomized cloud "conveyor belts" in 3 depth layers + rain streaks; Figma overlay gradient; glass search field (68 % white, 6 px backdrop blur, gradient 1 px inside stroke, inner + drop shadow); swappable `background` prop for other weather. |
+| **TopNavigation** | Two live backgrounds — rain (below) and **sunny morning** (sun glow, slow rays, flare, motes) — selectable at runtime. Live code-drawn rain sky (canvas): randomized cloud "conveyor belts" in 3 depth layers + rain streaks; Figma overlay gradient; glass search field (68 % white, 6 px backdrop blur, gradient 1 px inside stroke, inner + drop shadow); swappable `background` prop for other weather. |
 | **Category** | V1 (96×96), V2 (72×80, tilted art) and **V3** (64×80 pastel tiles + 136×80 wide "سوپر‌های محل" / "هایپر مارکت" tiles) with per-card image geometry from Figma; both rows in one scroller; scales to fill wide screens. The home page uses **V3**. |
+| **Aisle** | AisleGrid (Figma 1540:9091) at the end of the home: «دسته‌بندی‌های پرفروش», 3-column grid of AisleCards (fixed 114 px height, width fills the column, every gap 8 px) (#F5F5F5, 1px #EFEEEB inside, radius 24, art 56, label 11/16 Medium, max 2 lines) — 22 aisles, 1078 px at 390, measured equal to Figma. |
+| **Vendor** | ShopCarousel line=2 (Figma 1483:4073): #EFEEEB band, «فروشگاه‌های محبوب», two rows of 288×96 VendorCards (logo 44 r12, rating + star, delivery fee · time, tags) in one scroller — 290 px, measured equal to Figma. |
+| **NarrowBanner** | Banner / Narrow: one animated GIF (358×55, radius 16), fluid width with a fixed 358:55 ratio, optional link / tap handler. |
 | **Banner** | Transform-based carousel (no native horizontal scrolling, so it behaves the same on iPhone/WebKit, Android and desktop): infinite loop, auto-advance every 2.5 s, swipe with pointer events (`touch-action: pan-y` keeps vertical page scroll native), pauses while dragging / off-screen / hidden tab. |
 | **Carousel** | Default (white) and Promotion (colour band with Figma's exact wave edges, reproduced from Figma's own SVG pattern export), single / double line, optional artwork, countdown heading. |
 | **SectionHeading** | Title + trailing chevron, description, live `hh:mm:ss` countdown in Persian digits. |
@@ -156,7 +202,8 @@ within Figma's 328–360 px card limits.
 | **Counter** | Float & fixed; add → stepper expand with a spring (`linear()` easing), number roll, idle → compact amount circle, two-dot loader from Figma motion data, max state. |
 | **Price** | RTL / LTR, discount wave highlight (Figma pattern), −5° red strike, out of stock, pending; Persian digits + `٬` separators. |
 | **Badge** | Lime squircle discount badge (general / amazing) with Figma's exact gradient geometry; grey text badge. |
-| **BottomNavigation** | Simple & assistant variants; Lottie assistant (blink, look around, hop — horizontal travel and label removed from the JSON), linear pulse rings every 3 s, light red under-shadow, white gradient scrim. |
+| **BottomNavigation** | Home uses the **simple** variant (Figma 43:578): خانه · سفارش‌ها · سبد خرید · پروفایل, optional badge per tab (`dot` / `numeral`) and the animated **Plus** badge (5.2 s loop from Figma motion data); bottom safe area = `max(21px, env(safe-area-inset-bottom))` (21 px as in Figma, more on devices with a larger inset). Previous notes: |
+| **BottomNavigation (assistant)** | Simple & assistant variants; Lottie assistant (blink, look around, hop — horizontal travel and label removed from the JSON), linear pulse rings every 3 s, light red under-shadow, white gradient scrim. |
 
 ## How the work was done
 

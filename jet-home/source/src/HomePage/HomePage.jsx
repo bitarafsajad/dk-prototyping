@@ -3,8 +3,13 @@ import Pillars from "../Pillars";
 import TopNavigation from "../TopNavigation";
 import Category from "../Category";
 import Banner from "../Banner";
+import NarrowBanner from "../NarrowBanner";
+import Vendor from "../Vendor";
+import Aisle from "../Aisle";
 import Carousel, { SECTIONS } from "../Carousel";
 import BottomNavigation from "../BottomNavigation";
+import { WEATHER_BACKGROUNDS, SearchHeader } from "../TopNavigation";
+import SettingsSheet from "./SettingsSheet";
 import "./HomePage.css";
 
 const CHEVRON =
@@ -18,13 +23,17 @@ const MAGNIFIER =
  *  "down" while scrolling down            → Pillars hidden, compact location header
  *  "up"   while scrolling up (not at top) → Pillars compact, compact location header
  */
-function useScrollMode(ref, headerRef, { topOffset = 4, threshold = 6 } = {}) {
+function useScrollMode(ref, headerRef, { topOffset = 4, threshold = 6, layout = "weather" } = {}) {
   const [mode, setMode] = useState("top");
+  // search layout: SearchHeader collapses past 32px (half of its 64px travel); two
+  // states only, so stopping the scroll can never freeze it half-way
+  const [collapsed, setCollapsed] = useState(false);
   useEffect(() => {
     const el = ref.current;
     const header = headerRef.current;
-    if (!el || !header) return;
-    const field = el.querySelector(".top-nav__search");
+    if (!el) return;
+    const classic = layout === "weather" && !!header;
+    const field = classic ? el.querySelector(".top-nav__search") : null;
     let prev = {};
     const set = (k, v) => { if (prev[k] !== v) { header.style.setProperty(k, v); prev[k] = v; } };
     let last = el.scrollTop;
@@ -33,7 +42,14 @@ function useScrollMode(ref, headerRef, { topOffset = 4, threshold = 6 } = {}) {
     // Header geometry from Figma: location row 76px, search field at 84 (56 tall),
     // compact header search at 8 → the field reaches it at scrollTop 76.
     const FIELD = 84, PARK = 8, MORPH = 60;
+    let isCollapsed = false;
     const paint = (y) => {
+      if (!classic) {
+        // hysteresis: collapse at 32px, expand again below 24px
+        const next = isCollapsed ? y > 24 : y >= 32;
+        if (next !== isCollapsed) { isCollapsed = next; setCollapsed(next); }
+        return;
+      }
       const yy = Math.max(0, y);
       const top = Math.max(PARK, FIELD - yy);           // rides with the content, parks at 8
       const hs = yy > 0.5 ? 1 : 0;                      // pill replaces the field once moving
@@ -62,7 +78,7 @@ function useScrollMode(ref, headerRef, { topOffset = 4, threshold = 6 } = {}) {
     const ZONE_END = FIELD - PARK + MORPH;              // 136: pill fully a circle
     let touching = false, idle = 0, dir = 0, snapping = false;
     const settle = () => {
-      if (touching) return;
+      if (touching || !classic) return;
       const y = el.scrollTop;
       if (y <= 0.5 || y >= ZONE_END - 0.5) { snapping = false; return; }
       const goDown = dir > 0 ? true : dir < 0 ? false : y >= ZONE_END / 2;
@@ -95,8 +111,8 @@ function useScrollMode(ref, headerRef, { topOffset = 4, threshold = 6 } = {}) {
       cancelAnimationFrame(raf);
       clearTimeout(idle);
     };
-  }, [ref, headerRef, topOffset, threshold]);
-  return mode;
+  }, [ref, headerRef, topOffset, threshold, layout]);
+  return { mode, collapsed };
 }
 
 const CompactHeader = memo(function CompactHeader({ headerRef, place, address, onLocationClick, onSearchClick }) {
@@ -134,13 +150,28 @@ const CompactHeader = memo(function CompactHeader({ headerRef, place, address, o
  *                  Safari: top only; home-screen app: top + bottom)
  */
 /** Everything inside the scrolling card — memoised so scroll-state changes never re-render it. */
-const PageContent = memo(function PageContent({ sections, place, address, onLocationClick, onSearchClick }) {
+const PageContent = memo(function PageContent({ sections, place, address, onLocationClick, onSearchClick, weather, category, layout }) {
   return (
     <div className="home__inner">
-      <TopNavigation place={place} address={address} onLocationClick={onLocationClick} onSearchClick={onSearchClick} />
-      <Category variant="v3" />
+      {layout === "search" ? (
+        <>
+          <div className="home__spacer" aria-hidden="true" />   {/* room under the fixed header */}
+          <NarrowBanner className="home__narrow" />
+        </>
+      ) : (
+      <TopNavigation
+        place={place}
+        address={address}
+        onLocationClick={onLocationClick}
+        onSearchClick={onSearchClick}
+        background={WEATHER_BACKGROUNDS[weather] || WEATHER_BACKGROUNDS.rain}
+      />
+      )}
+      <Category variant={category} />
       <Banner />
       {sections.map(({ id, ...s }) => <Carousel key={id} {...s} />)}
+      <Vendor />
+      <Aisle />
     </div>
   );
 });
@@ -161,6 +192,7 @@ export default function HomePage({
   sections = DEFAULT_SECTIONS,
   place = "محل‌کار",
   address = "ونک، هتل هما، ۴۰ دقیقه",
+  searchAddress = "محل‌ کار، خدامی",      // address line of the search-first header (Figma 2404:5081)
   safeTop,
   safeBottom,
   onLocationClick,
@@ -170,7 +202,10 @@ export default function HomePage({
 }) {
   const scrollerRef = useRef(null);
   const headerRef = useRef(null);
-  const mode = useScrollMode(scrollerRef, headerRef);
+  // settings (grid button in the Pillars) — remembered per device
+  const load = (k, d, ok) => { try { const v = localStorage.getItem(k); return ok.includes(v) ? v : d; } catch { return d; } };
+  const [layout, setLayout] = useState(() => load("jet.topnav", "search", ["search", "weather"]));
+  const { mode, collapsed } = useScrollMode(scrollerRef, headerRef, { layout });
   // Pillars keep the shape they had when they start leaving (default from the
   // top, compact after scrolling up) — no resize while sliding out.
   const prevMode = useRef(mode);
@@ -202,6 +237,21 @@ export default function HomePage({
     return () => navs.forEach((nav, i) => nav.removeEventListener("scroll", handlers[i]));
   }, []);
   const [tab, setTab] = useState("home");
+
+  const [weather, setWeather] = useState(() => load("jet.weather", "rain", ["rain", "sunny"]));
+  const [category, setCategory] = useState(() => load("jet.category", "row", ["row", "v1", "v2", "v3"]));
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const openSettings = useCallback(() => setSettingsOpen(true), []);
+  const closeSettings = useCallback(() => setSettingsOpen(false), []);
+  useEffect(() => {
+    try {
+      localStorage.setItem("jet.weather", weather);
+      localStorage.setItem("jet.category", category);
+      localStorage.setItem("jet.topnav", layout);
+    } catch { /* private mode */ }
+  }, [weather, category, layout]);
+  // switching layouts starts from the top
+  useEffect(() => { scrollerRef.current?.scrollTo({ top: 0 }); }, [layout]);
   // iOS home-screen apps report navigator.standalone (older iOS lacks display-mode)
   const [standalone, setStandalone] = useState(false);
   useEffect(() => {
@@ -221,6 +271,8 @@ export default function HomePage({
     <div
       className={`home ${className}`.trim()}
       data-mode={mode}
+      data-layout={layout}
+      data-collapsed={layout === "search" && collapsed ? "" : undefined}
       data-leaving={leaving}
       data-standalone={standalone ? "" : undefined}
       style={{ ...vars, ...style }}
@@ -231,24 +283,48 @@ export default function HomePage({
         <div className="home__chromeBg" />
         <div ref={pillarsRef}>
           <div className="home__pillars home__pillars--default" aria-hidden={mode !== "top"} inert={mode !== "top" ? "" : undefined}>
-            <MemoPillars collapsed={false} activeId={venture} onChange={setVenture} />
+            <MemoPillars collapsed={false} activeId={venture} onChange={setVenture} onAllClick={openSettings} />
           </div>
           <div className="home__pillars home__pillars--compact" aria-hidden={mode !== "up"} inert={mode !== "up" ? "" : undefined}>
-            <MemoPillars collapsed activeId={venture} onChange={setVenture} />
+            <MemoPillars collapsed activeId={venture} onChange={setVenture} onAllClick={openSettings} />
           </div>
         </div>
+        {layout === "search" && (
+          <div className="home__searchBlock">
+            <SearchHeader
+              collapsed={collapsed}
+              label="تحویل به"
+              address={searchAddress}
+              onSearchClick={onSearchClick}
+              onLocationClick={onLocationClick}
+            />
+          </div>
+        )}
       </div>
 
       {/* contentFrame */}
       <div className="home__card">
-        <CompactHeader headerRef={headerRef} place={place} address={address} onLocationClick={onLocationClick} onSearchClick={onSearchClick} />
+        {layout === "weather" && (
+          <CompactHeader headerRef={headerRef} place={place} address={address} onLocationClick={onLocationClick} onSearchClick={onSearchClick} />
+        )}
         <div className="home__scroller" ref={scrollerRef}>
-          <PageContent sections={sections} place={place} address={address} onLocationClick={onLocationClick} onSearchClick={onSearchClick} />
+          <PageContent sections={sections} place={place} address={address} onLocationClick={onLocationClick} onSearchClick={onSearchClick} weather={weather} category={category} layout={layout} />
         </div>
       </div>
 
+      <SettingsSheet
+        open={settingsOpen}
+        onClose={closeSettings}
+        weather={weather}
+        onWeather={setWeather}
+        category={category}
+        onCategory={setCategory}
+        layout={layout}
+        onLayout={setLayout}
+      />
+
       <BottomNavigation
-        variant="assistant"
+        variant="simple"
         activeId={tab}
         onSelect={(id) => (id === "home" && tab === "home" ? scrollToTop() : setTab(id))}
         style={{ position: "absolute" }}

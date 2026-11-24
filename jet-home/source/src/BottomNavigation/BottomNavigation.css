@@ -1,7 +1,7 @@
 /* BottomNavigation — Figma: Home-Page › bottom navigation (2070:6835)
    variants: simple (2070:6813) · with assistant (2070:6788) */
 .bnav {
-  --bnav-safe: max(21px, env(safe-area-inset-bottom, 0px)); /* safeAreaInsetBottom */
+  --bnav-safe: max(21px, env(safe-area-inset-bottom, 0px)); /* safe area: 21px (Figma), or the device inset when larger */
   position: fixed;
   left: 0;
   right: 0;
@@ -78,7 +78,8 @@
 }
 .bnav__tab:focus-visible { outline: 2px solid #ed1944; outline-offset: -4px; border-radius: 12px; }
 .bnav__icon { display: block; width: 24px; height: 24px; flex: none; transition: transform 160ms ease-out; }
-.bnav__tab:active .bnav__icon { transform: scale(0.9); }
+.bnav__tab:active .bnav__iconWrap { transform: scale(0.9); }
+.bnav__iconWrap { transition: transform 160ms ease-out; }
 .bnav__label {
   font-weight: 500;                    /* Base/Small */
   font-size: 13px;
@@ -227,4 +228,77 @@
 
 @media (prefers-reduced-motion: reduce) {
   .bnav__ring { animation: none; }
+}
+
+/* ---------- tab icon wrapper + badges (Figma 43:578 hand-off) ---------- */
+.bnav__iconWrap { position: relative; display: block; width: 24px; height: 24px; flex: none; }
+/* Badge / Dot: 6px, #ED1944, 2px white OUTSIDE stroke, at icon (18, 0) */
+.bnav__dot {
+  position: absolute; left: 18px; top: 0; width: 6px; height: 6px; border-radius: 50%;
+  background: #ed1944; box-shadow: 0 0 0 2px #fff;
+}
+/* IndicatorBadge numeral: 16 high, padding 0 4, radius 10, digit Bold 13/20 white */
+.bnav__num {
+  position: absolute; left: 18px; top: 0; min-width: 16px; height: 16px; padding: 0 4px; box-sizing: border-box;
+  border-radius: 10px; background: #ed1944; box-shadow: 0 0 0 2px #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 13px; line-height: 20px; color: #fff; direction: rtl;
+}
+
+/* ---------- Plus badge (16×16 at icon (17, 10)) — 5.2 s loop from Figma motion ---------- */
+.bplus { position: absolute; left: 17px; top: 10px; width: 16px; height: 16px; pointer-events: none; }
+.bplus > span { position: absolute; transform-origin: 50% 50%; }
+.bplus__bg {
+  inset: 0; border-radius: 4px; box-shadow: 0 0 0 2px #fff;          /* 2px white OUTSIDE stroke */
+  background: linear-gradient(to top right, #d264be 0%, #ba49a2 25%, #a32f87 49%, #9c2684 75%, #941d80 100%);
+  animation: bplus-shrink 5.2s infinite;
+}
+.bplus__border { left: -2px; top: -2px; width: 20px; height: 20px; border-radius: 6px; background: #fff; opacity: 0;
+  animation: bplus-shrink 5.2s infinite, bplus-border 5.2s infinite; }
+.bplus__ic svg { position: absolute; display: block; }
+.bplus__ic--plus { animation: bplus-plus 5.2s infinite; }
+.bplus__ic--cashback, .bplus__ic--amazing, .bplus__ic--jet, .bplus__ic--return { opacity: 0; transform: translateX(-8.889px) scale(0.6); }
+.bplus__ic--cashback { animation: bplus-cashback 5.2s infinite; }
+.bplus__ic--amazing  { animation: bplus-amazing 5.2s infinite; }
+.bplus__ic--jet      { animation: bplus-jet 5.2s infinite; }
+.bplus__ic--return   { animation: bplus-return 5.2s infinite; }
+
+@keyframes bplus-shrink {
+  0%, 88.78% { transform: none; animation-timing-function: cubic-bezier(0.727, 0, 0.667, 1); }
+  94.87%, 100% { transform: translate(1.333px, 1.333px) scale(0.6667); }
+}
+@keyframes bplus-border {
+  0%, 88.78% { opacity: 0; animation-timing-function: cubic-bezier(0.333, 0, 0.833, 0.833); }
+  90.71%, 100% { opacity: 1; }
+}
+@keyframes bplus-plus {
+  0%, 7.69% { opacity: 1; transform: none; animation-timing-function: cubic-bezier(0.333, 0, 0.353, 0.98); }
+  13.46% { opacity: 0; transform: translateX(8.222px) scale(0.5882); }
+  75% { opacity: 0; transform: translateX(-8.667px) scale(0.5882); animation-timing-function: cubic-bezier(0.333, 0, 0.667, 1); }
+  80.45%, 88.78% { opacity: 1; transform: none; animation-timing-function: cubic-bezier(0.73, 0.054, 0.667, 1); }
+  94.87%, 100% { opacity: 1; transform: translate(1.333px, 1.333px) scale(0.5882); }
+}
+/* each service icon: slides in from the left, holds, slides out to the right */
+@keyframes bplus-cashback {
+  0%, 7.69% { opacity: 0; transform: translateX(-8.889px) scale(0.6); animation-timing-function: cubic-bezier(0.74, 0, 0.667, 1); }
+  13.46%, 23.08% { opacity: 1; transform: none; animation-timing-function: cubic-bezier(0.333, 0, 0.245, 1); }
+  28.85%, 100% { opacity: 0; transform: translateX(8.445px) scale(0.6); }
+}
+@keyframes bplus-amazing {
+  0%, 23.08% { opacity: 0; transform: translateX(-8.889px) scale(0.6); animation-timing-function: cubic-bezier(0.74, 0, 0.667, 1); }
+  28.85%, 38.46% { opacity: 1; transform: none; animation-timing-function: cubic-bezier(0.333, 0, 0.245, 1); }
+  44.23%, 100% { opacity: 0; transform: translateX(8.445px) scale(0.6); }
+}
+@keyframes bplus-jet {
+  0%, 38.46% { opacity: 0; transform: translateX(-8.889px) scale(0.6); animation-timing-function: cubic-bezier(0.74, 0, 0.667, 1); }
+  44.23%, 53.85% { opacity: 1; transform: none; animation-timing-function: cubic-bezier(0.333, 0, 0.245, 1); }
+  59.62%, 100% { opacity: 0; transform: translateX(8.445px) scale(0.6); }
+}
+@keyframes bplus-return {
+  0%, 53.85% { opacity: 0; transform: translateX(-8.889px) scale(0.6); animation-timing-function: cubic-bezier(0.74, 0, 0.667, 1); }
+  59.62%, 69.23% { opacity: 1; transform: none; animation-timing-function: cubic-bezier(0.333, 0, 0.245, 1); }
+  75%, 100% { opacity: 0; transform: translateX(8.445px) scale(0.6); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bplus > span { animation: none !important; }
 }

@@ -18,6 +18,7 @@
   height: 100%;
   margin: 0 auto;
   overflow: hidden;
+  overflow: clip;                          /* never scrollable by focus / scrollIntoView */
   background: #fff;
   direction: rtl;
   font-family: "Digikala", system-ui, sans-serif;
@@ -162,7 +163,7 @@
 .home__scroller::-webkit-scrollbar { display: none; }
 .home__inner {
   /* room for the bottom navigation + the card's travel between states */
-  padding-bottom: calc(64px + var(--safe-bottom) + 39px + 90px);
+  padding-bottom: calc(64px + max(21px, var(--safe-bottom)) + 39px + 90px);
 }
 .home__inner .top-nav { padding-bottom: 0; }
 .home__inner .banner { padding-bottom: 0; }
@@ -308,13 +309,10 @@
   opacity: calc(1 - var(--hm) * 2.5);
 }
 
-/* performance: product-card steppers sit on white thumbnails — their glass blur is
-   invisible but costs a backdrop pass per card while scrolling */
-.home__scroller .qs__bg { -webkit-backdrop-filter: none; backdrop-filter: none; }
 .home .bnav__scrim { -webkit-backdrop-filter: none; backdrop-filter: none; }
 
 /* bottom navigation sits on top of everything; its safe area follows the page rule */
-.home .bnav { z-index: 4; --bnav-safe: var(--safe-bottom); }
+.home .bnav { z-index: 4; --bnav-safe: max(21px, var(--safe-bottom)); }   /* ≈21px safe area, more on devices with a larger inset */
 
 @media (prefers-reduced-motion: reduce) {
   .home { --t: 1ms; }
@@ -322,3 +320,69 @@
 
 /* pill icon: 40% black like the page field (seamless hand-off) → solid black in the circle */
 .home__search svg path { fill: rgba(0, 0, 0, calc(0.4 + 0.6 * var(--hm))); }
+
+/* =====================================================================
+   Layout "search" — final home (Figma 2404:5081): TopNavigation homePage
+   (status bar · Pillars · SearchField · Location) fixed on white, content
+   scrolling underneath. Pillars keep their rules (down → hidden, up →
+   compact, top → default); the SearchHeader collapses past 32px.
+     block y: top = safe+82 · up = safe+44 · down = safe
+     block h: expanded 128 · collapsed 64 (+1px divider)
+   ===================================================================== */
+.home[data-layout="search"] { background: #fff; --blk-y: calc(var(--safe-top) + 82px); }
+.home[data-layout="search"][data-mode="up"] { --blk-y: calc(var(--safe-top) + 44px); --pillars-y: 0px; }
+.home[data-layout="search"][data-mode="down"] { --blk-y: var(--safe-top); }
+.home[data-layout="search"] .home__backdrop,
+.home[data-layout="search"] .home__chromeBg { display: none; }
+.home[data-layout="search"] .home__chrome { height: calc(var(--safe-top) + 220px); }
+
+.home__searchBlock {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  transform: translate3d(0, var(--blk-y), 0);
+  transition: transform var(--t) var(--ease);
+  pointer-events: auto;
+  will-change: transform;
+}
+/* white above the block (status bar / behind the Pillars) and behind it */
+.home__searchBlock::before {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: calc(100% - 8px);   /* overlaps the block: no hairline seam between the two white layers */
+  height: 608px;
+  background: #fff;
+  pointer-events: none;
+}
+.home__searchBlock::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 128px;
+  background: #fff;
+  transform-origin: 0 0;
+  transition: transform 360ms cubic-bezier(0.32, 0.72, 0, 1);
+  pointer-events: none;
+  z-index: -1;
+}
+.home[data-collapsed] .home__searchBlock::after { transform: scaleY(0.5); }   /* 128 → 64 */
+.home__searchBlock .sh { z-index: 0; }
+/* the Pillars sit above the white sheet of the block */
+.home[data-layout="search"] .home__pillars { z-index: 1; }
+.home[data-layout="search"] .home__searchBlock { z-index: 0; }
+
+/* content: full height, flat, starts under the expanded header */
+.home[data-layout="search"] .home__card {
+  height: 100%;
+  transform: none;
+  transition: none;
+}
+.home[data-layout="search"] .home__card::after { display: none; }
+.home[data-layout="search"] .home__scroller { border-radius: 0; }
+.home__spacer { height: calc(var(--safe-top) + 210px); }
+
+/* final home (2404:5081): Narrow Banner frame y16 · h55, CategoryRow right after it */
+.home__narrow.nbanner { padding: 16px 16px 0; }
+/* search layout has no card travel: only clear the bottom navigation */
+.home[data-layout="search"] .home__inner { padding-bottom: calc(64px + max(21px, var(--safe-bottom)) + 16px); }

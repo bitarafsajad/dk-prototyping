@@ -1,3 +1,4 @@
+import amazingArtwork from "./assets/amazing-artwork.webp";
 import shegeftangiz10 from "./assets/shegeft-angiz-10.webp";
 import shegeftangiz11 from "./assets/shegeft-angiz-11.webp";
 import shegeftangiz12 from "./assets/shegeft-angiz-12.webp";
@@ -37,18 +38,18 @@ export const SECTIONS = [
     appearance: "promotion",
     line: "double",
     color: "#ed1944",
-    title: "شگفت‌انگیز",
-    description: "تخفیف‌های ویژه تا پایان زمان",
-    endsAt: inHours(4.28),
+    title: "شگفت انگیز",
+    description: "تخفیف‌ها رو از دست نده!",
+    visual: { src: amazingArtwork, alt: "" },   // Figma 2621:4316 — isVisualized, simple heading
     products: [
-      { id: "shegeft-angiz-10", title: "پاپ کورن پنیری مزپاف", supportingText: "۹۰ گرم", image: shegeftangiz10, price: 48500, previousPrice: 69000, discountPercent: 30, maxQuantity: 3, discountVariant: "amazing" },
-      { id: "shegeft-angiz-11", title: "مایع لباسشویی رنگی تست", supportingText: "۲.۵ لیتر", image: shegeftangiz11, price: 289000, previousPrice: 412000, discountPercent: 30, maxQuantity: 3, discountVariant: "amazing" },
-      { id: "shegeft-angiz-12", title: "نوشابه لیمویی فانتا", supportingText: "۱.۵ لیتر", image: shegeftangiz12, price: 42900, previousPrice: 52000, discountPercent: 17, maxQuantity: 3, discountVariant: "amazing" },
-      { id: "shegeft-angiz-25", title: "نوار بهداشتی بالدار شبانه تافته", supportingText: "۱۰ عدد", image: shegeftangiz25, price: 96500, previousPrice: 129000, discountPercent: 25, maxQuantity: 3, discountVariant: "amazing" },
-      { id: "shegeft-angiz-26", title: "اسنک حلقه‌ای بستنی", supportingText: "۵۰ گرم", image: shegeftangiz26, price: 23800, previousPrice: 29000, discountPercent: 18, maxQuantity: 3, discountVariant: "amazing" },
-      { id: "shegeft-angiz-6", title: "شیر کم‌چرب روزانه", supportingText: "۱ لیتر", image: shegeftangiz6, price: 54900, previousPrice: 61000, discountPercent: 10, maxQuantity: 3, discountVariant: "amazing" },
-      { id: "shegeft-angiz-7", title: "پنیر سفید فتا پگاه", supportingText: "۴۰۰ گرم", image: shegeftangiz7, price: 128000, previousPrice: 152000, discountPercent: 16, maxQuantity: 3, discountVariant: "amazing" },
-      { id: "shegeft-angiz-9", title: "پفک نمکی چی‌توز", supportingText: "۹۰ گرم", image: shegeftangiz9, price: 36500, previousPrice: 44000, discountPercent: 17, maxQuantity: 3, discountVariant: "amazing" }
+      { id: "shegeft-angiz-10", title: "پاپ کورن پنیری مزپاف ۹۰ گرم", image: shegeftangiz10, price: 48500, previousPrice: 69000, discountPercent: 30, maxQuantity: 3 },
+      { id: "shegeft-angiz-11", title: "مایع لباسشویی رنگی تست ۲.۵ لیتر", image: shegeftangiz11, price: 289000, previousPrice: 412000, discountPercent: 30, maxQuantity: 3 },
+      { id: "shegeft-angiz-12", title: "نوشابه لیمویی فانتا ۱.۵ لیتر", image: shegeftangiz12, price: 42900, previousPrice: 52000, discountPercent: 17, maxQuantity: 3 },
+      { id: "shegeft-angiz-25", title: "نوار بهداشتی بالدار شبانه تافته ۱۰ عدد", image: shegeftangiz25, price: 96500, previousPrice: 129000, discountPercent: 25, maxQuantity: 3 },
+      { id: "shegeft-angiz-26", title: "اسنک حلقه‌ای بستنی ۵۰ گرم", image: shegeftangiz26, price: 23800, previousPrice: 29000, discountPercent: 18, maxQuantity: 3 },
+      { id: "shegeft-angiz-6", title: "شیر کم‌چرب روزانه ۱ لیتر", image: shegeftangiz6, price: 54900, previousPrice: 61000, discountPercent: 10, maxQuantity: 3 },
+      { id: "shegeft-angiz-7", title: "پنیر سفید فتا پگاه ۴۰۰ گرم", image: shegeftangiz7, price: 128000, previousPrice: 152000, discountPercent: 16, maxQuantity: 3 },
+      { id: "shegeft-angiz-9", title: "پفک نمکی چی‌توز ۹۰ گرم", image: shegeftangiz9, price: 36500, previousPrice: 44000, discountPercent: 17, maxQuantity: 3 }
     ],
   },
   {

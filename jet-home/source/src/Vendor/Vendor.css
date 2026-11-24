@@ -1,0 +1,70 @@
+/* Vendor — ShopCarousel line=2 · VendorCard (Figma 1483:4073) */
+.vendors {
+  background: #efeeeb;                  /* Terra/100 */
+  padding: 8px 0 10px;
+  direction: rtl;
+  font-family: "Digikala", system-ui, sans-serif;
+  letter-spacing: 0;
+}
+.vendors__scroller {
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.vendors__scroller::-webkit-scrollbar { display: none; }
+.vendors__track { display: flex; flex-direction: column; width: max-content; min-width: 100%; }
+.vendors__row { display: flex; gap: 12px; }
+.vendors__row--1 { padding: 8px 16px 6px; }
+.vendors__row--2 { padding: 6px 16px; }
+
+/* VendorCard 288 × 96: white, radius 24, padding 12 12 12 0, gap 12 */
+.vcard {
+  flex: none;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 288px;
+  height: 96px;
+  padding: 12px 12px 12px 0;
+  box-sizing: border-box;
+  background: #fff;
+  border-radius: 24px;
+  overflow: hidden;
+  color: #000;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 120ms ease-out;
+}
+.vcard:active { transform: scale(0.98); }
+.vcard:focus-visible { outline: 2px solid #ed1944; outline-offset: 2px; }
+
+/* leadingFrame: logo 44 (radius 12) + RateBadge */
+.vcard__lead { flex: none; width: 44px; display: flex; flex-direction: column; gap: 12px; }
+.vcard__logo { display: block; width: 44px; height: 44px; border-radius: 12px; object-fit: cover; }
+.vcard__rate {
+  display: flex; align-items: center; justify-content: center; gap: 2px;
+  height: 16px; padding: 0 6px 0 4px; box-sizing: border-box;
+  border-radius: 4px; background: #fff;
+  font-weight: 700; font-size: 13px; line-height: 20px; color: #000;
+}
+.vcard__rate svg { width: 12px; height: 12px; flex: none; display: block; }
+
+/* contentFrame 220 */
+.vcard__content { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+.vcard__titleFrame { display: flex; flex-direction: column; gap: 8px; padding-left: 12px; }
+.vcard__title {                         /* Prominent/xSmall 13/20 */
+  font-weight: 700; font-size: 13px; line-height: 20px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: right;
+}
+.vcard__desc { display: flex; align-items: center; gap: 4px; height: 16px; }
+.vcard__meta { font-weight: 500; font-size: 11px; line-height: 16px; white-space: nowrap; }   /* DeliveryBadge 11/16 Medium */
+.vcard__dot { flex: none; width: 2px; height: 2px; border-radius: 50%; background: #bdbdbd; margin-top: 4px; }
+.vcard__tags { display: flex; align-items: center; gap: 4px; height: 16px; overflow: hidden; }
+.vcard__tag {                           /* Tag · neutral · small · low */
+  flex: none; height: 16px; padding: 0 4px 2px; box-sizing: border-box;
+  border-radius: 4px; background: #e8e8e8;
+  font-weight: 400; font-size: 11px; line-height: 16px; color: #525252; white-space: nowrap;
+  display: flex; align-items: center;
+}

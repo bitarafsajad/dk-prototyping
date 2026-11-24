@@ -11,6 +11,7 @@ import petshop from "./assets/petshop.webp";
 import vegetable from "./assets/vegetable.webp";
 import bread from "./assets/bread.webp";
 import shop from "./assets/shop.webp";
+import CategoryRow from "./CategoryRow";
 import hypermarket from "./assets/hypermarket.webp";
 
 /*
@@ -118,7 +119,12 @@ function Art({ src, box, inner = 64, rot = 0, inset = 0 }) {
  *  rows      [[item, …], [item, …]] — defaults to the Figma content
  *  onSelect(item)  called when a category is tapped
  */
-export default function Category({ variant = "v1", rows, onSelect, className = "", ...rest }) {
+export default function Category(props) {
+  // "row" = CategoryRow (Figma 1184:2); v1–v3 = the original category variants
+  return props.variant === "row" ? <CategoryRow onSelect={props.onSelect} className={props.className} /> : <CategoryClassic {...props} />;
+}
+
+function CategoryClassic({ variant = "v1", rows, onSelect, className = "", ...rest }) {
   const data = rows ?? (variant === "v3" ? CATEGORY_V3 : variant === "v2" ? CATEGORY_V2 : CATEGORY_V1);
 
   // When the container is wider than the rows, scale everything up so the

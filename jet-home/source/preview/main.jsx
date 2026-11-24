@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createRoot } from "react-dom/client";
-import { Counter, Thumbnail, Price, DiscountBadge, TextBadge, ProductCard, BottomNavigation, Carousel, SECTIONS, Category, Banner, Pillars, TopNavigation } from "../src";
+import { Counter, Thumbnail, Price, DiscountBadge, TextBadge, ProductCard, BottomNavigation, Carousel, SECTIONS, Category, Banner, Pillars, TopNavigation, SearchHeader, CategoryRow, NarrowBanner, Vendor, DEFAULT_TABS, Aisle } from "../src";
 import sunscreen from "../src/assets/product-sunscreen.webp";
 import shampoo from "../src/assets/product-shampoo.webp";
 import cereal from "../src/assets/product-cereal.webp";
@@ -67,6 +67,47 @@ function Phone({ variant }) {
 function App() {
   return (
     <div className="pv">
+      <section className="pv-section">
+        <h2>TopNavigation — homePage ⇄ homePageScroll</h2>
+        <p className="pv-note">Expanded and collapsed states of the new search-first header.</p>
+        <div className="pv-home"><SearchHeader /></div>
+        <div className="pv-home" style={{ marginTop: 12, height: 64, overflow: "hidden" }}><SearchHeader collapsed /></div>
+      </section>
+      <section className="pv-section">
+        <h2>Aisle — AisleGrid</h2>
+        <div className="pv-home"><Aisle /></div>
+      </section>
+      <section className="pv-section">
+        <h2>Vendor — ShopCarousel</h2>
+        <div className="pv-home"><Vendor /></div>
+      </section>
+      <section className="pv-section">
+        <h2>BottomNavigation — badges · Plus · safe area</h2>
+        <p className="pv-note">Dot · numeral · Plus (5.2 s loop). Safe area = env(safe-area-inset-bottom).</p>
+        {[
+          { cart: { type: "dot" } },
+          { cart: { type: "numeral", value: 1 } },
+          { plus: true },
+        ].map((v, i) => (
+          <div key={i} className="pv-home" style={{ position: "relative", height: 64, marginTop: i ? 12 : 0, overflow: "hidden" }}>
+            <BottomNavigation
+              variant="simple"
+              fixed={false}
+              tabs={DEFAULT_TABS.map((t) => ({ ...t, badge: t.id === "cart" ? v.cart : undefined, plus: t.id === "profile" && v.plus }))}
+            />
+          </div>
+        ))}
+      </section>
+      <section className="pv-section">
+        <h2>NarrowBanner</h2>
+        <p className="pv-note">Banner / Narrow — animated GIF 358×55, radius 16.</p>
+        <div className="pv-home"><NarrowBanner /></div>
+      </section>
+      <section className="pv-section">
+        <h2>CategoryRow</h2>
+        <p className="pv-note">large = 2 × small + gap at every width; both rows scroll together.</p>
+        <div className="pv-home"><CategoryRow /></div>
+      </section>
       <section className="pv-section">
         <h2>Pillars</h2>
         <div className="pv-home"><Pillars /></div>

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { ICONS } from "./icons";
 import "./BottomNavigation.css";
+import PlusBadge from "./PlusBadge";
 
 function Icon({ name }) {
   return (
@@ -12,11 +13,12 @@ function Icon({ name }) {
   );
 }
 
-/** Tabs, right → left (RTL). `icon` is the outline name; "-fill" is used when selected. */
+/** Tabs, right → left (RTL). `icon` is the outline name; "-fill" is used when selected.
+ *  Optional per tab: badge { type: "dot" } | { type: "numeral", value }, plus: true (Plus badge). */
 export const DEFAULT_TABS = [
   { id: "home", label: "خانه", icon: "home" },
   { id: "orders", label: "سفارش‌ها", icon: "orders" },
-  { id: "cart", label: "سبد", icon: "basket" },
+  { id: "cart", label: "سبد خرید", icon: "basket" },
   { id: "profile", label: "پروفایل", icon: "profile" },
 ];
 
@@ -30,7 +32,14 @@ function Tab({ tab, selected, onSelect }) {
       aria-current={selected ? "page" : undefined}
       onClick={(e) => onSelect?.(tab.id, e)}
     >
-      <Icon name={selected ? `${tab.icon}-fill` : tab.icon} />
+      <span className="bnav__iconWrap">
+        <Icon name={selected ? `${tab.icon}-fill` : tab.icon} />
+        {tab.badge?.type === "dot" && <span className="bnav__dot" aria-label="جدید" />}
+        {tab.badge?.type === "numeral" && (
+          <span className="bnav__num">{String(tab.badge.value).replace(/\d/g, (d) => "۰۱۲۳۴۵۶۷۸۹"[d])}</span>
+        )}
+        {tab.plus && <PlusBadge />}
+      </span>
       <span className="bnav__label">{tab.label}</span>
     </Tag>
   );

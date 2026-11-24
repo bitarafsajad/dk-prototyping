@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { createRainScene } from "./rainScene";
+import { createSunScene } from "./sunScene";
 import "./TopNavigation.css";
 
 import cloud1 from "./assets/cloud-1.webp";
@@ -31,6 +32,18 @@ export const WEATHER_BACKGROUNDS = {
     fade: true,
     overlay: "linear-gradient(180deg, rgba(33, 0, 123, 0.9) 0%, rgba(82, 0, 123, 0) 100%)",
     overlayOpacity: 0.48,
+  },
+  /* Sun shining (morning): clear sky, sun light only. Deep blue at the top
+     (behind the white location text) for contrast, brightening towards the
+     horizon; the sun sits on the left, away from the RTL text. */
+  sunny: {
+    scene: createSunScene,
+    clouds: [],
+    options: {},
+    sky: "linear-gradient(180deg, #1559b8 0%, #2a74cf 32%, #4f9be6 60%, #9fd0f6 84%, #d6edfc 100%)",
+    fade: true,
+    overlay: "linear-gradient(180deg, rgba(6, 34, 96, 0.30) 0%, rgba(6, 34, 96, 0.12) 45%, rgba(6, 34, 96, 0) 75%)",
+    overlayOpacity: 1,
   },
 };
 

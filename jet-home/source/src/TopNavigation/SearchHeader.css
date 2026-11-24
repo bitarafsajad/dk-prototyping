@@ -1,0 +1,166 @@
+/* SearchHeader — TopNavigation homePage ⇄ homePageScroll
+   Tokens: surface/secondary #F5F5F5 · border/secondary #D6D6D6 · content/secondary #525252
+           content/tertiary #737373 · Border/Terra-Secondary #DAD7D3 (scroll divider)
+   Action/Outline: inner shadow 0 4 8 white 70% painted over the 1px inside stroke. */
+.sh {
+  --sh-d: 360ms;
+  --sh-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  position: relative;
+  height: 128px;
+  container-type: inline-size;          /* W = 100cqw */
+  direction: rtl;
+  font-family: "Digikala", system-ui, sans-serif;
+  letter-spacing: 0;
+}
+.sh button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+
+/* ---------- SearchField ⇄ ghost circle ---------- */
+.sh__field {
+  all: unset;
+  box-sizing: border-box;
+  position: absolute;
+  left: 16px;
+  top: 8px;
+  width: calc(100cqw - 32px);
+  height: 52px;
+  border-radius: 999px;
+  background: #f5f5f5;
+  box-shadow: inset 0 4px 8px rgba(255, 255, 255, 0.7), inset 0 0 0 1px #d6d6d6;
+  cursor: pointer;
+  transition: width var(--sh-d) var(--sh-ease), height var(--sh-d) var(--sh-ease), transform var(--sh-d) var(--sh-ease);
+}
+.is-collapsed .sh__field { width: 64px; height: 44px; transform: translateY(2px); }   /* 64×44 at y10 */
+.sh__field:focus-visible { outline: 2px solid #ed1944; outline-offset: 2px; }
+
+/* placeholder: right edge 16 + 4 + 44 + 4 = 68, text 15/28 Medium tertiary */
+.sh__placeholder {
+  position: absolute;
+  right: 68px;
+  top: 20px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 28px;
+  color: #737373;
+  white-space: nowrap;
+  pointer-events: none;
+  direction: ltr;                       /* [ticker][4][«جستجوی»] → reads «جستجوی شیر کم‌چرب» */
+  transition: transform var(--sh-d) var(--sh-ease), opacity 200ms linear 220ms;
+}
+.is-collapsed .sh__placeholder {
+  opacity: 0;
+  transform: translateX(calc(96px - 100cqw));
+  transition: transform var(--sh-d) var(--sh-ease), opacity 80ms linear;
+}
+.sh__ticker { position: relative; width: 99px; height: 18px; overflow: hidden; direction: rtl; }
+.sh__track {
+  position: absolute; right: 0; top: -6px; width: 99px;
+  display: flex; flex-direction: column; gap: 8px; text-align: right;
+  animation: sh-ticker 10250ms infinite;
+}
+.sh__track span { display: block; height: 28px; line-height: 28px; }
+@keyframes sh-ticker {
+  0%       { transform: translate3d(0,0,0);      animation-timing-function: linear; }
+  7.8049%  { transform: translate3d(0,0,0);      animation-timing-function: cubic-bezier(.22,1,.36,1); }
+  20%      { transform: translate3d(0,-36px,0);  animation-timing-function: linear; }
+  27.8049% { transform: translate3d(0,-36px,0);  animation-timing-function: cubic-bezier(.22,1,.36,1); }
+  40%      { transform: translate3d(0,-72px,0);  animation-timing-function: linear; }
+  47.8049% { transform: translate3d(0,-72px,0);  animation-timing-function: cubic-bezier(.22,1,.36,1); }
+  60%      { transform: translate3d(0,-108px,0); animation-timing-function: linear; }
+  67.8049% { transform: translate3d(0,-108px,0); animation-timing-function: cubic-bezier(.22,1,.36,1); }
+  80%      { transform: translate3d(0,-144px,0); animation-timing-function: linear; }
+  87.8049% { transform: translate3d(0,-144px,0); animation-timing-function: cubic-bezier(.22,1,.36,1); }
+  100%     { transform: translate3d(0,-180px,0); }
+}
+
+/* mic: Button naked medium circle at field x4 → left 20, top 12 */
+.sh__mic {
+  all: unset;
+  box-sizing: border-box;
+  position: absolute;
+  left: 20px;
+  top: 12px;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: opacity 200ms linear 220ms;
+}
+.sh__mic svg { width: 24px; height: 24px; display: block; }
+.is-collapsed .sh__mic { opacity: 0; pointer-events: none; transition: opacity 80ms linear; }
+.sh__mic:focus-visible { outline: 2px solid #ed1944; outline-offset: -2px; }
+
+/* search icon: field slot (right 30, y22) → centre of the 64×44 circle (x36, y20) */
+.sh__icon {
+  position: absolute;
+  right: 30px;
+  top: 22px;
+  width: 24px;
+  height: 24px;
+  pointer-events: none;
+  transition: transform var(--sh-d) var(--sh-ease);
+}
+.sh__icon svg { position: absolute; inset: 0; width: 24px; height: 24px; transition: opacity 200ms linear; }
+.sh__ic-field { color: #999; }
+.sh__ic-btn { color: #000; opacity: 0; }
+.is-collapsed .sh__icon { transform: translate(calc(90px - 100cqw), -2px); }
+.is-collapsed .sh__ic-field { opacity: 0; transition-delay: 100ms; }
+.is-collapsed .sh__ic-btn { opacity: 1; transition-delay: 100ms; }
+
+/* ---------- Location (homePage y72 → homePageScroll y8) ---------- */
+.sh__loc {
+  position: absolute;
+  left: 84px;                           /* 16 + 64 circle + 4 gap */
+  right: 24px;
+  top: 72px;
+  height: 48px;
+  transition: transform var(--sh-d) var(--sh-ease);
+}
+.is-collapsed .sh__loc { transform: translateY(-64px); }
+.sh__locBtn {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;              /* right edge (RTL) */
+  gap: 4px;
+  width: 100%;
+  direction: rtl;
+  cursor: pointer;
+}
+.sh__locBtn:focus-visible { outline: 2px solid #ed1944; outline-offset: 2px; border-radius: 8px; }
+.sh__label {                            /* Subtle/Small 13/20 */
+  width: 100%;
+  font-weight: 400; font-size: 13px; line-height: 20px; color: #525252;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: right;
+}
+.sh__address { display: flex; align-items: center; gap: 8px; height: 24px; max-width: 100%; }
+.sh__addressText {                      /* Prominent/Small 15/24 */
+  font-weight: 700; font-size: 15px; line-height: 24px; color: #000;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
+}
+.sh__chip {
+  flex: none; width: 20px; height: 20px; border-radius: 16px; background: rgba(0, 0, 0, 0.12);
+  display: grid; place-items: center;
+}
+.sh__chip svg { width: 18px; height: 18px; display: block; }
+
+/* scroll divider (hasScrollDivider): full width 1px, only in homePageScroll */
+.sh__divider {
+  position: absolute; left: 0; right: 0; top: 63px; height: 1px;
+  background: #dad7d3;
+  opacity: 0;
+  transition: opacity 80ms linear;
+  pointer-events: none;
+}
+.is-collapsed .sh__divider { opacity: 1; transition: opacity 160ms linear 200ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sh { --sh-d: 1ms; }
+  .sh__track { animation: none; }
+}
