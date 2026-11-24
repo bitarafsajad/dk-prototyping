@@ -224,19 +224,41 @@ export function createProductModal(device) {
     baseTop = Math.max(16, H - INDICATOR_H - GROUP_GAP - CARD_H);
   }
 
-  /* source image rect (relative to the device) for a product id, in the opening section */
+  /* source = the WHOLE product card (relative to the device) for a product id, in the opening section */
   function rectFor(id) {
     const root = sectionEl && sectionEl.isConnected ? sectionEl : device;
-    const el = root.querySelector(`[data-pid="${CSS.escape(id)}"] .thumb__img`) || (sourceEl && sourceEl.isConnected ? sourceEl : null);
+    const el = root.querySelector(`[data-pid="${CSS.escape(id)}"]`) || (sourceEl && sourceEl.isConnected ? sourceEl.closest("[data-pid]") : null);
     if (!el) return null;
     const r = el.getBoundingClientRect(), dv = device.getBoundingClientRect();
-    return { x: r.left - dv.left, y: r.top - dv.top, w: r.width, h: r.height, r: 12, el };
+    if (!r.width || !r.height) return null;
+    return { x: r.left - dv.left, y: r.top - dv.top, w: r.width, h: r.height, r: 24, el };
   }
   function hideSource(el) {
     if (hidden && hidden !== el) hidden.style.visibility = "";
     hidden = el || null;
-    if (hidden) hidden.style.visibility = "hidden";       // the "hole" where the image left
+    if (hidden) hidden.style.visibility = "hidden";       // the card has become the modal
   }
+  /* morph layers: a white rounded shell (the container) holding a live copy of the card */
+  const shell = document.createElement("div");
+  shell.className = "pdp-shell";
+  shell.setAttribute("aria-hidden", "true");
+  track.appendChild(shell);
+  let cloneFor = null;
+  function setClone(cardEl) {
+    if (cloneFor === cardEl) return;
+    shell.textContent = "";
+    cloneFor = cardEl || null;
+    if (!cardEl) return;
+    const c = cardEl.cloneNode(true);
+    c.removeAttribute("data-pid");
+    c.style.visibility = "visible";
+    c.style.position = "absolute"; c.style.left = "0"; c.style.top = "0"; c.style.margin = "0";
+    c.style.width = cardEl.getBoundingClientRect().width + "px";
+    c.style.transformOrigin = "0 0";
+    c.setAttribute("inert", "");
+    shell.appendChild(c);
+  }
+  const smoothstep = (a, b, v) => { const t = Math.min(1, Math.max(0, (v - a) / (b - a))); return t * t * (3 - 2 * t); };
 
   /* ---------- render ---------- */
   function render() {
@@ -267,24 +289,30 @@ export function createProductModal(device) {
       el.style.visibility = (Math.abs(s) > 1 && Math.abs(k - pos) > 1.6) || dupHide ? "hidden" : "";
       const ghost = el.firstElementChild;
       if (active && m < 1 && src) {
-        // container transform: scale the card down onto the product image and crop it to its shape
-        const s0 = src.w / w, h0 = src.h / s0;
-        const top0 = Math.min(Math.max(160 - h0 / 2, 0), Math.max(0, h - h0));  // centred on the image
-        const bot0 = Math.max(0, h - top0 - h0);
-        const sc = s0 + (1 - s0) * m, top = top0 * (1 - m), bot = bot0 * (1 - m);
-        const rr = (src.r / s0) * (1 - m) + r * m;
-        const bx = src.x + (x - src.x) * m, by = src.y + (y - src.y) * m;
+        // container transform: the product CARD's box grows into the modal's box (position,
+        // width, height and radius interpolate); the card's content fades out while the
+        // modal's content fades in, both scaled to the container width (no reflow)
+        const R = { x: src.x + (x - src.x) * m, y: src.y + (y - src.y) * m, w: src.w + (w - src.w) * m, h: src.h + (h - src.h) * m };
+        const rr = src.r + (r - src.r) * m;
+        const sc = R.w / w;                                   // modal content scale
         el.style.transformOrigin = "0 0";
-        el.style.transform = `translate3d(${bx}px,${by - top * sc}px,0) scale(${sc})`;
-        el.style.clipPath = `inset(${top}px 0 ${bot}px 0 round ${rr}px)`;
+        el.style.transform = `translate3d(${R.x}px,${R.y}px,0) scale(${sc})`;
+        el.style.clipPath = `inset(0 0 ${Math.max(0, h - R.h / sc)}px 0 round ${rr / sc}px)`;
         el.style.borderRadius = "0px";
-        // the card's own image, growing with the card and fading out
-        ghost.style.visibility = "visible";
-        ghost.style.top = top0 + "px"; ghost.style.width = w + "px"; ghost.style.height = h0 + "px";
-        ghost.style.backgroundImage = `url("${P[mod(k, N)].image}")`;
-        ghost.style.opacity = 1 - Math.min(1, Math.max(0, (m - 0.06) / 0.42));
+        el.style.opacity = smoothstep(0.18, 0.62, m);
+        shell.style.display = "block";
+        shell.style.transform = `translate3d(${R.x}px,${R.y}px,0)`;
+        shell.style.width = R.w + "px"; shell.style.height = R.h + "px";
+        shell.style.borderRadius = rr + "px";
+        const c = shell.firstElementChild;
+        if (c) {
+          c.style.transform = `scale(${R.w / src.w})`;
+          c.style.opacity = 1 - smoothstep(0, 0.36, m);
+        }
+        if (ghost.style.visibility !== "hidden") ghost.style.visibility = "hidden";
       } else {
         el.style.transformOrigin = "";
+        if (active) { shell.style.display = "none"; }
         if (ghost.style.visibility !== "hidden") ghost.style.visibility = "hidden";
       }
       if (!active) el.style.opacity = o * m * m * m;
@@ -350,6 +378,7 @@ export function createProductModal(device) {
     pos = index; p = 0; d = 0; state = "card"; ipos = null;
     src = rectFor(P[index].id);
     m = src ? 0 : 1;
+    setClone(src && src.el);
     hideSource(src && src.el);
     modal.classList.add("is-open");
     render(); announce();
@@ -362,6 +391,7 @@ export function createProductModal(device) {
     pos = Math.round(pos);
     // shrink back into the image of the product being shown
     src = rectFor(P[mod(pos, N)].id);
+    if (src) { hideSource(null); setClone(src.el); }       // copy the card as it looks now (e.g. its quantity)
     hideSource(src && src.el);
     const p0 = p, d0 = d, m0 = m;
     state = "closing";
@@ -369,6 +399,8 @@ export function createProductModal(device) {
     const done = () => {
       state = "closed"; modal.classList.remove("is-open");
       d = 0; p = 0; m = 1; activeScroll().scrollTop = 0; render();
+      shell.style.display = "none"; setClone(null);
+      activeEl().style.opacity = "";
       hideSource(null);
       const back = src && src.el && src.el.closest("[data-pid]");
       (back && back.querySelector(".pcard__open")) ? back.querySelector(".pcard__open").focus({ preventScroll: true }) : lastFocus && lastFocus.focus && lastFocus.focus({ preventScroll: true });
@@ -477,34 +509,37 @@ export function createProductModal(device) {
     releasePull((b.y - a.y) / scale / Math.max(1, b.t - a.t));
   });
 
-  /* ---------- wheel / trackpad ---------- */
-  let wheelAcc = 0, wheelX = 0, wheelLock = 0, lastScrollMove = 0;
+  /* ---------- wheel / trackpad ----------
+     One physical gesture = one step. A trackpad swipe sends a long stream of wheel
+     events (finger + momentum); the stream counts as ONE gesture until it has been
+     quiet for 220 ms, so the momentum tail can never trigger a second step. */
+  let wheelAcc = 0, wheelX = 0, lastWheel = 0, wheelUsed = false;
+  const WHEEL_GAP = 220;
   modal.addEventListener("wheel", (e) => {
-    if (state === "closed") return;
+    if (state === "closed" || state === "closing") return;
     const now = performance.now();
+    if (now - lastWheel > WHEEL_GAP) { wheelUsed = false; wheelAcc = 0; wheelX = 0; }   // a new gesture
+    lastWheel = now;
     if (state === "card") {
       e.preventDefault();
-      if (now < wheelLock) return;
+      if (wheelUsed) return;                                  // this gesture already moved once
       if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
         wheelX += e.deltaX;
-        if (Math.abs(wheelX) > 50) { goTo(Math.round(pos) + (wheelX < 0 ? 1 : -1)); wheelX = 0; wheelLock = now + 450; }
-      } else if (e.deltaY < 0) {
+        if (Math.abs(wheelX) > 50) { wheelUsed = true; goTo(Math.round(pos) + (wheelX < 0 ? 1 : -1)); }
+      } else {
         wheelAcc += e.deltaY;
-        if (wheelAcc < -30) { wheelAcc = 0; wheelLock = now + 700; close(); }
-      } else if (e.deltaY > 0) {
-        wheelAcc += e.deltaY;
-        if (wheelAcc > 30) { wheelAcc = 0; wheelLock = now + 700; expand(); }
+        if (wheelAcc < -30) { wheelUsed = true; close(); }
+        else if (wheelAcc > 30) { wheelUsed = true; expand(); }
       }
     } else if (state === "expanded") {
       const sc = activeScroll();
-      if (now < wheelLock) return;
+      if (wheelUsed) { if (sc.scrollTop <= 0.5 && e.deltaY < 0) e.preventDefault(); return; }
       if (sc.scrollTop > 0.5 || e.deltaY >= 0) { wheelAcc = 0; return; }
+      // at the top and still scrolling up: the same gesture returns to the modal (once)
       wheelAcc += e.deltaY;
-      if (wheelAcc < -12) { wheelAcc = 0; wheelLock = now + 600; collapse(); }
+      if (wheelAcc < -12) { wheelUsed = true; collapse(); }
     }
-    lastScrollMove = now;
   }, { passive: false });
-  const wheelReset = setInterval(() => { if (performance.now() - lastScrollMove > 180) { wheelAcc = 0; wheelX = 0; } }, 100);
 
   /* ---------- keyboard ---------- */
   const onKey = (e) => {
@@ -529,7 +564,6 @@ export function createProductModal(device) {
     destroy() {
       document.removeEventListener("keydown", onKey);
       removeEventListener("resize", onResize);
-      clearInterval(wheelReset);
       Object.keys(tweens).forEach(stopTween);
       hideSource(null);
       modal.remove();
