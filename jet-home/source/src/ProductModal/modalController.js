@@ -339,7 +339,21 @@ export function createProductModal(device) {
     if (N === 1) k = Math.round(pos);
     tween("pos", pos, k, dur, easeOut, (v) => { pos = v; render(); }, () => { pos = k; render(); announce(); });
   }
-  function announce() { live.textContent = P[mod(Math.round(pos), N)].title; }
+  function announce() { live.textContent = P[mod(Math.round(pos), N)].title; followBehind("smooth"); }
+
+  /* Keep the page in sync behind the modal: scroll the section's row so the card of the
+     product now shown is on screen — closing then lands on a visible card. */
+  function followBehind(behavior) {
+    if (!sectionEl || !sectionEl.isConnected || !P.length) return;
+    const card = sectionEl.querySelector(`[data-pid="${CSS.escape(P[mod(Math.round(pos), N)].id)}"]`);
+    const row = card && card.closest(".carousel__scroller");
+    if (!row) return;
+    const c = card.getBoundingClientRect(), r = row.getBoundingClientRect(), pad = 16;
+    let dx = 0;
+    if (c.left < r.left + pad) dx = c.left - (r.left + pad);
+    else if (c.right > r.right - pad) dx = c.right - (r.right - pad);
+    if (Math.abs(dx) > 0.5) row.scrollBy({ left: dx, behavior });
+  }
 
   /* ---------- expand / collapse ---------- */
   function pullDown(dist) {
@@ -393,6 +407,7 @@ export function createProductModal(device) {
     stopTween("pos"); stopTween("p"); stopTween("d"); stopTween("m");
     pos = Math.round(pos);
     // shrink back into the image of the product being shown
+    followBehind("auto");                                  // finish any catch-up scroll first
     src = rectFor(P[mod(pos, N)].id);
     if (src) { hideSource(null); setClone(src.el); }       // copy the card as it looks now (e.g. its quantity)
     hideSource(src && src.el);
