@@ -228,3 +228,8 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* iOS WebKit: no live backdrop blur inside the scrolling page (layers blink on scroll) */
+@supports (-webkit-touch-callout: none) {
+  .home__scroller .top-nav__search-glass { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(255, 255, 255, 0.9); }
+}

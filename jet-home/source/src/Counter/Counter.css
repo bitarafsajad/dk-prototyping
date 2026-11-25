@@ -314,3 +314,17 @@ button.counter { transition: transform 140ms ease-out; }
    engine and, unlike masks or extra layers, costs nothing per frame. */
 .qs__clip { clip-path: inset(0 round 999px); }
 .qs__plus-clip { clip-path: circle(50% at 50% 50%); }
+
+/* ---- iOS WebKit (Safari AND Chrome on iPhone) ----
+   With dozens of live backdrop-filter layers inside a scrolling container, iOS drops
+   and re-draws neighbouring layers while you scroll: the + glyphs (and the discount
+   badges) blink off and on. On iOS the counter glass is therefore a solid frosted
+   white (same look over the white product images, no live blur); every other browser
+   keeps the real 5px backdrop blur.  `-webkit-touch-callout` exists only on iOS. */
+@supports (-webkit-touch-callout: none) {
+  .qs__bg {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: rgba(255, 255, 255, 0.94);
+  }
+}
