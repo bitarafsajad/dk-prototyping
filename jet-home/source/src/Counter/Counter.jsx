@@ -59,7 +59,7 @@ export function counterState({ quantity = 0, max = Infinity, loading = false, co
   return quantity >= max ? "max" : "added";
 }
 
-function FloatCounter({ state, quantity, idle, fluid, onInc, onDec, className, style }) {
+function FloatCounter({ state, quantity, idle, fluid, onInc, onDec, className, style, backdrop }) {
   const forcedCompact = state === "collapsed";
   const open = ["added", "max", "addedLoading", "collapsed"].includes(state);
   const loading = state === "addLoading" || state === "addedLoading";
@@ -100,7 +100,17 @@ function FloatCounter({ state, quantity, idle, fluid, onInc, onDec, className, s
   return (
     <div className={cls} style={style}>
       <div className="qs__pill">
-        <div className="qs__bg"><div className="qs__glass" /></div>
+        <div className="qs__bg">
+          {backdrop && (
+            <>
+              {/* "baked" glass: a blurred copy of the product image under the counter,
+                  aligned to the image — looks like backdrop blur, costs nothing while scrolling */}
+              <span className="qs__fake" style={{ backgroundImage: `url("${backdrop}")` }} aria-hidden="true" />
+              <span className="qs__tint" aria-hidden="true" />
+            </>
+          )}
+          <div className="qs__glass" />
+        </div>
         <div className="qs__clip">
           <div className="qs__row">
             <span className="qs__minus"><Icon d={MINUS_24} size={24} color="currentColor" /></span>
@@ -140,6 +150,9 @@ function FloatCounter({ state, quantity, idle, fluid, onInc, onDec, className, s
  *  unit       optional unit label (e.g. "ورق") — Figma `hasUnit`
  *  state      force a Figma state (overrides the derived one)
  *  fluid      stretch the expanded stepper to the parent width
+ *  backdrop   image URL under the float counter (ProductCard passes its product
+ *             image): the glass is drawn as a blurred copy of it instead of a live
+ *             backdrop-filter (no blinking layers on iPhone while scrolling)
  *  collapseAfter  ms of inactivity before the float stepper folds into the
  *                 red amount circle (null = never). Tap it to open again.
  *  onChange(nextQuantity)
@@ -154,6 +167,7 @@ export default function Counter({
   state: forcedState,
   fluid = false,
   collapseAfter = 1500,
+  backdrop,
   onChange,
   className = "",
   style,
@@ -170,13 +184,14 @@ export default function Counter({
   if (isFloat) {
     return (
       <FloatCounter
+        backdrop={backdrop}
         state={state}
         quantity={quantity}
         idle={collapseAfter}
         fluid={fluid}
         onInc={inc}
         onDec={dec}
-        className={className}
+        className={`${className}${backdrop ? " qs--fake" : ""}`.trim()}
         style={style}
       />
     );

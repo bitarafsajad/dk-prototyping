@@ -108,6 +108,7 @@ export default function ProductCard({
               max={maxQuantity}
               loading={loading}
               fluid
+              backdrop={image}
               onChange={setQty}
             />
           </div>

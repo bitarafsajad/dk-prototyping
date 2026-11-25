@@ -328,3 +328,23 @@ button.counter { transition: transform 140ms ease-out; }
     background: rgba(255, 255, 255, 0.94);
   }
 }
+
+/* ---- "baked" glass for counters on product images (ProductCard) ----
+   A blurred copy of the product image, anchored to the image's bottom-right corner
+   (the pill is pinned 8px from it), clipped by the pill. Static: no live
+   backdrop-filter, so nothing blinks while scrolling — on every browser. */
+.counter.qs--fake .qs__bg { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; background: none !important; }
+.qs__fake {
+  position: absolute;
+  right: -8px;
+  bottom: -8px;
+  width: calc(100cqw + 16px);              /* = the product image box (square) */
+  height: calc(100cqw + 16px);
+  background-color: #fff;
+  background-repeat: no-repeat;
+  background-position: 12px 12px;          /* Thumbnail image inset */
+  background-size: calc(100% - 24px) calc(100% - 24px);
+  filter: blur(5px);                       /* Figma background blur 10 → CSS 5px */
+  pointer-events: none;
+}
+.qs__tint { position: absolute; inset: 0; background: rgba(255, 255, 255, 0.8); pointer-events: none; }
