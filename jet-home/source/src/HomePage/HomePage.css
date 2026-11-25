@@ -386,3 +386,28 @@
 .home__narrow.nbanner { padding: 16px 16px 0; }
 /* search layout has no card travel: only clear the bottom navigation */
 .home[data-layout="search"] .home__inner { padding-bottom: calc(64px + max(21px, var(--safe-bottom)) + 16px); }
+
+/* ---- mobile robustness: the fixed header must never drop out while the content
+   underneath is momentum-scrolled (iOS Safari / Android Chrome layer culling) ---- */
+.home__chrome {
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+.home__searchBlock { will-change: auto; -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+.home__searchBlock .sh__field { -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+
+/* one real white sheet behind status bar + Pillars + search block (no pseudo layers):
+   its bottom edge always sits on the block's bottom edge */
+.home[data-layout="search"] { --blk-h: 128px; }
+.home[data-layout="search"][data-collapsed] { --blk-h: 64px; }
+.home__headerBg {
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: calc(var(--safe-top) + 260px);
+  background: #fff;
+  transform: translate3d(0, calc(var(--blk-y) + var(--blk-h) - var(--safe-top) - 260px), 0);
+  transition: transform var(--t) var(--ease);
+  pointer-events: none;
+}
+.home__searchBlock::before, .home__searchBlock::after { content: none; display: none; }

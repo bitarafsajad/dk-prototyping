@@ -138,7 +138,7 @@ button.counter { transition: transform 140ms ease-out; }
     0 8px 20px 0 var(--brand-900-12);
   transition: width var(--qs-t);
 }
-.is-open .qs__pill { width: var(--qs-open); transition: width var(--qs-b); }
+.counter.is-open .qs__pill { width: var(--qs-open); transition: width var(--qs-b); }
 
 /* backgrounds: white 80% + blur; the pink glass of the "add" button cross-fades out */
 .qs__bg {
@@ -162,13 +162,13 @@ button.counter { transition: transform 140ms ease-out; }
   -webkit-mask-composite: xor;
           mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
 }
-.is-open .qs__glass { opacity: 0; }
+.counter.is-open .qs__glass { opacity: 0; }
 .qs__border {
   position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
   box-shadow: inset 0 0 0 1px transparent;
   transition: box-shadow var(--qs-t);
 }
-.is-open .qs__border { box-shadow: inset 0 0 0 1px #fff; }   /* border/inverse, inside */
+.counter.is-open .qs__border { box-shadow: inset 0 0 0 1px #fff; }   /* border/inverse, inside */
 
 /* content row: full open width, pinned right, clipped by the pill */
 .qs__clip { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; pointer-events: none; }
@@ -189,7 +189,7 @@ button.counter { transition: transform 140ms ease-out; }
   opacity: 0; transform: translateX(12px);
   transition: opacity var(--qs-t), transform var(--qs-t), color var(--qs-t);
 }
-.is-open .qs__minus, .is-open .qs__count {
+.counter.is-open .qs__minus, .counter.is-open .qs__count {
   opacity: 1; transform: none;
   transition: opacity var(--qs-t), transform var(--qs-b), color var(--qs-t);
 }
@@ -200,13 +200,13 @@ button.counter { transition: transform 140ms ease-out; }
   color: var(--brand);
   transition: color var(--qs-t), transform 200ms var(--qs-ease);
 }
-.is-open .qs__plus { color: #fff; }
+.counter.is-open .qs__plus { color: #fff; }
 .qs__plus-bg {
   position: absolute; inset: 0; border-radius: inherit; background: var(--brand);
   transform: scale(0); opacity: 0;
   transition: transform var(--qs-t), opacity 150ms ease;
 }
-.is-open .qs__plus-bg { transform: scale(1); opacity: 1; transition: transform var(--qs-b), opacity 120ms ease; }
+.counter.is-open .qs__plus-bg { transform: scale(1); opacity: 1; transition: transform var(--qs-b), opacity 120ms ease; }
 .qs__plus-clip { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; }
 .qs__plus-icon, .qs__plus-num, .qs__plus-loader {
   position: absolute; inset: 0; display: grid; place-items: center;
@@ -220,23 +220,23 @@ button.counter { transition: transform 140ms ease-out; }
 .qs__plus-loader { opacity: 0; }
 
 /* max: plus becomes a disabled grey icon (no red circle) */
-.is-max .qs__plus { color: var(--disable); }
-.is-max .qs__plus-bg { transform: scale(0); opacity: 0; }
+.counter.is-max .qs__plus { color: var(--disable); }
+.counter.is-max .qs__plus-bg { transform: scale(0); opacity: 0; }
 
 /* loading (current loader kept as is) */
-.is-loading .qs__plus-icon { opacity: 0; transform: scale(0.6); }
-.is-loading .qs__plus-loader { opacity: 1; }
-.is-loading.is-open .qs__minus { color: rgba(237, 25, 68, 0.2); }
+.counter.is-loading .qs__plus-icon { opacity: 0; transform: scale(0.6); }
+.counter.is-loading .qs__plus-loader { opacity: 1; }
+.counter.is-loading.is-open .qs__minus { color: rgba(237, 25, 68, 0.2); }
 
 /* compact: after idle → solid red circle showing the amount */
-.is-compact .qs__pill { width: 40px; transition: width var(--qs-t); }
-.is-compact .qs__minus, .is-compact .qs__count { opacity: 0; transform: translateX(12px); transition: opacity var(--qs-t), transform var(--qs-t); }
-.is-compact .qs__plus-bg { transform: scale(1.25); opacity: 1; transition: transform var(--qs-t); }  /* 32 → 40 */
-.is-compact .qs__border { box-shadow: inset 0 0 0 1px transparent; }
-.is-compact .qs__plus-icon { transform: translateY(-100%); opacity: 0; }   /* plus slides up & out */
-.is-compact .qs__plus-num { transform: none; opacity: 1; }                  /* amount slides up & in */
-.is-compact .qs__plus-loader { opacity: 0; }
-.is-compact .qs__hit--minus { visibility: hidden; }
+.counter.is-compact .qs__pill { width: 40px; transition: width var(--qs-t); }
+.counter.is-compact .qs__minus, .counter.is-compact .qs__count { opacity: 0; transform: translateX(12px); transition: opacity var(--qs-t), transform var(--qs-t); }
+.counter.is-compact .qs__plus-bg { transform: scale(1.25); opacity: 1; transition: transform var(--qs-t); }  /* 32 → 40 */
+.counter.is-compact .qs__border { box-shadow: inset 0 0 0 1px transparent; }
+.counter.is-compact .qs__plus-icon { transform: translateY(-100%); opacity: 0; }   /* plus slides up & out */
+.counter.is-compact .qs__plus-num { transform: none; opacity: 1; }                  /* amount slides up & in */
+.counter.is-compact .qs__plus-loader { opacity: 0; }
+.counter.is-compact .qs__hit--minus { visibility: hidden; }
 
 /* touch areas: 56 wide, 9px outside the pill */
 .qs__hit {
@@ -247,7 +247,7 @@ button.counter { transition: transform 140ms ease-out; }
 .qs__hit:focus-visible { outline: 2px solid var(--brand); outline-offset: -6px; border-radius: 999px; }
 .qs__hit--plus { right: -9px; }
 .qs__hit--minus { left: -9px; visibility: hidden; }
-.is-open .qs__hit--minus { visibility: visible; }
+.counter.is-open .qs__hit--minus { visibility: visible; }
 .qs__hit--plus:active:not(:disabled) ~ .qs__clip .qs__plus { transform: scale(0.9); }
 
 /* number roll (shared with the fixed variant) */
@@ -307,3 +307,10 @@ button.counter { transition: transform 140ms ease-out; }
 
 /* performance: idle steppers don't run their (hidden) loader animation */
 .counter--float:not(.is-loading) .qs__plus-loader { display: none; }
+
+/* ---- mobile Safari / Chrome robustness ----
+   WebKit can drop a transformed child inside an `overflow:hidden` + border-radius
+   parent (the plus icon vanished). clip-path clips children reliably on every
+   engine and, unlike masks or extra layers, costs nothing per frame. */
+.qs__clip { clip-path: inset(0 round 999px); }
+.qs__plus-clip { clip-path: circle(50% at 50% 50%); }

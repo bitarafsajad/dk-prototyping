@@ -293,6 +293,7 @@ export default function HomePage({
             <MemoPillars collapsed activeId={venture} onChange={setVenture} onAllClick={openSettings} />
           </div>
         </div>
+        {layout === "search" && <div className="home__headerBg" aria-hidden="true" />}
         {layout === "search" && (
           <div className="home__searchBlock">
             <SearchHeader

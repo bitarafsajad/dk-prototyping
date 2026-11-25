@@ -104,11 +104,11 @@ export function createProductModal(device) {
     $(".pdp-more", el).addEventListener("click", () => { if (el.k === Math.round(pos)) expand(); });
     $(".pdp-cart", el).addEventListener("click", (e) => {
       const b = e.currentTarget, s = b.firstElementChild;
-      if (b.classList.contains("is-added")) return;
-      b.classList.add("is-added"); s.textContent = "به سبد اضافه شد";
+      if (b.classList.contains("pdp-added")) return;
+      b.classList.add("pdp-added"); s.textContent = "به سبد اضافه شد";
       const prod = P[mod(el.k, N)];
       prod && prod.onAdd && prod.onAdd();
-      setTimeout(() => { b.classList.remove("is-added"); s.textContent = "افزودن به سبد"; }, 1600);
+      setTimeout(() => { b.classList.remove("pdp-added"); s.textContent = "افزودن به سبد"; }, 1600);
     });
   }
 
@@ -300,10 +300,12 @@ export function createProductModal(device) {
         el.style.clipPath = `inset(0 0 ${Math.max(0, h - R.h / sc)}px 0 round ${rr / sc}px)`;
         el.style.borderRadius = "0px";
         el.style.opacity = smoothstep(0.18, 0.62, m);
-        shell.style.display = "block";
+        // the shell never changes size (no layout per frame): it is clipped to the box instead
+        const SW = Math.ceil(Math.max(src.w, W)), SH = Math.ceil(Math.max(src.h, H));
+        if (shell.style.display !== "block") shell.style.display = "block";
+        if (shell._w !== SW || shell._h !== SH) { shell.style.width = SW + "px"; shell.style.height = SH + "px"; shell._w = SW; shell._h = SH; }
         shell.style.transform = `translate3d(${R.x}px,${R.y}px,0)`;
-        shell.style.width = R.w + "px"; shell.style.height = R.h + "px";
-        shell.style.borderRadius = rr + "px";
+        shell.style.clipPath = `inset(0 ${SW - R.w}px ${SH - R.h}px 0 round ${rr}px)`;
         const c = shell.firstElementChild;
         if (c) {
           c.style.transform = `scale(${R.w / src.w})`;
@@ -316,8 +318,8 @@ export function createProductModal(device) {
         if (ghost.style.visibility !== "hidden") ghost.style.visibility = "hidden";
       }
       if (!active) el.style.opacity = o * m * m * m;
-      el.classList.toggle("is-full", active && p > 0);
-      el.classList.toggle("is-expanded", active && state === "expanded" && p === 1);
+      el.classList.toggle("pdp-full", active && p > 0);
+      el.classList.toggle("pdp-exp", active && state === "expanded" && p === 1);
       if (active) { el.removeAttribute("inert"); el.removeAttribute("aria-hidden"); }
       else el.setAttribute("inert", "");
     }
@@ -380,7 +382,8 @@ export function createProductModal(device) {
     m = src ? 0 : 1;
     setClone(src && src.el);
     hideSource(src && src.el);
-    modal.classList.add("is-open");
+    modal.classList.add("pdp-on");
+    device.classList.add("pdp-busy");
     render(); announce();
     modal.focus({ preventScroll: true });
     if (src) tween("m", 0, 1, 620, easeOutQuart, (v) => { m = v; render(); }, () => { m = 1; render(); });
@@ -395,9 +398,10 @@ export function createProductModal(device) {
     hideSource(src && src.el);
     const p0 = p, d0 = d, m0 = m;
     state = "closing";
-    activeEl().classList.remove("is-expanded");
+    activeEl().classList.remove("pdp-exp");
     const done = () => {
-      state = "closed"; modal.classList.remove("is-open");
+      state = "closed"; modal.classList.remove("pdp-on");
+      device.classList.remove("pdp-busy");
       d = 0; p = 0; m = 1; activeScroll().scrollTop = 0; render();
       shell.style.display = "none"; setClone(null);
       activeEl().style.opacity = "";

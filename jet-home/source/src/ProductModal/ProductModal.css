@@ -8,7 +8,7 @@
   user-select: none; -webkit-user-select: none;
   direction: rtl; font-family: "Digikala", Tahoma, "Segoe UI", sans-serif;
 }
-.pdp-modal.is-open { visibility: visible; pointer-events: auto; }
+.pdp-modal.pdp-on { visibility: visible; pointer-events: auto; }
 .pdp-modal:focus { outline: none; }
 .pdp-modal button { font: inherit; color: inherit; background: none; border: 0; padding: 0; margin: 0; cursor: pointer; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
 .pdp-modal button:focus-visible { outline: 2px solid #2f6bff; outline-offset: 2px; }
@@ -23,7 +23,7 @@
 .pdp-card[inert] { cursor: pointer; }
 .pdp-scroll { position: absolute; inset: 0; overflow: hidden; overscroll-behavior: contain; scrollbar-width: none; }
 .pdp-scroll::-webkit-scrollbar { display: none; }
-.pdp-card.is-expanded .pdp-scroll { overflow-y: auto; touch-action: pan-y; user-select: text; -webkit-user-select: text; }
+.pdp-card.pdp-exp .pdp-scroll { overflow-y: auto; touch-action: pan-y; user-select: text; -webkit-user-select: text; }
 .pdp-body { display: flex; flex-direction: column; gap: 16px; padding-top: 32px; padding-bottom: 105px; }
 
 .pdp-imageFrame { display: flex; justify-content: center; }
@@ -64,12 +64,12 @@
 
 .pdp-text { display: flex; flex-direction: column; gap: 4px; padding: 0 16px; min-height: 68px; }
 .pdp-title { margin: 0; font-weight: 700; font-size: 15px; line-height: 24px; color: var(--pdp-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: right; }
-.pdp-card.is-full .pdp-title { white-space: normal; }
+.pdp-card.pdp-full .pdp-title { white-space: normal; }
 .pdp-desc { margin: 0; font-weight: 400; font-size: 13px; line-height: 20px; color: var(--pdp-tertiary); text-align: right; }
 .pdp-descShort { max-height: 40px; overflow: hidden; }
 .pdp-descFull { display: none; white-space: pre-line; }
-.pdp-card.is-full .pdp-descShort { display: none; }
-.pdp-card.is-full .pdp-descFull { display: block; }
+.pdp-card.pdp-full .pdp-descShort { display: none; }
+.pdp-card.pdp-full .pdp-descFull { display: block; }
 .pdp-more { font-size: 13px !important; line-height: 20px; color: var(--pdp-primary) !important; text-decoration: underline; text-underline-offset: 3px; padding: 0 1px !important; }
 
 /* CartFab */
@@ -100,10 +100,10 @@
 }
 .pdp-cart:active { transform: scale(.97); }
 .pdp-cart span { padding: 0 8px; font-weight: 500; font-size: 15px; line-height: 24px; color: #fff; white-space: nowrap; }
-.pdp-cart.is-added { background: #1f9d55 !important; }
+.pdp-cart.pdp-added { background: #1f9d55 !important; }
 @media (hover: hover) and (pointer: fine) {
   .pdp-cart:hover { background: #d6143c !important; }
-  .pdp-cart.is-added:hover { background: #1b8a4b !important; }
+  .pdp-cart.pdp-added:hover { background: #1b8a4b !important; }
   .pdp-close:hover { background: linear-gradient(rgba(0,0,0,.04), rgba(0,0,0,.04)), var(--pdp-surface-2) !important; }
 }
 
@@ -121,6 +121,11 @@
 .pdp-shell {
   position: absolute; left: 0; top: 0; z-index: 1; display: none;
   background: #fff; overflow: hidden; pointer-events: none;
-  will-change: transform, width, height;
+  will-change: transform, clip-path; contain: strict;
 }
 .pdp-shell > * { pointer-events: none; }
+.pdp-shell > * { contain: layout paint; will-change: transform, opacity; }
+
+/* while the modal is up, the page below sits under the scrim: its glass counters don't
+   need a live backdrop blur (one less full re-blur per frame during the transitions) */
+.pdp-busy .qs__bg { -webkit-backdrop-filter: none; backdrop-filter: none; }
