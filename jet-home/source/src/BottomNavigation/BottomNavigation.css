@@ -1,7 +1,7 @@
 /* BottomNavigation — Figma: Home-Page › bottom navigation (2070:6835)
    variants: simple (2070:6813) · with assistant (2070:6788) */
 .bnav {
-  --bnav-safe: max(21px, env(safe-area-inset-bottom, 0px)); /* safe area: 21px (Figma), or the device inset when larger */
+  --bnav-safe: max(21px, calc(env(safe-area-inset-bottom, 0px) - 13px)); /* 21px (Figma); the home indicator itself needs only the lower ~13px */
   position: fixed;
   left: 0;
   right: 0;

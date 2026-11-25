@@ -282,6 +282,7 @@ export function createProductModal(device) {
       el.style.width = w + "px"; el.style.height = h + "px";
       el.style.borderRadius = r + "px";
       el.style.setProperty("--r", r + "px");
+      el.style.setProperty("--pdp-st", active ? p : 0);           // 0 = card, 1 = full screen
       el.style.clipPath = r > 0 ? `inset(0 round ${r}px)` : "none";
       el.style.opacity = o;
       el.style.zIndex = active ? 2 : 1;

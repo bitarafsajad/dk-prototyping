@@ -129,3 +129,15 @@
 /* while the modal is up, the page below sits under the scrim: its glass counters don't
    need a live backdrop blur (one less full re-blur per frame during the transitions) */
 .pdp-busy .qs__bg { -webkit-backdrop-filter: none; backdrop-filter: none; }
+
+/* ---- safe areas when the modal is full screen (home-screen app / PWA) ----
+   --pdp-st goes 0 → 1 with the expand, so the ✕, the content and the cart bar slide
+   out of the status bar / home indicator together with the card (0 in a browser tab). */
+.pdp-modal {
+  --pdp-safe-top: env(safe-area-inset-top, 0px);
+  --pdp-safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+.pdp-card { --pdp-st: 0; }
+.pdp-modal .pdp-close { top: calc(16px + var(--pdp-safe-top) * var(--pdp-st)); }   /* top, not transform: keeps the press spring */
+.pdp-body { transform: translateY(calc(var(--pdp-safe-top) * var(--pdp-st))); }
+.pdp-fab { padding-bottom: max(21px, calc(var(--pdp-safe-bottom) * var(--pdp-st))); }

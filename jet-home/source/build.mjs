@@ -29,7 +29,8 @@ const HEAD = (title, desc) => `<meta charset="utf-8">
 <meta property="og:image" content="icons/og-image.png">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">`;
+<link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">`;
 
 // Preact (≈4 KB) stands in for React (≈130 KB) — same API via preact/compat.
 const alias = {

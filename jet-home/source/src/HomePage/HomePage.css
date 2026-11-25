@@ -163,7 +163,7 @@
 .home__scroller::-webkit-scrollbar { display: none; }
 .home__inner {
   /* room for the bottom navigation + the card's travel between states */
-  padding-bottom: calc(64px + max(21px, var(--safe-bottom)) + 39px + 90px);
+  padding-bottom: calc(64px + max(21px, calc(var(--safe-bottom) - 13px)) + 39px + 90px);
 }
 .home__inner .top-nav { padding-bottom: 0; }
 .home__inner .banner { padding-bottom: 0; }
@@ -312,7 +312,7 @@
 .home .bnav__scrim { -webkit-backdrop-filter: none; backdrop-filter: none; }
 
 /* bottom navigation sits on top of everything; its safe area follows the page rule */
-.home .bnav { z-index: 4; --bnav-safe: max(21px, var(--safe-bottom)); }   /* ≈21px safe area, more on devices with a larger inset */
+.home .bnav { z-index: 4; --bnav-safe: max(21px, calc(var(--safe-bottom) - 13px)); }   /* 21px (Figma); iPhone home-screen app: 34 − 13 = 21 */   /* ≈21px safe area, more on devices with a larger inset */
 
 @media (prefers-reduced-motion: reduce) {
   .home { --t: 1ms; }
@@ -385,7 +385,7 @@
 /* final home (2404:5081): Narrow Banner frame y16 · h55, CategoryRow right after it */
 .home__narrow.nbanner { padding: 16px 16px 0; }
 /* search layout has no card travel: only clear the bottom navigation */
-.home[data-layout="search"] .home__inner { padding-bottom: calc(64px + max(21px, var(--safe-bottom)) + 16px); }
+.home[data-layout="search"] .home__inner { padding-bottom: calc(64px + max(21px, calc(var(--safe-bottom) - 13px)) + 16px); }
 
 /* ---- mobile robustness: the fixed header must never drop out while the content
    underneath is momentum-scrolled (iOS Safari / Android Chrome layer culling) ---- */
