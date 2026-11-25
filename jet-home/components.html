@@ -8,7 +8,11 @@
 <meta name="theme-color" content="#ffffff">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<!-- "default": iOS places the app BELOW its own (white) status bar and gives it the full
+     remaining height. "black-translucent" drew the page from the top of the screen but
+     kept it one status-bar shorter, so the bottom of the screen (navigation labels)
+     was never painted. -->
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="دیجی‌کالا جت">
 <meta property="og:title" content="Digikala Jet — components">
 <meta property="og:description" content="Every component and state of the Digikala Jet home page kit.">
