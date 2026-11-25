@@ -348,3 +348,11 @@ button.counter { transition: transform 140ms ease-out; }
   pointer-events: none;
 }
 .qs__tint { position: absolute; inset: 0; background: rgba(255, 255, 255, 0.8); pointer-events: none; }
+/* iOS WebKit: a filtered child (the blurred copy) gets its own GPU layer and escapes
+   the rounded `overflow:hidden` clip → a sharp square showed around the round button.
+   clip-path clips composited / filtered children too, so the glass stays round. */
+.counter.qs--fake .qs__bg {
+  isolation: isolate;
+  -webkit-clip-path: inset(0 round 999px);
+          clip-path: inset(0 round 999px);
+}
